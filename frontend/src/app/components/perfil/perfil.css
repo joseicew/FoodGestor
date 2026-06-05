@@ -1,16 +1,15 @@
 .perfil-container {
   padding: 0px;
   padding-bottom: 100px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.header {
-  margin-top: 5px;
-  margin-bottom: 10px;
-}
+/* .header h1 → global styles.css */
+/* .mensaje, .mensaje.error → global styles.css */
+/* .spinner, @keyframes spin → global styles.css */
+/* .modal-overlay → global styles.css */
 
 .header-title {
   display: flex;
@@ -27,14 +26,9 @@
   justify-content: center;
 }
 
-.header h1 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #2d2d2d;
-  margin: 0;
-}
+.fecha { font-size: 13px; color: #999; margin-top: 2px; }
 
-/* PERFIL INFO HEADER */
+/* ── Perfil info header ── */
 .perfil-info-header {
   display: flex;
   align-items: center;
@@ -68,28 +62,7 @@
   transform: scale(1.1);
 }
 
-.mensaje {
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  background: #e8f5e9;
-  color: #2e7d32;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.mensaje.error {
-  background: #fce4ec;
-  color: #c62828;
-}
-
-.fecha {
-  font-size: 13px;
-  color: #999;
-  margin-top: 2px;
-}
-
-/* PERFIL INFO CARD */
+/* ── Perfil info card ── */
 .perfil-info-card {
   background: #fff;
   border: 3px solid #e8e8e8;
@@ -100,17 +73,8 @@
   gap: 16px;
 }
 
-.info-section h2 {
-  margin: 0 0 4px 0;
-  font-size: 1.2rem;
-  color: #2d2d2d;
-}
-
-.email {
-  color: #999;
-  font-size: 13px;
-  margin: 0;
-}
+.info-section h2 { margin: 0 0 4px 0; font-size: 1.2rem; color: #2d2d2d; }
+.email { color: #999; font-size: 13px; margin: 0; }
 
 .datos-fila {
   display: grid;
@@ -119,13 +83,8 @@
   margin-bottom: 8px;
 }
 
-.dato-item {
-  background: #f5f5f5;
-  padding: 12px;
-  border-radius: 8px;
-}
+.dato-item { background: #f5f5f5; padding: 12px; border-radius: 8px; }
 
-/* DATOS INLINE */
 .dato-inline-row {
   display: flex;
   align-items: center;
@@ -144,37 +103,14 @@
   min-width: 120px;
 }
 
-.dato-valor-inline {
-  font-size: 15px;
-  font-weight: 600;
-  color: #2d2d2d;
-  flex: 1;
-}
+.dato-valor-inline { font-size: 15px; font-weight: 600; color: #2d2d2d; flex: 1; }
 
-.dato-label {
-  display: block;
-  font-size: 11px;
-  color: #999;
-  font-weight: 600;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
+.dato-label { display: block; font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+.dato-valor { display: block; font-size: 16px; font-weight: 600; color: #2d2d2d; }
 
-.dato-valor {
-  display: block;
-  font-size: 16px;
-  font-weight: 600;
-  color: #2d2d2d;
-}
+.dato-separator { height: 1px; background: #e0e0e0; margin: 12px 0; }
 
-/* SEPARADOR */
-.dato-separator {
-  height: 1px;
-  background: #e0e0e0;
-  margin: 12px 0;
-}
-
-/* SECCIÓN CALORÍAS PERSONALIZADAS */
+/* ── Calorías explicación ── */
 .calorias-explicacion {
   background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
   border: 1px solid #ffe082;
@@ -208,32 +144,12 @@
   background: rgba(244, 67, 54, 0.05);
 }
 
-.caloria-label {
-  font-size: 12px;
-  color: #666;
-  font-weight: 500;
-}
+.caloria-label  { font-size: 12px; color: #666; font-weight: 500; }
+.caloria-valor  { font-size: 16px; font-weight: 700; color: #2d2d2d; }
+.caloria-ahorro { font-size: 10px; color: #f44336; font-weight: 600; margin-left: 4px; }
 
-.caloria-valor {
-  font-size: 16px;
-  font-weight: 700;
-  color: #2d2d2d;
-}
-
-.caloria-ahorro {
-  font-size: 10px;
-  color: #f44336;
-  font-weight: 600;
-  margin-left: 4px;
-}
-
-/* LOGOUT SECTION */
-.logout-section {
-  display: flex;
-  justify-content: center;
-  padding: 24px 0;
-  margin-top: 20px;
-}
+/* ── Logout ── */
+.logout-section { display: flex; justify-content: center; padding: 24px 0; margin-top: 20px; }
 
 .btn-logout {
   padding: 12px 24px;
@@ -253,21 +169,7 @@
   box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
 }
 
-/* MODAL CONFIRMACIÓN */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
-}
-
+/* ── Modal confirmación (local — usa .modal-overlay global) ── */
 .modal-content {
   background: #fff;
   border-radius: 16px;
@@ -278,24 +180,10 @@
   animation: slideUp 0.3s ease;
 }
 
-.modal-content h3 {
-  margin: 0 0 8px 0;
-  font-size: 1.1rem;
-  color: #2d2d2d;
-  font-weight: 600;
-}
+.modal-content h3 { margin: 0 0 8px 0; font-size: 1.1rem; color: #2d2d2d; font-weight: 600; }
+.modal-content p  { margin: 0 0 20px 0; color: #666; font-size: 14px; }
 
-.modal-content p {
-  margin: 0 0 20px 0;
-  color: #666;
-  font-size: 14px;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  flex-direction: column;
-}
+.modal-actions { display: flex; gap: 12px; flex-direction: column; }
 
 .btn-confirm {
   padding: 12px 16px;
@@ -309,10 +197,7 @@
   transition: all 0.2s;
 }
 
-.btn-confirm:hover {
-  background: #d32f2f;
-  transform: translateY(-2px);
-}
+.btn-confirm:hover { background: #d32f2f; transform: translateY(-2px); }
 
 .btn-cancel {
   padding: 12px 16px;
@@ -326,31 +211,14 @@
   transition: all 0.2s;
 }
 
-.btn-cancel:hover {
-  background: #e0e0e0;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+.btn-cancel:hover { background: #e0e0e0; }
 
 @keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
-/* LÍMITES CARD */
+/* ── Límites card ── */
 .limites-card {
   background: #fff;
   border: 1px solid #e8e8e8;
@@ -358,18 +226,9 @@
   padding: 16px;
 }
 
-.limites-card h3 {
-  font-size: 14px;
-  font-weight: 700;
-  color: #2d2d2d;
-  margin: 0 0 16px 0;
-}
+.limites-card h3 { font-size: 14px; font-weight: 700; color: #2d2d2d; margin: 0 0 16px 0; }
 
-.limites-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
+.limites-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
 .limite-item {
   background: #f5f5f5;
@@ -382,47 +241,13 @@
   gap: 10px;
 }
 
-.limite-icono {
-  font-size: 32px;
-  display: block;
-}
+.limite-icono   { font-size: 32px; display: block; }
+.limite-contenido { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.limite-valor   { display: block; font-size: 18px; font-weight: 700; color: #667eea; line-height: 1.2; }
+.limite-unidad  { font-size: 16px; font-weight: 700; color: #667eea; margin-left: 2px; }
+.limite-etiqueta { display: block; font-size: 12px; color: #999; font-weight: 500; text-transform: capitalize; }
 
-.limite-contenido {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
-}
-
-.limite-valor {
-  display: block;
-  font-size: 18px;
-  font-weight: 700;
-  color: #667eea;
-  line-height: 1.2;
-}
-
-.limite-unidad {
-  font-size: 16px;
-  font-weight: 700;
-  color: #667eea;
-  margin-left: 2px;
-}
-
-.limite-etiqueta {
-  display: block;
-  font-size: 12px;
-  color: #999;
-  font-weight: 500;
-  text-transform: capitalize;
-}
-
-/* CALORIAS CARD SIMPLE */
-.macro-fill.calorias {
-  background: linear-gradient(135deg, #4CAF50, #2e7d32);
-}
-
-/* MACROS CARD */
+/* ── Macros card ── */
 .macros-card {
   background: #fff;
   border: 1px solid #e8e8e8;
@@ -433,79 +258,27 @@
   gap: 14px;
 }
 
-.macros-card h3 {
-  font-size: 14px;
-  font-weight: 700;
-  color: #2d2d2d;
-  margin-bottom: 4px;
-}
+.macros-card h3 { font-size: 14px; font-weight: 700; color: #2d2d2d; margin-bottom: 4px; }
 
-.macro-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.macro-item   { display: flex; flex-direction: column; gap: 6px; }
+.macro-header { display: flex; justify-content: space-between; align-items: center; }
+.macro-nombre { font-size: 13px; font-weight: 600; }
 
-.macro-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+.proteinas-color     { color: #4CAF50; }
+.carbohidratos-color { color: #2196F3; }
+.grasas-color        { color: #F44336; }
+.azucares-color      { color: #FF9800; }
 
-.macro-nombre {
-  font-size: 13px;
-  font-weight: 600;
-}
+.macro-valor { font-size: 12px; color: #888; }
 
-.proteinas-color {
-  color: #4CAF50;
-}
+.macro-bar  { height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+.macro-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
 
-.carbohidratos-color {
-  color: #2196F3;
-}
-
-.grasas-color {
-  color: #F44336;
-}
-
-.azucares-color {
-  color: #FF9800;
-}
-
-.macro-valor {
-  font-size: 12px;
-  color: #888;
-}
-
-.macro-bar {
-  height: 8px;
-  background: #f0f0f0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.macro-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.5s ease;
-}
-
-.macro-fill.proteinas {
-  background: #4CAF50;
-}
-
-.macro-fill.carbohidratos {
-  background: #2196F3;
-}
-
-.macro-fill.grasas {
-  background: #F44336;
-}
-
-.macro-fill.azucares {
-  background: #FF9800;
-}
+.macro-fill.proteinas     { background: #4CAF50; }
+.macro-fill.carbohidratos { background: #2196F3; }
+.macro-fill.grasas        { background: #F44336; }
+.macro-fill.azucares      { background: #FF9800; }
+.macro-fill.calorias      { background: linear-gradient(135deg, #4CAF50, #2e7d32); }
 
 .coming-soon-card {
   background: #f5f5f5;
@@ -516,7 +289,7 @@
   font-size: 13px;
 }
 
-/* PERFIL EDICION */
+/* ── Perfil edición ── */
 .perfil-edicion-card {
   background: #fff;
   border: none;
@@ -534,17 +307,9 @@
   text-align: center;
 }
 
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.form { display: flex; flex-direction: column; gap: 12px; }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+.form-group { display: flex; flex-direction: column; gap: 4px; }
 
 .form-row {
   display: grid;
@@ -561,28 +326,12 @@
   margin-bottom: 0px;
 }
 
-.form-section h3 {
-  margin: 0 0 16px 0;
-  font-size: 14px;
-  color: #2d2d2d;
-  font-weight: 700;
-  text-transform: none;
-}
+.form-section h3 { margin: 0 0 16px 0; font-size: 14px; color: #2d2d2d; font-weight: 700; }
 
-.form-hint {
-  font-size: 12px;
-  color: #999;
-  font-style: italic;
-  margin: -8px 0 12px 0;
-}
+.form-hint { font-size: 12px; color: #999; font-style: italic; margin: -8px 0 12px 0; }
 
-.form-group label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #999;
-  text-transform: uppercase;
-  letter-spacing: 0.2px;
-}
+/* Form group overrides: perfil uses purple focus */
+.form-group label { font-size: 10px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.2px; }
 
 .form-group input,
 .form-group select {
@@ -590,10 +339,6 @@
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   font-size: 12px;
-  transition: all 0.2s;
-  outline: none;
-  font-family: inherit;
-  background: white;
 }
 
 .form-group input:focus,
@@ -610,11 +355,7 @@
   opacity: 0.6;
 }
 
-.form-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 0px;
-}
+.form-actions { display: flex; gap: 12px; margin-top: 0px; }
 
 .btn-guardar,
 .btn-cancelar {
@@ -642,24 +383,11 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-.btn-guardar:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
+.btn-guardar:disabled { opacity: 0.7; cursor: not-allowed; }
 
-.btn-cancelar {
-  background: #f0f0f0;
-  color: #2d2d2d;
-}
-
-.btn-cancelar:hover:not(:disabled) {
-  background: #e0e0e0;
-}
-
-.btn-cancelar:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
+.btn-cancelar { background: #f0f0f0; color: #2d2d2d; }
+.btn-cancelar:hover:not(:disabled) { background: #e0e0e0; }
+.btn-cancelar:disabled { opacity: 0.7; cursor: not-allowed; }
 
 .btn-recalcular {
   width: 100%;
@@ -684,12 +412,9 @@
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
 }
 
-.btn-recalcular:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
+.btn-recalcular:disabled { opacity: 0.7; cursor: not-allowed; }
 
-/* PREVIEW DE CALORÍAS EN EDICIÓN */
+/* ── Preview calorías en edición ── */
 .calorias-preview {
   background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
   border: 1px solid #ffe082;
@@ -723,32 +448,12 @@
   background: rgba(244, 67, 54, 0.05);
 }
 
-.caloria-label-preview {
-  font-size: 11px;
-  color: #666;
-  font-weight: 500;
-}
+.caloria-label-preview       { font-size: 11px; color: #666; font-weight: 500; }
+.caloria-valor-preview        { font-size: 14px; font-weight: 700; color: #2d2d2d; }
+.caloria-valor-con-deficit    { font-size: 14px; font-weight: 700; color: #2d2d2d; white-space: nowrap; }
+.caloria-ahorro-preview       { font-size: 9px; color: #f44336; font-weight: 600; margin-left: 4px; }
 
-.caloria-valor-preview {
-  font-size: 14px;
-  font-weight: 700;
-  color: #2d2d2d;
-}
-
-.caloria-valor-con-deficit {
-  font-size: 14px;
-  font-weight: 700;
-  color: #2d2d2d;
-  white-space: nowrap;
-}
-
-.caloria-ahorro-preview {
-  font-size: 9px;
-  color: #f44336;
-  font-weight: 600;
-  margin-left: 4px;
-}
-
+/* Spinner local (purple) */
 .spinner {
   display: inline-block;
   width: 12px;
@@ -757,13 +462,4 @@
   border-top: 2px solid #667eea;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
