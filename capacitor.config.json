@@ -1,0 +1,14 @@
+{
+  "appId": "com.foodgestor.app",
+  "appName": "FoodGestor",
+  "webDir": "frontend/dist/frontend/browser",
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}

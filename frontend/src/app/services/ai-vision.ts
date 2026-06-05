@@ -1,0 +1,51 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
+const OCR_URL = 'http://192.168.1.17:5000/api/ocr';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AiVisionService {
+  constructor(private http: HttpClient) {}
+
+  async procesarImagenIngredientes(file: File): Promise<string[]> {
+    const formData = new FormData();
+    formData.append('imagen', file);
+    const res: any = await firstValueFrom(
+      this.http.post(`${OCR_URL}/ingredientes`, formData)
+    );
+    return res.ingredientes ?? [];
+  }
+
+  async procesarImagenCodigoBarras(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('imagen', file);
+    const res: any = await firstValueFrom(
+      this.http.post(`${OCR_URL}/codigo_barras`, formData)
+    );
+    return res.codigo_barras ?? '';
+  }
+
+  async procesarImagenMacros(file: File): Promise<MacrosExtraidos> {
+    const formData = new FormData();
+    formData.append('imagen', file);
+    const res: any = await firstValueFrom(
+      this.http.post(`${OCR_URL}/macros`, formData)
+    );
+    return res.macros ?? {};
+  }
+}
+
+export interface MacrosExtraidos {
+  calorias?: number;
+  proteinas?: number;
+  hidratos_carbono?: number;
+  azucares?: number;
+  grasas?: number;
+  grasas_saturadas?: number;
+  fibra?: number;
+  sal?: number;
+  sodio?: number;
+}

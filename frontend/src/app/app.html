@@ -1,0 +1,25 @@
+<div class="app-container">
+  <main class="content">
+    <router-outlet />
+  </main>
+  @if (authService.estaAutenticado()) {
+    <nav class="bottom-nav">
+      <a routerLink="/perfil" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Perfil</span>
+      </a>
+      <a routerLink="/alimentos" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">🥗</span>
+        <span class="nav-label">Alimentos</span>
+      </a>
+      <a routerLink="/raciones" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">🍽️</span>
+        <span class="nav-label">Raciones</span>
+      </a>
+      <a routerLink="/calendario" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Calendario</span>
+      </a>
+    </nav>
+  }
+</div>

@@ -1,0 +1,310 @@
+<div class="raciones-container">
+  <div class="header">
+    <h1>🍽️ Raciones</h1>
+  </div>
+
+  @if (mensaje) {
+    <div class="mensaje" [class.error]="mensajeTipo === 'error'">{{ mensaje }}</div>
+  }
+
+  <!-- ═══════════════ PANEL LISTA ═══════════════ -->
+  @if (activePanel === 'lista') {
+      @if (cargandoRaciones) {
+        <div class="empty-state-large">
+          <span class="spinner" style="font-size: 48px; margin-bottom: 12px;"></span>
+          <h3>Cargando raciones...</h3>
+          <p>Por favor espera</p>
+        </div>
+      } @else if (raciones.length === 0) {
+        <div class="empty-state-large">
+          <div class="empty-icon">🍽️</div>
+          <h3>No hay raciones aún</h3>
+          <p>Crea tu primera ración para empezar a combinar alimentos</p>
+          <button class="btn-crear-grande" (click)="abrirModalCrear()">➕ Crear Ración</button>
+        </div>
+      } @else {
+        <div class="raciones-grid">
+          @for (racion of raciones; track racion.id) {
+            <div class="racion-card" (click)="seleccionarRacion(racion)">
+              <div class="racion-header">
+                <h3>{{ racion.nombre }}</h3>
+                <button class="btn-eliminar" (click)="eliminarRacion(racion.id); $event.stopPropagation()"
+                        title="Eliminar">🗑️</button>
+              </div>
+              <div class="racion-stats">
+                <span class="stat">
+                  <strong>{{ racion.alimentos.length }}</strong> alimentos
+                </span>
+                <span class="stat">
+                  <strong>{{ racion.totales.calorias }}</strong> kcal
+                </span>
+              </div>
+              <div class="racion-macros-preview">
+                <span class="macro-item">
+                  <span class="macro-label">💪 P:</span>
+                  <span class="macro-valor">{{ racion.totales.proteinas | number:'1.1-1' }}g</span>
+                </span>
+                <span class="macro-item">
+                  <span class="macro-label">🍞 H:</span>
+                  <span class="macro-valor">{{ racion.totales.hidratos_carbono | number:'1.1-1' }}g</span>
+                </span>
+                <span class="macro-item">
+                  <span class="macro-label">🧈 G:</span>
+                  <span class="macro-valor">{{ racion.totales.grasas | number:'1.1-1' }}g</span>
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Botón Flotante para Crear Ración -->
+      <button class="fab-button" (click)="abrirModalCrear()" title="Crear nueva ración">
+        <span class="fab-icon">➕</span>
+        <span class="fab-texto">Crear nueva Ración</span>
+      </button>
+  }
+
+  <!-- ═══════════════ PANEL EDITAR ═══════════════ -->
+  @if (activePanel === 'editar' && racionSeleccionada) {
+      <div class="panel-header">
+        <div>
+          <h2>{{ racionSeleccionada.nombre }}</h2>
+        </div>
+        <button class="btn-volver" (click)="volverALista()" title="Volver">↖️</button>
+      </div>
+
+      <!-- Información Nutricional -->
+      <div class="macros-section">
+        <div class="macros-row">
+          <div class="macro-stat">
+            <span class="macro-icon">🔥</span>
+            <div class="macro-info">
+              <span class="macro-label">Calorías</span>
+              <span class="macro-valor">{{ racionSeleccionada.totales.calorias | number:'1.0-0' }} kcal</span>
+            </div>
+          </div>
+          <div class="macro-stat">
+            <span class="macro-icon">🥩</span>
+            <div class="macro-info">
+              <span class="macro-label">Proteínas</span>
+              <span class="macro-valor">{{ racionSeleccionada.totales.proteinas | number:'1.1-1' }}g</span>
+            </div>
+          </div>
+          <div class="macro-stat">
+            <span class="macro-icon">🌾</span>
+            <div class="macro-info">
+              <span class="macro-label">Hidratos</span>
+              <span class="macro-valor">{{ racionSeleccionada.totales.hidratos_carbono | number:'1.1-1' }}g</span>
+            </div>
+          </div>
+          <div class="macro-stat">
+            <span class="macro-icon">🧈</span>
+            <div class="macro-info">
+              <span class="macro-label">Grasas</span>
+              <span class="macro-valor">{{ racionSeleccionada.totales.grasas | number:'1.1-1' }}g</span>
+            </div>
+          </div>
+          <div class="macro-stat">
+            <span class="macro-icon">🌿</span>
+            <div class="macro-info">
+              <span class="macro-label">Fibra</span>
+              <span class="macro-valor">{{ racionSeleccionada.totales.fibra | number:'1.1-1' }}g</span>
+            </div>
+          </div>
+          <div class="macro-stat">
+            <span class="macro-icon">🍬</span>
+            <div class="macro-info">
+              <span class="macro-label">Azúcar</span>
+              <span class="macro-valor">{{ racionSeleccionada.totales.azucares | number:'1.1-1' }}g</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfica de distribución de calorías -->
+        <div class="chart-section">
+          <h3>Distribución de Calorías por Macronutriente</h3>
+          <canvas #macrosChart></canvas>
+        </div>
+      </div>
+
+      <!-- Sección de Alimentos -->
+      <div class="alimentos-section">
+        <h3>Alimentos ({{ racionSeleccionada.alimentos.length }})</h3>
+
+        <!-- Búsqueda de alimentos -->
+        <div class="busqueda-alimentos">
+          <input type="text" [(ngModel)]="terminoBusquedaAlimentos" (ngModelChange)="buscarAlimentos()"
+                 placeholder="🔍 Buscar alimento para agregar..." />
+        </div>
+
+        <!-- Lista de alimentos para agregar -->
+        @if (terminoBusquedaAlimentos.trim()) {
+          <div class="alimentos-disponibles">
+            @if (alimentosFiltrados.length === 0) {
+              <p class="empty-state-small">Sin resultados</p>
+            }
+            @for (alimento of alimentosFiltrados; track alimento.id) {
+              @if (!racionSeleccionada.alimentos.find(a => a.id === alimento.id)) {
+                <button class="modal-item" (click)="seleccionarAlimentoParaAgregar(alimento)" [class.favorito]="alimento.favorito" style="justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                    @if (alimento.favorito) {
+                      <span style="font-size: 16px; flex-shrink: 0;">⭐</span>
+                    }
+                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                      {{ alimento.nombre }} <span style="color: #999;">({{ alimento.marca }})</span>
+                    </span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                    <span style="font-weight: 500; color: #666; font-size: 13px;">{{ alimento.calorias }} kcal</span>
+                    <span style="font-size: 18px; color: #4CAF50; font-weight: bold;">➕</span>
+                  </div>
+                </button>
+              }
+            }
+          </div>
+        }
+
+        <!-- Alimentos en el ración -->
+        @if (racionSeleccionada.alimentos.length > 0) {
+          <div class="alimentos-agregados">
+            @for (alimento of racionSeleccionada.alimentos; track alimento.id) {
+              <div class="alimento-en-menu">
+                <div class="alimento-data">
+                  <span class="alimento-nombre">{{ alimento.nombre }}</span>
+                  <span class="alimento-marca">{{ alimento.marca }}</span>
+                </div>
+                <div class="alimento-cantidad">
+                  <input type="number" [value]="alimento.cantidad" min="1" step="10"
+                         (change)="actualizarCantidad(alimento.id, $any($event.target).value)"
+                         placeholder="100" />
+                  <span class="cantidad-unidad">g</span>
+                </div>
+                <div class="kcal-display">
+                  <span class="kcal-valor">{{ (alimento.calorias * alimento.cantidad / 100) | number:'1.0-0' }}</span>
+                  <span class="kcal-label">kcal</span>
+                </div>
+                <button class="btn-remover" (click)="removerAlimento(alimento.id)" title="Remover">🗑️</button>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-state-small">Busca y agrega alimentos para comenzar</p>
+        }
+      </div>
+  }
+
+  <!-- ═══════════════ MODAL CREAR MENÚ ═══════════════ -->
+  @if (mostrarModalCrear) {
+    <div class="modal-overlay" (click)="cerrarModalCrear()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-scroll">
+          <div class="modal-header-create">
+            <span class="modal-icono">📋</span>
+            <div>
+              <h2 class="modal-titulo">Nuevo Ración</h2>
+              <p class="modal-subtitulo">Dale un nombre a tu ración</p>
+            </div>
+          </div>
+
+          <div class="modal-form">
+            <input type="text" [(ngModel)]="nuevoRacionNombre"
+                   placeholder="Ej: Desayuno Saludable"
+                   (keyup.enter)="crearRacion()"
+                   autofocus />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-secondary" (click)="cerrarModalCrear()">Cancelar</button>
+          <button class="btn-primary" (click)="crearRacion()" [disabled]="cargando || !nuevoRacionNombre.trim()">
+            @if (cargando) {
+              <span class="spinner spinner-sm"></span>
+            } @else {
+              Crear Ración
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal para elegir cantidad al agregar alimento a ración -->
+  @if (alimentoParaAgregar) {
+    <div class="modal-overlay" (click)="terminarAgregarAlimento()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Cantidad</h2>
+          <button class="modal-close" (click)="terminarAgregarAlimento()">✕</button>
+        </div>
+
+        <div style="padding: 16px;">
+          <div style="margin-bottom: 16px;">
+            <h3 style="margin: 0 0 8px 0;">{{ alimentoParaAgregar.nombre }}</h3>
+            <p style="margin: 0; font-size: 13px; color: #666;">{{ alimentoParaAgregar.marca }}</p>
+            @if (alimentoParaAgregar.peso_unidad && alimentoParaAgregar.nombre_unidad) {
+              <p style="margin: 8px 0 0 0; font-size: 12px; color: #999; background: #f5f5f5; padding: 8px 12px; border-radius: 4px;">
+                1 {{ alimentoParaAgregar.nombre_unidad }} = {{ alimentoParaAgregar.peso_unidad }}g
+              </p>
+            }
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <!-- Tabs para elegir modo -->
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+              <button (click)="modoAgregarAlimentoRacion = 'unidades'"
+                      [style.background]="modoAgregarAlimentoRacion === 'unidades' ? '#4CAF50' : '#f0f0f0'"
+                      [style.color]="modoAgregarAlimentoRacion === 'unidades' ? '#fff' : '#666'"
+                      style="flex: 1; padding: 8px; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                @if (alimentoParaAgregar.nombre_unidad) {
+                  {{ alimentoParaAgregar.nombre_unidad }}
+                } @else {
+                  Raciones
+                }
+              </button>
+              <button (click)="modoAgregarAlimentoRacion = 'gramos'"
+                      [style.background]="modoAgregarAlimentoRacion === 'gramos' ? '#4CAF50' : '#f0f0f0'"
+                      [style.color]="modoAgregarAlimentoRacion === 'gramos' ? '#fff' : '#666'"
+                      style="flex: 1; padding: 8px; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                Gramos
+              </button>
+            </div>
+
+            <!-- Input de cantidad -->
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">
+              Cantidad
+            </label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text"
+                     [(ngModel)]="cantidadAgregarAlimento"
+                     [placeholder]="modoAgregarAlimentoRacion === 'unidades' ? 'Ej: 1, 1/2, 0.5' : 'Ej: 250, 100'"
+                     style="flex: 1; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 14px;" />
+              <span style="font-size: 14px; color: #666; font-weight: 500;">
+                @if (modoAgregarAlimentoRacion === 'unidades') {
+                  @if (alimentoParaAgregar.nombre_unidad) {
+                    {{ alimentoParaAgregar.nombre_unidad }}
+                  } @else {
+                    ración
+                  }
+                } @else {
+                  g
+                }
+              </span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button (click)="confirmarAgregarAlimento()" style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">
+              ✓ Agregar
+            </button>
+            <button (click)="terminarAgregarAlimento()" style="flex: 1; padding: 10px; background: #f0f0f0; color: #666; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">
+              ← Atrás
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+

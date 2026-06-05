@@ -1,0 +1,162 @@
+<div class="onboarding-container">
+  <div class="onboarding-box">
+    <div class="header">
+      <h1>🥗 FoodGestor</h1>
+      <p class="subtitle">Completa tu perfil</p>
+    </div>
+
+    @if (mensaje) {
+      <div class="mensaje" [class.error]="mensajeTipo === 'error'">
+        {{ mensaje }}
+      </div>
+    }
+
+    <form (ngSubmit)="completarOnboarding()" class="form">
+      <!-- Nombre Completo -->
+      <div class="form-group">
+        <label for="nombreCompleto">Nombre Completo</label>
+        <input
+          type="text"
+          id="nombreCompleto"
+          [(ngModel)]="nombreCompleto"
+          name="nombreCompleto"
+          placeholder="Juan Pérez García"
+          [disabled]="cargando"
+          (change)="onCampoChanged()"
+        />
+      </div>
+
+      <!-- Fila: Edad y Sexo -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="edad">Edad</label>
+          <input
+            type="number"
+            id="edad"
+            [(ngModel)]="edad"
+            name="edad"
+            min="13"
+            max="120"
+            placeholder="30"
+            [disabled]="cargando"
+            (change)="onCampoChanged()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="sexo">Sexo</label>
+          <select
+            id="sexo"
+            [(ngModel)]="sexo"
+            name="sexo"
+            [disabled]="cargando"
+            (change)="onCampoChanged()"
+          >
+            @for (opcion of opcicionesSexo; track opcion.value) {
+              <option [value]="opcion.value">{{ opcion.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila: Altura y Peso -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="altura">Altura (cm)</label>
+          <input
+            type="number"
+            id="altura"
+            [(ngModel)]="altura"
+            name="altura"
+            min="100"
+            max="300"
+            placeholder="175"
+            [disabled]="cargando"
+            (change)="onCampoChanged()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="peso">Peso (kg)</label>
+          <input
+            type="number"
+            id="peso"
+            [(ngModel)]="peso"
+            name="peso"
+            min="25"
+            max="500"
+            placeholder="75"
+            [disabled]="cargando"
+            (change)="onCampoChanged()"
+          />
+        </div>
+      </div>
+
+      <!-- Nivel de Actividad -->
+      <div class="form-group">
+        <label for="nivelActividad">Nivel de Actividad</label>
+        <select
+          id="nivelActividad"
+          [(ngModel)]="nivelActividad"
+          name="nivelActividad"
+          [disabled]="cargando"
+          (change)="onCampoChanged()"
+        >
+          @for (opcion of opcionesActividad; track opcion.value) {
+            <option [value]="opcion.value">{{ opcion.label }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Objetivo -->
+      <div class="form-group">
+        <label for="objetivo">Objetivo</label>
+        <select
+          id="objetivo"
+          [(ngModel)]="objetivo"
+          name="objetivo"
+          [disabled]="cargando"
+          (change)="onCampoChanged()"
+        >
+          @for (opcion of opcionesObjetivo; track opcion.value) {
+            <option [value]="opcion.value">{{ opcion.label }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Límites Calculados -->
+      @if (limitesCalculados) {
+        <div class="limites-calculados">
+          <h3>Límites Diarios Recomendados</h3>
+          <div class="limites-grid">
+            <div class="limite-item">
+              <span class="limite-valor">{{ limitesCalculados.calorias }}</span>
+              <span class="limite-label">kcal</span>
+            </div>
+            <div class="limite-item">
+              <span class="limite-valor">{{ limitesCalculados.proteinas | number : '1.0-1' }}</span>
+              <span class="limite-label">g proteína</span>
+            </div>
+            <div class="limite-item">
+              <span class="limite-valor">{{ limitesCalculados.grasas | number : '1.0-1' }}</span>
+              <span class="limite-label">g grasa</span>
+            </div>
+            <div class="limite-item">
+              <span class="limite-valor">{{ limitesCalculados.azucares }}</span>
+              <span class="limite-label">g azúcar</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <button type="submit" class="btn-primary" [disabled]="cargando || !limitesCalculados">
+        @if (cargando) {
+          <span class="spinner"></span>
+          Guardando...
+        } @else {
+          Continuar
+        }
+      </button>
+    </form>
+  </div>
+</div>

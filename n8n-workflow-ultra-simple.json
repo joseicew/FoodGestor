@@ -1,0 +1,44 @@
+{
+  "name": "FoodGestor - OpenFoodFacts Ultra Simple",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "procesar-ingrediente",
+        "responseCode": 200
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://world.openfoodfacts.org/cgi/search.pl",
+        "sendQuery": true,
+        "queryParameters": "search_terms={{ $json.nombre }}&json=1"
+      },
+      "id": "http",
+      "name": "OpenFoodFacts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "OpenFoodFacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {}
+}

@@ -1,0 +1,351 @@
+<div class="perfil-container">
+  @if (!editando) {
+    <div class="header">
+      <div class="header-title">
+        <span class="header-icon">👤</span>
+        <h1>{{ usuario.nombre_completo }}</h1>
+      </div>
+    </div>
+  }
+
+  @if (mensaje) {
+    <div class="mensaje" [class.error]="mensajeTipo === 'error'">
+      {{ mensaje }}
+    </div>
+  }
+
+  @if (!editando) {
+    <!-- VISTA NORMAL -->
+
+    <!-- 1. CALORÍAS HOY (PRIMERO) -->
+    <div class="perfil-info-card calorias-card-simple">
+      <h3>Calorías Hoy</h3>
+      <div class="macro-item">
+        <div class="macro-header">
+          <span class="macro-nombre">Calorías consumidas</span>
+          <span class="macro-valor">{{ totalCalorias }} / {{ usuario.limites_calorias || 2000 }} kcal</span>
+        </div>
+        <div class="macro-bar"><div class="macro-fill calorias" [style.width.%]="(totalCalorias / (usuario.limites_calorias || 2000)) * 100"></div></div>
+      </div>
+    </div>
+
+    <!-- 2. MACRONUTRIENTES -->
+    <div class="perfil-info-card">
+      <h3>Macronutrientes</h3>
+      <div class="macro-item">
+        <div class="macro-header">
+          <span class="macro-nombre proteinas-color">💪 Proteínas</span>
+          <span class="macro-valor">{{ totalProteinas | number : '1.0-1' }} / {{ usuario.limites_proteinas | number : '1.0-1' }}g</span>
+        </div>
+        <div class="macro-bar"><div class="macro-fill proteinas" [style.width.%]="(totalProteinas / (usuario.limites_proteinas || 100)) * 100"></div></div>
+      </div>
+      <div class="macro-item">
+        <div class="macro-header">
+          <span class="macro-nombre carbohidratos-color">🍞 Carbohidratos</span>
+          <span class="macro-valor">{{ totalCarbohidratos | number : '1.0-1' }} / {{ usuario.limites_carbohidratos | number : '1.0-1' }}g</span>
+        </div>
+        <div class="macro-bar"><div class="macro-fill carbohidratos" [style.width.%]="(totalCarbohidratos / (usuario.limites_carbohidratos || 250)) * 100"></div></div>
+      </div>
+      <div class="macro-item">
+        <div class="macro-header">
+          <span class="macro-nombre grasas-color">🧈 Grasas</span>
+          <span class="macro-valor">{{ totalGrasas | number : '1.0-1' }} / {{ usuario.limites_grasas | number : '1.0-1' }}g</span>
+        </div>
+        <div class="macro-bar"><div class="macro-fill grasas" [style.width.%]="(totalGrasas / (usuario.limites_grasas || 80)) * 100"></div></div>
+      </div>
+      <div class="macro-item">
+        <div class="macro-header">
+          <span class="macro-nombre azucares-color">🍬 Azúcares (máx)</span>
+          <span class="macro-valor">{{ totalAzucares | number : '1.0-1' }} / {{ usuario.limites_azucares | number : '1.0-1' }}g</span>
+        </div>
+        <div class="macro-bar"><div class="macro-fill azucares" [style.width.%]="(totalAzucares / (usuario.limites_azucares || 150)) * 100"></div></div>
+      </div>
+    </div>
+
+    <!-- 3. LÍMITES DIARIOS -->
+    <!-- 4. DATOS DEL PERFIL (ÚLTIMO) -->
+    <div class="perfil-info-card">
+      <!-- Header con título y botón editar -->
+      <div class="perfil-info-header">
+        <h3>Datos Personales</h3>
+        <button class="btn-edit-icon" (click)="editarPerfil()" title="Editar perfil">✏️</button>
+      </div>
+
+      <!-- Fila 1: Edad, Altura, Peso -->
+      <div class="datos-fila">
+        <div class="dato-item">
+          <span class="dato-label">Edad</span>
+          <span class="dato-valor">{{ usuario.edad }} años</span>
+        </div>
+        <div class="dato-item">
+          <span class="dato-label">Altura</span>
+          <span class="dato-valor">{{ usuario.altura }} cm</span>
+        </div>
+        <div class="dato-item">
+          <span class="dato-label">Peso</span>
+          <span class="dato-valor">{{ usuario.peso }} kg</span>
+        </div>
+      </div>
+
+      <!-- Fila 2: Actividad física (inline) -->
+      <div class="dato-inline-row">
+        <div class="dato-label-inline">Actividad Física</div>
+        <div class="dato-valor-inline">{{ formatearActividad(usuario.nivel_actividad) }} ({{ obtenerDiasSemana(usuario.nivel_actividad) }} días)</div>
+      </div>
+
+      <!-- Fila 3: Objetivo (inline) -->
+      <div class="dato-inline-row">
+        <div class="dato-label-inline">Objetivo</div>
+        <div class="dato-valor-inline">{{ formatearObjetivo(usuario.objetivo) }}</div>
+      </div>
+    </div>
+
+    <!-- Explicación de calorías -->
+    <div class="perfil-info-card">
+      <h4>Calorías Personalizadas</h4>
+      <div class="caloria-item">
+        <span class="caloria-label">🔋 TMB (Metabolismo Basal)</span>
+        <span class="caloria-valor">{{ usuario.tmb_calculada | number : '1.0-0' }} kcal</span>
+      </div>
+      <div class="caloria-item">
+        <span class="caloria-label">⚡ En Mantenimiento</span>
+        <span class="caloria-valor">{{ usuario.getd_calculada | number : '1.0-0' }} kcal</span>
+      </div>
+      @if (usuario.objetivo === 'perder_peso') {
+        <div class="caloria-item deficit">
+          <span class="caloria-label">📉 Con Déficit (15%)
+            <span class="caloria-ahorro">(-{{ (usuario.getd_calculada - usuario.limites_calorias) | number : '1.0-0' }} kcal)</span>
+          </span>
+          <span class="caloria-valor">
+            {{ usuario.limites_calorias | number : '1.0-0' }} kcal
+          </span>
+        </div>
+      }
+    </div>
+
+    <div class="coming-soon-card">
+      <p>🚧 Historial y estadísticas próximamente</p>
+    </div>
+
+    <!-- LOGOUT -->
+    <div class="logout-section">
+      <button class="btn-logout" (click)="abrirConfirmacionLogout()" title="Cerrar sesión">
+        🚪 Cerrar sesión
+      </button>
+    </div>
+
+    @if (confirmarLogout) {
+      <div class="modal-overlay" (click)="cerrarConfirmacionLogout()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <h3>¿Cerrar sesión?</h3>
+          <p>¿Estás seguro de que quieres cerrar sesión?</p>
+          <div class="modal-actions">
+            <button class="btn-confirm" (click)="logout()">✓ Sí, cerrar sesión</button>
+            <button class="btn-cancel" (click)="cerrarConfirmacionLogout()">✕ Cancelar</button>
+          </div>
+        </div>
+      </div>
+    }
+  } @else {
+    <!-- VISTA DE EDICIÓN -->
+    <div class="perfil-edicion-card">
+      <h2>✏️ Editar Perfil</h2>
+
+      <form (ngSubmit)="guardarCambios()" class="form">
+        <!-- DATOS PERSONALES -->
+        <div class="form-section">
+          <h3>👤 Datos Personales</h3>
+
+          <div class="form-group">
+            <label for="nombreCompleto">Nombre Completo</label>
+            <input
+              type="text"
+              id="nombreCompleto"
+              [(ngModel)]="nombreCompleto"
+              name="nombreCompleto"
+              placeholder="Tu nombre"
+              [disabled]="cargando"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="peso">Peso (kg)</label>
+              <input
+                type="number"
+                id="peso"
+                [(ngModel)]="peso"
+                name="peso"
+                min="25"
+                max="500"
+                step="0.1"
+                [disabled]="cargando"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="altura">Altura (cm)</label>
+              <input
+                type="number"
+                id="altura"
+                [(ngModel)]="altura"
+                name="altura"
+                min="100"
+                max="300"
+                [disabled]="cargando"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- OBJETIVOS Y ACTIVIDAD -->
+        <div class="form-section">
+          <h3>🎯 Objetivos y Actividad</h3>
+
+          <div class="form-group">
+            <label for="nivel_actividad">Nivel de Actividad</label>
+            <select id="nivel_actividad" [(ngModel)]="nivel_actividad" name="nivel_actividad" [disabled]="cargando">
+              <option value="sedentario">Sedentario (0-1 día/semana)</option>
+              <option value="ligero">Ligero (1-3 días/semana)</option>
+              <option value="moderado">Moderado (3-4 días/semana)</option>
+              <option value="activo">Activo (5-6 días/semana)</option>
+              <option value="muy_activo">Muy Activo (6-7 días/semana)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="objetivo">Objetivo</label>
+            <select id="objetivo" [(ngModel)]="objetivo" name="objetivo" [disabled]="cargando">
+              <option value="perder_peso">Perder Peso</option>
+              <option value="mantener">Mantener</option>
+              <option value="ganar_musculo">Ganar Músculo</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- LÍMITES NUTRICIONALES -->
+        <div class="form-section">
+          <h3>📊 Límites Nutricionales (Edición Manual)</h3>
+          <p class="form-hint">Estos valores se recalculan automáticamente si cambias peso, altura, edad u objetivo.</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="limites_calorias">🔥 Calorías (kcal)</label>
+              <input
+                type="number"
+                id="limites_calorias"
+                [(ngModel)]="limites_calorias"
+                name="limites_calorias"
+                min="500"
+                max="10000"
+                [disabled]="cargando"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="limites_proteinas">💪 Proteínas (g)</label>
+              <input
+                type="number"
+                id="limites_proteinas"
+                [(ngModel)]="limites_proteinas"
+                name="limites_proteinas"
+                min="10"
+                max="500"
+                step="0.1"
+                [disabled]="cargando"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="limites_grasas">🧈 Grasas (g)</label>
+              <input
+                type="number"
+                id="limites_grasas"
+                [(ngModel)]="limites_grasas"
+                name="limites_grasas"
+                min="10"
+                max="300"
+                step="0.1"
+                [disabled]="cargando"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="limites_carbohidratos">🌾 Carbohidratos (g)</label>
+              <input
+                type="number"
+                id="limites_carbohidratos"
+                [(ngModel)]="limites_carbohidratos"
+                name="limites_carbohidratos"
+                min="10"
+                max="1000"
+                step="0.1"
+                [disabled]="cargando"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="limites_azucares">🍬 Azúcares Máx (g)</label>
+              <input
+                type="number"
+                id="limites_azucares"
+                [(ngModel)]="limites_azucares"
+                name="limites_azucares"
+                min="10"
+                max="500"
+                step="0.1"
+                [disabled]="cargando"
+              />
+            </div>
+          </div>
+
+          <button type="button" class="btn-recalcular" (click)="recalcularBases()" [disabled]="cargando" title="Recalcula los límites basándose en tu peso, altura, actividad y objetivo">
+            🔄 Recalcular Bases
+          </button>
+
+          <!-- Preview de calorías calculadas -->
+          @if (tmb_calculada_temp && tmb_calculada_temp > 0) {
+            <div class="calorias-preview">
+              <h4>📊 Calorías Personalizadas (Preview)</h4>
+              <div class="caloria-item-preview">
+                <span class="caloria-label-preview">🔋 TMB (Metabolismo Basal)</span>
+                <span class="caloria-valor-preview">{{ tmb_calculada_temp | number : '1.0-0' }} kcal</span>
+              </div>
+              <div class="caloria-item-preview">
+                <span class="caloria-label-preview">⚡ En Mantenimiento</span>
+                <span class="caloria-valor-preview">{{ getd_mantenimiento_temp | number : '1.0-0' }} kcal</span>
+              </div>
+              @if (objetivo === 'perder_peso' && getd_mantenimiento_temp && limites_calorias) {
+                <div class="caloria-item-preview deficit">
+                  <div class="caloria-label-preview">📉 Con Déficit (15%)</div>
+                  <div class="caloria-valor-con-deficit">
+                    {{ limites_calorias | number : '1.0-0' }} kcal
+                    <span class="caloria-ahorro-preview">(-{{ (getd_mantenimiento_temp - limites_calorias) | number : '1.0-0' }} kcal/día)</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-guardar" [disabled]="cargando">
+            @if (cargando) {
+              <span class="spinner"></span>
+              Guardando...
+            } @else {
+              ✓ Guardar cambios
+            }
+          </button>
+          <button type="button" class="btn-cancelar" (click)="cancelarEdicion()" [disabled]="cargando">
+            ✕ Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

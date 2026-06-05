@@ -1,0 +1,138 @@
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from datetime import timedelta
+import os
+from dotenv import load_dotenv
+
+# Cargar .env desde la carpeta backend
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+db = SQLAlchemy()
+jwt = JWTManager()
+
+def create_app():
+    app = Flask(__name__)
+
+    # Usar SQLite para desarrollo
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///foodgestor.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Configurar JWT
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'desarrollo-secreto-cambiar-en-produccion')
+    # Token expira en 30 días (2592000 segundos) - suficiente para un uso normal sin reloguear constantemente
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=30)
+
+    # Inicializar extensiones
+    db.init_app(app)
+    CORS(app,
+         origins="*",
+         allow_headers=["Content-Type", "Authorization"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+         supports_credentials=False)
+    jwt.init_app(app)
+    
+    # Registrar blueprints
+    from app.routes.auth import auth_bp
+    from app.routes.alimentos import alimentos_bp
+    from app.routes.ingredientes import ingredientes_bp
+    from app.routes.ocr import ocr_bp
+    from app.routes.ocr_async import ocr_async_bp
+    from app.routes.raciones import raciones_bp
+    from app.routes.calendario import calendario_bp
+    from app.routes.test_webhook import test_webhook_bp
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(alimentos_bp)
+    app.register_blueprint(ingredientes_bp)
+    app.register_blueprint(ocr_bp)
+    app.register_blueprint(ocr_async_bp)
+    app.register_blueprint(raciones_bp)
+    app.register_blueprint(calendario_bp)
+    app.register_blueprint(test_webhook_bp)
+
+    # Crear tablas y migrar columnas nuevas
+    with app.app_context():
+        # Importar modelos
+        from app.models.usuario import Usuario
+        from app.models.ingrediente import Ingrediente
+        from app.models.racion import Racion
+        from app.models.comida_diaria import ComidaDiaria
+
+        # Crear tablas basado en los modelos definidos
+        db.create_all()
+        _migrar_columnas()
+
+    return app
+
+
+def _migrar_columnas():
+    from sqlalchemy import inspect, text
+    inspector = inspect(db.engine)
+
+    # Migrar tabla alimento
+    try:
+        columnas = [c['name'] for c in inspector.get_columns('alimento')]
+        if 'codigo_barras' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE alimento ADD COLUMN codigo_barras VARCHAR(100)'))
+                conn.commit()
+        if 'marca' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE alimento ADD COLUMN marca VARCHAR(255)'))
+                conn.commit()
+        if 'favorito' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE alimento ADD COLUMN favorito BOOLEAN DEFAULT 0'))
+                conn.commit()
+    except Exception:
+        pass
+
+    # Migrar tabla ingrediente
+    try:
+        columnas = [c['name'] for c in inspector.get_columns('ingrediente')]
+
+        # Eliminar columnas innecesarias (cambio de modelo)
+        campos_eliminar = ['descripcion', 'alergias', 'intolerancias', 'aditivos', 'organico', 'origen', 'fuente_datos', 'tipo']
+        for col_name in campos_eliminar:
+            if col_name in columnas:
+                try:
+                    with db.engine.connect() as conn:
+                        conn.execute(text(f'ALTER TABLE ingrediente DROP COLUMN {col_name}'))
+                        conn.commit()
+                except Exception:
+                    pass
+
+        # Agregar columnas nuevas
+        nuevas_columnas = {
+            'es_aditivo': 'BOOLEAN DEFAULT 0',
+            'notas': 'TEXT DEFAULT ""',
+            'categoria': 'VARCHAR(100) DEFAULT ""',
+            'alergenos_categorias': 'TEXT DEFAULT "[]"',
+            'verificado': 'BOOLEAN DEFAULT 0',
+            'updated_at': 'DATETIME'
+        }
+        for col_name, col_def in nuevas_columnas.items():
+            if col_name not in columnas:
+                with db.engine.connect() as conn:
+                    conn.execute(text(f'ALTER TABLE ingrediente ADD COLUMN {col_name} {col_def}'))
+                    conn.commit()
+    except Exception:
+        pass
+
+    # Eliminar tabla intermedia ingrediente_alergeno
+    try:
+        if 'ingrediente_alergeno' in inspector.get_table_names():
+            with db.engine.connect() as conn:
+                conn.execute(text('DROP TABLE IF EXISTS ingrediente_alergeno'))
+                conn.commit()
+    except Exception:
+        pass
+
+    # Eliminar tabla alergeno (si existe)
+    try:
+        if 'alergeno' in inspector.get_table_names():
+            with db.engine.connect() as conn:
+                conn.execute(text('DROP TABLE IF EXISTS alergeno'))
+                conn.commit()
+    except Exception:
+        pass

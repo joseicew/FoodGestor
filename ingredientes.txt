@@ -1,0 +1,48 @@
+{
+  "name": "FoodGestor - Procesar Ingredientes",
+  "active": true,
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [250, 300],
+      "typeVersion": 1,
+      "parameters": {
+        "path": "procesar-ingrediente",
+        "responseCode": 200,
+        "method": "POST"
+      }
+    },
+    {
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "position": [500, 300],
+      "typeVersion": 3,
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"name": "nombre", "value": "={{ $json.nombre }}"},
+            {"name": "descripcion", "value": ""},
+            {"name": "alergias", "value": ""},
+            {"name": "intolerancias", "value": ""},
+            {"name": "tipo", "value": ""},
+            {"name": "origen", "value": ""},
+            {"name": "organico", "value": false},
+            {"name": "notas", "value": "Respuesta desde n8n"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [750, 300],
+      "typeVersion": 1,
+      "parameters": {"responseCode": 200}
+    }
+  ],
+  "connections": {
+    "Webhook": {"main": [[{"node": "Set", "type": "main", "index": 0}]]},
+    "Set": {"main": [[{"node": "Response", "type": "main", "index": 0}]]}
+  }
+}
