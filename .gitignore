@@ -31,3 +31,27 @@ env/
 .DS_Store
 .env
 node_modules
+
+# Databases
+*.db
+instance/
+
+# Logs and runtime files
+*.log
+*.txt
+
+# Uploads and user-generated files
+backend/uploads/
+
+# Test and temporary files
+test_images/
+test_ocr.py
+verificar_*.sh
+
+# Credentials and secrets
+credentials.json
+config.txt
+
+# One-off scripts
+migrate_*.py
+debug_*.py
