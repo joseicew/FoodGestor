@@ -6,8 +6,7 @@
     "preview": {
       "ios": {
         "resourceClass": "medium",
-        "image": "latest",
-        "scheme": "App"
+        "image": "latest"
       },
       "android": {
         "buildType": "apk"
@@ -16,8 +15,7 @@
     "production": {
       "ios": {
         "resourceClass": "medium",
-        "image": "latest",
-        "scheme": "App"
+        "image": "latest"
       },
       "android": {
         "buildType": "app-bundle"
