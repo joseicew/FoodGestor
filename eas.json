@@ -1,8 +1,13 @@
 {
+  "cli": {
+    "appVersionSource": "remote"
+  },
   "build": {
     "preview": {
       "ios": {
-        "resourceClass": "medium"
+        "resourceClass": "medium",
+        "image": "latest",
+        "scheme": "App"
       },
       "android": {
         "buildType": "apk"
@@ -10,7 +15,9 @@
     },
     "production": {
       "ios": {
-        "resourceClass": "medium"
+        "resourceClass": "medium",
+        "image": "latest",
+        "scheme": "App"
       },
       "android": {
         "buildType": "app-bundle"
