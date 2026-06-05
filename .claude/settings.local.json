@@ -209,7 +209,11 @@
       "Bash(timeout 8 python -u main.py)",
       "Bash(ng serve *)",
       "Bash(npx cap *)",
-      "Bash(eas build *)"
+      "Bash(eas build *)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
