@@ -3,12 +3,6 @@
     "@angular/common": "^21.2.13",
     "@angular/core": "^21.2.13",
     "@angular/platform-browser": "^21.2.13",
-    "@capacitor/android": "^8.4.0",
-    "@capacitor/cli": "^8.4.0",
-    "@capacitor/core": "^8.4.0",
-    "@capacitor/ios": "^8.4.0",
-    "angular": "^1.8.3",
-    "expo": "^49.0.23",
-    "expo-cli": "^6.3.12"
+    "angular": "^1.8.3"
   }
 }
