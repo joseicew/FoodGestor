@@ -14,9 +14,23 @@ jwt = JWTManager()
 def create_app():
     app = Flask(__name__)
 
-    # Usar SQLite para desarrollo
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///foodgestor.db'
+    # Usar BD según configuración (PostgreSQL en nube o SQLite local)
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///foodgestor.db'
+
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Connection pooling para PostgreSQL
+    if database_url and 'postgresql' in database_url:
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_pre_ping': True,
+            'pool_size': 3,
+            'pool_recycle': 3600,
+            'max_overflow': 0,
+        }
 
     # Configurar JWT
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'desarrollo-secreto-cambiar-en-produccion')
