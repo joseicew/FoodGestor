@@ -1,6 +1,4 @@
-/// <reference lib="webworker" />
-
-declare const self: ServiceWorkerGlobalScope;
+// Service Worker para PWA - Soporte offline y caching
 
 const CACHE_NAME = 'foodgestor-v1';
 const urlsToCache = [
@@ -12,7 +10,7 @@ const urlsToCache = [
 ];
 
 // Install event - cache app shell
-self.addEventListener('install', (event: ExtendableEvent) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(urlsToCache);
@@ -22,7 +20,7 @@ self.addEventListener('install', (event: ExtendableEvent) => {
 });
 
 // Activate event - clean up old caches
-self.addEventListener('activate', (event: ExtendableEvent) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -30,6 +28,7 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
           if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
+          return Promise.resolve();
         })
       );
     })
@@ -38,7 +37,7 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 });
 
 // Fetch event - network first, then cache
-self.addEventListener('fetch', (event: FetchEvent) => {
+self.addEventListener('fetch', (event) => {
   // Don't cache API calls
   if (event.request.url.includes('/api/')) {
     event.respondWith(
