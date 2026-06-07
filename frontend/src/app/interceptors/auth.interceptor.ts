@@ -21,13 +21,21 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // NO agregar autenticación a archivos estáticos
+    const esArchivoEstatico = /\.(json|js|css|ico|png|svg|woff|woff2)$/.test(request.url);
+
+    if (esArchivoEstatico) {
+      console.log(`[AuthInterceptor] Saltando autenticación para: ${request.url}`);
+      return next.handle(request);
+    }
+
     // Obtener el token
     const token = this.authService.obtenerToken();
 
     console.log(`[AuthInterceptor] Request a: ${request.url}`);
     console.log(`[AuthInterceptor] Token disponible: ${!!token}`);
 
-    // Si existe token, agregarlo a la request
+    // Si existe token, agregarlo a la request (solo para APIs)
     if (token) {
       console.log(`[AuthInterceptor] Agregando token al header`);
       request = request.clone({

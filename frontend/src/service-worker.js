@@ -2,18 +2,23 @@
 
 const CACHE_NAME = 'foodgestor-v1';
 const urlsToCache = [
-  '/',
   '/index.html',
   '/styles.css',
-  '/favicon.ico',
-  '/manifest.json'
+  '/favicon.ico'
 ];
 
 // Install event - cache app shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache);
+      // Cachear archivos individuales e ignorar errores
+      return Promise.all(
+        urlsToCache.map((url) => {
+          return cache.add(url).catch((err) => {
+            console.warn(`[SW] No se pudo cachear ${url}:`, err);
+          });
+        })
+      );
     })
   );
   self.skipWaiting();
