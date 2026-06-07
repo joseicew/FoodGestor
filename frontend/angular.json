@@ -23,11 +23,13 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/manifest.json"
             ],
             "styles": [
               "src/styles.css"
-            ]
+            ],
+            "serviceWorker": "src/service-worker.ts"
           },
           "configurations": {
             "production": {
