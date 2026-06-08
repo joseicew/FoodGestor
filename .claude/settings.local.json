@@ -227,7 +227,16 @@
       "Bash(git filter-branch *)",
       "Bash(git reset *)",
       "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --tree-filter 'rm -f backend/credentials.json' -- --all)",
-      "Bash(npm prune *)"
+      "Bash(npm prune *)",
+      "Bash(vercel --prod)",
+      "Bash(tee deployment.log)",
+      "Bash(vercel --prod --name foodgestor)",
+      "Bash(cp browser/manifest.json .)",
+      "Bash(cp browser/service-worker.js .)",
+      "Bash(cp browser/favicon.ico .)",
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
+      "Bash(vercel list *)",
+      "Bash(curl -s -I https://browser-3065dirx7-joseicew-8311s-projects.vercel.app/)"
     ]
   }
 }
