@@ -1,0 +1,6 @@
+requirements.txt
+backend/
+Procfile
+Dockerfile
+gunicorn.conf.py
+entrypoint.sh
