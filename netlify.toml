@@ -1,34 +1,12 @@
 [build]
   command = "cd frontend && npm install && npm run build"
   publish = "frontend/dist/frontend"
-  ignore = "git diff --quiet $DEPLOY_PRIME_REV $DEPLOY_GIT_REV -- frontend/ || true"
 
 [build.environment]
   NODE_VERSION = "20"
-  NPM_VERSION = "10"
-  SKIP_PYTHON_INSTALL = "true"
 
+# SPA redirect - route all requests to index.html for client-side routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/*.css"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
