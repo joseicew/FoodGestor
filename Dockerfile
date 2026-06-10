@@ -19,5 +19,5 @@ COPY . .
 # Exponer puerto
 EXPOSE 8000
 
-# Comando de inicio
-CMD ["gunicorn", "--config", "gunicorn.conf.py", "--bind", "0.0.0.0:8000", "backend.main:app"]
+# Comando de inicio - gunicorn busca el módulo desde PYTHONPATH
+CMD ["gunicorn", "--config", "gunicorn.conf.py", "--bind", "0.0.0.0:8000", "--pythonpath", "/app", "backend.main:app"]
