@@ -9,9 +9,7 @@ html, body {
   background: var(--bg-surface);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
-  color: var(--text-primary);
   line-height: 1.5;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Safe area for iPhone notch */
