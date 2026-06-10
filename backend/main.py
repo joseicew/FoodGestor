@@ -9,4 +9,6 @@ from app import create_app
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=False, port=5000, host='127.0.0.1')
+    port = int(os.getenv('PORT', 5000))
+    host = os.getenv('HOST', '0.0.0.0')
+    app.run(debug=False, port=port, host=host)
