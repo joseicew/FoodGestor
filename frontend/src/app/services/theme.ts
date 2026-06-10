@@ -7,7 +7,7 @@ export type ThemeMode = 'light' | 'dark' | 'system';
   providedIn: 'root'
 })
 export class ThemeService {
-  private themeSubject = new BehaviorSubject<ThemeMode>('system');
+  private themeSubject = new BehaviorSubject<ThemeMode>('dark');
   public theme$: Observable<ThemeMode> = this.themeSubject.asObservable();
 
   constructor() {
@@ -20,8 +20,8 @@ export class ThemeService {
     if (savedTheme) {
       this.setTheme(savedTheme);
     } else {
-      // Default to system preference
-      this.setTheme('system');
+      // Default to dark mode
+      this.setTheme('dark');
     }
   }
 
