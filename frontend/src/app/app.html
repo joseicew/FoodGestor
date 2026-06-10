@@ -1,4 +1,11 @@
 <div class="app-container">
+  <div class="theme-toggle">
+    <button class="theme-btn" (click)="toggleTheme()"
+            [attr.aria-label]="themeService.isDarkMode() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'">
+      {{ themeService.isDarkMode() ? '☀️' : '🌙' }}
+    </button>
+  </div>
+
   <main class="content">
     <router-outlet />
   </main>

@@ -18,7 +18,9 @@ input[type="number"]::-webkit-outer-spin-button {
   opacity: 1;
 }
 
-/* ── Design System v1.0 ── */
+/* ── Design System v1.0 with Dark Mode ── */
+
+/* Light Theme (Default) */
 :root {
   /* Colores Principales */
   --primary:          #007AFF;
@@ -38,7 +40,7 @@ input[type="number"]::-webkit-outer-spin-button {
   --error-light:      #FFE5E0;
   --info:             #007AFF;
 
-  /* Neutral */
+  /* Neutral (Light) */
   --text-primary:     #000000;
   --text-secondary:   #666666;
   --text-tertiary:    #999999;
@@ -77,6 +79,42 @@ input[type="number"]::-webkit-outer-spin-button {
   --font-weight-medium:  500;
   --font-weight-semibold: 600;
   --font-weight-bold:    700;
+}
+
+/* Dark Theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Neutral (Dark) */
+    --text-primary:     #FFFFFF;
+    --text-secondary:   #B0B0B0;
+    --text-tertiary:    #808080;
+    --text-light:       #606060;
+    --bg-surface:       #0A0E27;
+    --bg-secondary:     #1C1C1E;
+    --bg-tertiary:      #2C2C2E;
+    --border-color:     #3A3A3C;
+    --border-light:     #2C2C2E;
+    --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md:        0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-lg:        0 16px 32px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Manual Dark Mode Toggle */
+body.dark-mode {
+  /* Neutral (Dark) */
+  --text-primary:     #FFFFFF;
+  --text-secondary:   #B0B0B0;
+  --text-tertiary:    #808080;
+  --text-light:       #606060;
+  --bg-surface:       #0A0E27;
+  --bg-secondary:     #1C1C1E;
+  --bg-tertiary:      #2C2C2E;
+  --border-color:     #3A3A3C;
+  --border-light:     #2C2C2E;
+  --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md:        0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg:        0 16px 32px rgba(0, 0, 0, 0.6);
 }
 
 /* ── Animaciones ── */
