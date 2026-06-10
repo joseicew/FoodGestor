@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://web-production-38a756.up.railway.app'
+  apiUrl: 'https://foodgestor-backend-production.up.railway.app'
 };
