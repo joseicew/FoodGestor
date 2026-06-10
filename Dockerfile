@@ -16,8 +16,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar código
 COPY . .
 
+# Copiar script de entrada
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Exponer puerto
 EXPOSE 8000
 
-# Comando de inicio - gunicorn busca el módulo desde PYTHONPATH
-CMD ["gunicorn", "--config", "gunicorn.conf.py", "--bind", "0.0.0.0:8000", "--pythonpath", "/app", "backend.main:app"]
+# Comando de inicio
+ENTRYPOINT ["/app/entrypoint.sh"]
