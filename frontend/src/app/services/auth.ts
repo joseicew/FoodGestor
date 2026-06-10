@@ -3,12 +3,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { SessionService } from './session';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://192.168.1.17:5000/api/auth';
+  private apiUrl = `${environment.apiUrl}/api/auth`;
   private usuarioSubject = new BehaviorSubject<any>(null);
   public usuario$ = this.usuarioSubject.asObservable();
   private tokenKey = 'auth_token';

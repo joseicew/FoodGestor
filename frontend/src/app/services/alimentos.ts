@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth';
+import { environment } from '../../environments/environment';
 
-const API = 'http://192.168.1.17:5000/api/alimentos';
+const API = `${environment.apiUrl}/api/alimentos`;
 
 @Injectable({
   providedIn: 'root',
@@ -44,11 +45,11 @@ export class AlimentosService {
   }
 
   procesarOCRIngredientes(formData: FormData): Observable<any> {
-    return this.http.post<any>('http://192.168.1.17:5000/api/ocr/ingredientes', formData, this.getHeaders());
+    return this.http.post<any>(`${environment.apiUrl}/api/ocr/ingredientes`, formData, this.getHeaders());
   }
 
   procesarOCRMacros(formData: FormData): Observable<any> {
-    return this.http.post<any>('http://192.168.1.17:5000/api/ocr/macros', formData, this.getHeaders());
+    return this.http.post<any>(`${environment.apiUrl}/api/ocr/macros`, formData, this.getHeaders());
   }
 
   toggleFavorito(id: number): Observable<any> {
@@ -64,15 +65,15 @@ export class AlimentosService {
   }
 
   obtenerCategoriasAlergenos(): Observable<any> {
-    return this.http.get<any>('http://192.168.1.17:5000/api/ingredientes/alergenos-categorias/disponibles', this.getHeaders());
+    return this.http.get<any>(`${environment.apiUrl}/api/ingredientes/alergenos-categorias/disponibles`, this.getHeaders());
   }
 
   obtenerCategoriasAlimentos(): Observable<any> {
-    return this.http.get<any>('http://192.168.1.17:5000/api/ingredientes/alimentos-categorias/disponibles', this.getHeaders());
+    return this.http.get<any>(`${environment.apiUrl}/api/ingredientes/alimentos-categorias/disponibles`, this.getHeaders());
   }
 
   actualizarIngrediente(ingredienteId: number, datos: any): Observable<any> {
-    return this.http.put<any>(`http://192.168.1.17:5000/api/ingredientes/${ingredienteId}`, datos, this.getHeaders());
+    return this.http.put<any>(`${environment.apiUrl}/api/ingredientes/${ingredienteId}`, datos, this.getHeaders());
   }
 
   actualizarAlergenos(alimentoId: number, ingredientes: any[]): Observable<any> {

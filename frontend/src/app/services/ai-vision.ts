@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
-const OCR_URL = 'http://192.168.1.17:5000/api/ocr';
+const OCR_URL = `${environment.apiUrl}/api/ocr`;
 
 @Injectable({
   providedIn: 'root',

@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CalendarioService {
-  private apiUrl = 'http://192.168.1.17:5000/api/calendario';
+  private apiUrl = `${environment.apiUrl}/api/calendario`;
 
   constructor(
     private http: HttpClient,
