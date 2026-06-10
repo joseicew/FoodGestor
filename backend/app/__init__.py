@@ -4,10 +4,16 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 import os
-from dotenv import load_dotenv
+import logging
 
-# Cargar .env desde la carpeta backend
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+# Cargar .env desde la carpeta backend (si existe)
+try:
+    from dotenv import load_dotenv
+    env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+    if os.path.exists(env_path):
+        load_dotenv(env_path)
+except Exception as e:
+    logging.warning(f"No .env file found or couldn't load: {e}")
 db = SQLAlchemy()
 jwt = JWTManager()
 
@@ -66,15 +72,20 @@ def create_app():
 
     # Crear tablas y migrar columnas nuevas
     with app.app_context():
-        # Importar modelos
-        from app.models.usuario import Usuario
-        from app.models.ingrediente import Ingrediente
-        from app.models.racion import Racion
-        from app.models.comida_diaria import ComidaDiaria
+        try:
+            # Importar modelos
+            from app.models.usuario import Usuario
+            from app.models.ingrediente import Ingrediente
+            from app.models.racion import Racion
+            from app.models.comida_diaria import ComidaDiaria
 
-        # Crear tablas basado en los modelos definidos
-        db.create_all()
-        _migrar_columnas()
+            # Crear tablas basado en los modelos definidos
+            db.create_all()
+            _migrar_columnas()
+        except Exception as e:
+            logging.error(f"Error creating tables or migrating: {e}")
+            # No fallar la app si hay error en migraciones
+            pass
 
     return app
 

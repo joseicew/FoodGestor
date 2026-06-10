@@ -1,1 +1,1 @@
-web: cd backend && gunicorn main:app
+web: gunicorn --config gunicorn.conf.py --bind 0.0.0.0:$PORT backend.main:app
