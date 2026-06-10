@@ -56,3 +56,6 @@ config.txt
 migrate_*.py
 debug_*.py
 .vercel
+
+# Local Netlify folder
+.netlify
