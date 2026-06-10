@@ -6,11 +6,17 @@
 
 html, body {
   height: 100%;
-  background: #FFFFFF;
+  background: var(--bg-surface);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
-  color: #000;
+  color: var(--text-primary);
   line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Safe area for iPhone notch */
+html {
+  padding-top: max(env(safe-area-inset-top), 16px);
 }
 
 input[type="number"]::-webkit-inner-spin-button,
