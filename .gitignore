@@ -39,6 +39,8 @@ instance/
 # Logs and runtime files
 *.log
 *.txt
+!requirements.txt
+!/backend/requirements.txt
 
 # Uploads and user-generated files
 backend/uploads/
