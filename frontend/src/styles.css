@@ -49,6 +49,7 @@ input[type="number"]::-webkit-outer-spin-button {
   --text-secondary:   #666666;
   --text-tertiary:    #999999;
   --text-light:       #CCCCCC;
+  --text-label:       #333333;
   --bg-surface:       #FFFFFF;
   --bg-secondary:     #F2F2F7;
   --bg-tertiary:      #E5E5EA;
@@ -93,6 +94,7 @@ input[type="number"]::-webkit-outer-spin-button {
     --text-secondary:   #B0B0B0;
     --text-tertiary:    #808080;
     --text-light:       #606060;
+    --text-label:       #E0E0E0;
     --bg-surface:       #0A0E27;
     --bg-secondary:     #1C1C1E;
     --bg-tertiary:      #2C2C2E;
@@ -111,6 +113,7 @@ body.dark-mode {
   --text-secondary:   #B0B0B0;
   --text-tertiary:    #808080;
   --text-light:       #606060;
+  --text-label:       #E0E0E0;
   --bg-surface:       #0A0E27;
   --bg-secondary:     #1C1C1E;
   --bg-tertiary:      #2C2C2E;
@@ -291,7 +294,7 @@ body.dark-mode {
   display: block;
   font-size: var(--font-caption);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-secondary);
+  color: var(--text-label);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
