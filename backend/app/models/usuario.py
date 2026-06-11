@@ -35,7 +35,6 @@ class Usuario(db.Model):
     tdee_calculada = db.Column(db.Float, default=0)  # Gasto Energético Diario Total (con déficit/superávit)
 
     # Relaciones inversas
-    alimentos = db.relationship('Alimento', backref='usuario', lazy='select')
     raciones = db.relationship('Racion', backref='usuario', lazy='select')
     comidas_diarias = db.relationship('ComidaDiaria', backref='usuario', lazy='select')
 

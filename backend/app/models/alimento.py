@@ -13,7 +13,6 @@ class Alimento(db.Model):
     __tablename__ = 'alimento'
 
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False, index=True)
     nombre = db.Column(db.String(255), nullable=False)
     marca = db.Column(db.String(255), nullable=False)
     descripcion = db.Column(db.Text)
