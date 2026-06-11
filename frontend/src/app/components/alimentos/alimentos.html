@@ -299,6 +299,104 @@
   @if (activePanel === 'anadir') {
     <div class="panel">
 
+      <!-- ═══════════════ MODAL OCR ═══════════════ -->
+      @if (mostrarModalOCR) {
+        <div class="modal-overlay" (click)="cerrarModalOCR()">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h2>📷 Cargar desde imagen</h2>
+              <button class="btn-close" (click)="cerrarModalOCR()">✕</button>
+            </div>
+
+            <div class="modal-body">
+              <div class="ocr-upload">
+                <label class="ocr-upload-label">
+                  <span class="ocr-upload-text">
+                    @if (cargandoOCR) {
+                      <span class="spinner-sm"></span> Procesando...
+                    } @else {
+                      📸 Selecciona una imagen de la etiqueta del producto
+                    }
+                  </span>
+                  <input type="file" accept="image/*" hidden
+                         (change)="procesarImagenOCR($event)"
+                         [disabled]="cargandoOCR" />
+                </label>
+              </div>
+
+              @if (datosExtraidosOCR) {
+                <div class="ocr-datos">
+                  <h3>Datos extraídos:</h3>
+
+                  @if (datosExtraidosOCR.nombre) {
+                    <div class="ocr-dato">
+                      <span class="ocr-label">Nombre:</span>
+                      <span class="ocr-valor">{{ datosExtraidosOCR.nombre }}</span>
+                    </div>
+                  }
+
+                  @if (datosExtraidosOCR.marca) {
+                    <div class="ocr-dato">
+                      <span class="ocr-label">Marca:</span>
+                      <span class="ocr-valor">{{ datosExtraidosOCR.marca }}</span>
+                    </div>
+                  }
+
+                  @if (datosExtraidosOCR.codigo_barras) {
+                    <div class="ocr-dato">
+                      <span class="ocr-label">Código:</span>
+                      <span class="ocr-valor">{{ datosExtraidosOCR.codigo_barras }}</span>
+                    </div>
+                  }
+
+                  @if (datosExtraidosOCR.macros) {
+                    <div class="ocr-dato">
+                      <span class="ocr-label">Macros (por 100g):</span>
+                      <div class="ocr-macros">
+                        @if (datosExtraidosOCR.macros.calorias) {
+                          <span>🔥 {{ datosExtraidosOCR.macros.calorias }} kcal</span>
+                        }
+                        @if (datosExtraidosOCR.macros.proteinas) {
+                          <span>💪 {{ datosExtraidosOCR.macros.proteinas }}g P</span>
+                        }
+                        @if (datosExtraidosOCR.macros.hidratos_carbono) {
+                          <span>🌾 {{ datosExtraidosOCR.macros.hidratos_carbono }}g HC</span>
+                        }
+                        @if (datosExtraidosOCR.macros.grasas) {
+                          <span>🧈 {{ datosExtraidosOCR.macros.grasas }}g G</span>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  @if (datosExtraidosOCR.ingredientes && datosExtraidosOCR.ingredientes.length > 0) {
+                    <div class="ocr-dato">
+                      <span class="ocr-label">Ingredientes:</span>
+                      <div class="ocr-ingredientes">
+                        @for (ing of datosExtraidosOCR.ingredientes; track ing) {
+                          <span class="ocr-ingredient-tag">{{ ing }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="modal-actions">
+              <button class="btn-secondary" (click)="cerrarModalOCR()" [disabled]="cargandoOCR">
+                Cancelar
+              </button>
+              @if (datosExtraidosOCR) {
+                <button class="btn-primary" (click)="rellenarFormularioConOCR(datosExtraidosOCR); cerrarModalOCR()" [disabled]="cargandoOCR">
+                  ✓ Usar datos
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
       <div class="form-group">
         <label>Nombre <span class="obligatorio">*</span></label>
         <input type="text" [(ngModel)]="nuevoAlimento.nombre"
