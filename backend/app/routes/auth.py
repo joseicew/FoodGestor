@@ -85,6 +85,28 @@ def login():
         return jsonify({'error': str(e)}), 500
 
 
+@auth_bp.route('/debug-token', methods=['POST'])
+def debug_token():
+    """Debug endpoint para verificar token"""
+    try:
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header:
+            return jsonify({'error': 'No Authorization header', 'has_token': False}), 400
+
+        token = auth_header.split(' ')[1] if ' ' in auth_header else ''
+        if not token:
+            return jsonify({'error': 'Invalid Authorization format', 'has_token': False}), 400
+
+        return jsonify({
+            'has_token': True,
+            'token_length': len(token),
+            'token_preview': token[:20] + '...',
+            'message': 'Token received'
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @auth_bp.route('/me', methods=['GET'])
 @jwt_required()
 def obtener_perfil():
