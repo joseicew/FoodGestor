@@ -240,7 +240,20 @@
       "Bash(node create_guide.js)",
       "Bash(python \"C:\\\\Users\\\\Joza\\\\Documents\\\\Proyectos\\\\FoodGestor\\\\crear_guia.py\")",
       "Bash(python crear_guia.py)",
-      "Bash(netlify deploy *)"
+      "Bash(netlify deploy *)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(gh pr create --title 'refactor: Replace OCR modal with inline camera icon' --body ' *)",
+      "Bash(gh pr *)",
+      "Bash(curl -s http://localhost:5000/api/health)",
+      "Bash(python -c \"import requests; import bs4; print\\('✅ Dependencias OK'\\)\")",
+      "Bash(python -c \"import bs4; print\\('✅ BeautifulSoup4 instalado'\\)\")",
+      "Bash(python -c \"import bs4; print\\('BeautifulSoup4 OK'\\)\")",
+      "Bash(python scrape_mercadona.py)",
+      "Bash(curl -s \"https://tienda.mercadona.es/api/products/4717/?lang=es&wh=alc1\")",
+      "Bash(python remove_usuario_id_from_alimento.py)",
+      "Bash(python update_ean_from_api.py)",
+      "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"test123\"}')"
     ]
   }
 }

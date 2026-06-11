@@ -220,7 +220,6 @@ def crear_alimento():
             return cast(v) if v else default
 
         alimento = Alimento(
-            ,
             nombre=data.get('nombre'),
             marca=marca,
             descripcion=data.get('descripcion', ''),
