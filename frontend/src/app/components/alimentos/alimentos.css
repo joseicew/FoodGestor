@@ -694,12 +694,30 @@
 .modal-scroll { overflow-y: auto; flex: 1; padding: 24px 20px 8px; }
 
 .modal-footer {
-  padding: 12px 20px 20px;
+  padding: 20px;
   border-top: 1px solid #f0f0f0;
   background: #fff;
   border-radius: 0 0 16px 16px;
   display: flex;
+  flex-direction: column;
   gap: 10px;
+  position: relative;
+}
+
+.modal-footer .btn-secondary:first-child {
+  position: absolute;
+  top: -40px;
+  right: 20px;
+  width: auto;
+  padding: 8px 12px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.modal-footer .btn-primary {
+  width: 100%;
+  padding: 14px 16px;
+  margin: 0;
 }
 
 @keyframes slide-up {
