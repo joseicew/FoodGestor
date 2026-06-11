@@ -1649,6 +1649,7 @@ export class Alimentos implements OnInit {
         if (datos.macros.azucares) this.nuevoAlimento.azucares = datos.macros.azucares;
         if (datos.macros.grasas) this.nuevoAlimento.grasas = datos.macros.grasas;
       }
+      this.cdr.detectChanges();
       this.mostrarMensaje('✓ Datos cargados correctamente', 'exito');
       this.ocrCompletaEstado = 'listo';
       await this.esperar(1500);
