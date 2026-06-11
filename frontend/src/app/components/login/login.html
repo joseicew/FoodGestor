@@ -81,12 +81,12 @@
   }
 
   <!-- Modal: Contraseña incorrecta -->
-  @if (mostrarModalContraseñaIncorrecta) {
-    <div class="modal-overlay" (click)="cerrarModalContraseñaIncorrecta()">
+  @if (mostrarModalPasswordIncorrecto) {
+    <div class="modal-overlay" (click)="cerrarModalPassword()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>🔐 Contraseña incorrecta</h2>
-          <button class="btn-close" (click)="cerrarModalContraseñaIncorrecta()">✕</button>
+          <button class="btn-close" (click)="cerrarModalPassword()">✕</button>
         </div>
 
         <div class="modal-body">
@@ -95,7 +95,7 @@
         </div>
 
         <div class="modal-actions">
-          <button class="btn-primary" (click)="cerrarModalContraseñaIncorrecta()">
+          <button class="btn-primary" (click)="cerrarModalPassword()">
             Intentar de nuevo
           </button>
         </div>
