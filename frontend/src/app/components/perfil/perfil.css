@@ -355,11 +355,16 @@
   opacity: 0.6;
 }
 
-.form-actions { display: flex; gap: 12px; margin-top: 0px; }
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  position: relative;
+}
 
 .btn-guardar,
 .btn-cancelar {
-  flex: 1;
   padding: 12px 16px;
   border: none;
   border-radius: 8px;
@@ -374,8 +379,12 @@
 }
 
 .btn-guardar {
+  width: 100%;
+  flex: none;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
+  padding: 14px 16px;
+  margin: 0;
 }
 
 .btn-guardar:hover:not(:disabled) {
@@ -385,7 +394,16 @@
 
 .btn-guardar:disabled { opacity: 0.7; cursor: not-allowed; }
 
-.btn-cancelar { background: #f0f0f0; color: #2d2d2d; }
+.btn-cancelar {
+  position: absolute;
+  top: -50px;
+  right: 0;
+  width: auto;
+  background: #f0f0f0;
+  color: #2d2d2d;
+  padding: 8px 12px;
+  font-size: 12px;
+}
 .btn-cancelar:hover:not(:disabled) { background: #e0e0e0; }
 .btn-cancelar:disabled { opacity: 0.7; cursor: not-allowed; }
 
