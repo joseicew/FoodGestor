@@ -1,0 +1,49 @@
+<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo redondeado -->
+  <rect x="20" y="40" width="160" height="180" rx="20" fill="#B8D944" opacity="0.1"/>
+
+  <!-- Cuerpo del calendario - Verde principal -->
+  <rect x="30" y="50" width="140" height="170" rx="15" fill="#A4C639"/>
+
+  <!-- Parte superior - Verde oscuro -->
+  <rect x="30" y="50" width="140" height="35" rx="15" fill="#8AB821"/>
+
+  <!-- Anillos -->
+  <circle cx="55" cy="60" r="10" fill="#654321"/>
+  <circle cx="100" cy="60" r="10" fill="#654321"/>
+  <circle cx="145" cy="60" r="10" fill="#654321"/>
+
+  <!-- Cara feliz -->
+  <circle cx="70" cy="95" r="7" fill="#2D2D2D"/>
+  <circle cx="100" cy="95" r="7" fill="#2D2D2D"/>
+  <circle cx="85" cy="95" r="3" fill="white"/>
+  <circle cx="115" cy="95" r="3" fill="white"/>
+
+  <!-- Boca sonriente -->
+  <path d="M 75 105 Q 85 115 105 105" stroke="#2D2D2D" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Mejillas -->
+  <circle cx="60" cy="105" r="5" fill="#FFB6C1" opacity="0.6"/>
+  <circle cx="120" cy="105" r="5" fill="#FFB6C1" opacity="0.6"/>
+
+  <!-- Grilla del calendario -->
+  <rect x="40" y="125" width="25" height="25" rx="3" fill="#B8D944" stroke="#8AB821" stroke-width="2"/>
+  <rect x="70" y="125" width="25" height="25" rx="3" fill="#B8D944" stroke="#8AB821" stroke-width="2"/>
+  <rect x="100" y="125" width="25" height="25" rx="3" fill="#B8D944" stroke="#8AB821" stroke-width="2"/>
+  <rect x="130" y="125" width="25" height="25" rx="3" fill="#B8D944" stroke="#8AB821" stroke-width="2"/>
+
+  <rect x="40" y="155" width="25" height="25" rx="3" fill="#B8D944" stroke="#8AB821" stroke-width="2"/>
+  <rect x="70" y="155" width="25" height="25" rx="3" fill="#B8D944" stroke="#8AB821" stroke-width="2"/>
+  <rect x="100" y="155" width="25" height="25" rx="3" fill="#B8D944" stroke="#8AB821" stroke-width="2"/>
+  <rect x="130" y="155" width="25" height="25" rx="3" fill="#B8D944" stroke="#8AB821" stroke-width="2"/>
+
+  <!-- Checkmark en primera celda -->
+  <path d="M 45 135 L 50 140 L 58 130" stroke="#2D2D2D" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Aguacate en segunda celda -->
+  <ellipse cx="82.5" cy="167.5" rx="6" ry="8" fill="#8AB821"/>
+  <circle cx="82.5" cy="167.5" r="2" fill="#654321"/>
+
+  <!-- Hoja en última celda -->
+  <path d="M 140 180 Q 142 175 145 180 Q 142 185 140 180" fill="#8AB821"/>
+</svg>

@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #A4C639 0%, #8AB821 100%);
   padding: 16px;
 }
 
@@ -19,6 +19,23 @@
 .header {
   text-align: center;
   margin-bottom: 32px;
+}
+
+.app-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px;
+  display: block;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 .header h1 {
@@ -94,8 +111,8 @@
 }
 
 .form-group input:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #A4C639;
+  box-shadow: 0 0 0 3px rgba(164, 198, 57, 0.1);
 }
 
 .form-group input:disabled {
@@ -106,7 +123,7 @@
 
 .btn-primary {
   padding: 12px 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #A4C639 0%, #8AB821 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -122,7 +139,7 @@
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(164, 198, 57, 0.4);
 }
 
 .btn-primary:disabled {
@@ -155,14 +172,14 @@
 }
 
 .footer a {
-  color: #667eea;
+  color: #A4C639;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.2s;
 }
 
 .footer a:hover:not(.disabled) {
-  color: #764ba2;
+  color: #8AB821;
 }
 
 .footer a.disabled {
@@ -267,7 +284,7 @@
   color: #2d2d2d;
   word-break: break-all;
   margin: 12px 0 16px 0 !important;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #8AB821;
 }
 
 .modal-actions {
