@@ -220,6 +220,16 @@ export class OnboardingComponent implements OnInit {
     });
   }
 
+  /**
+   * Cancela el onboarding y hace logout
+   */
+  cancelarOnboarding(): void {
+    if (confirm('¿Descartar datos y cerrar sesión?')) {
+      this.authService.logout();
+      this.router.navigate(['/login']);
+    }
+  }
+
   private mostrarMensaje(texto: string, tipo: 'error' | 'exito'): void {
     this.mensaje = texto;
     this.mensajeTipo = tipo;

@@ -149,14 +149,19 @@
         </div>
       }
 
-      <button type="submit" class="btn-primary" [disabled]="cargando || !limitesCalculados">
-        @if (cargando) {
-          <span class="spinner"></span>
-          Guardando...
-        } @else {
-          Continuar
-        }
-      </button>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="cargando || !limitesCalculados">
+          @if (cargando) {
+            <span class="spinner"></span>
+            Guardando...
+          } @else {
+            Continuar
+          }
+        </button>
+        <button type="button" class="btn-secondary" (click)="cancelarOnboarding()" [disabled]="cargando">
+          Cancelar
+        </button>
+      </div>
     </form>
   </div>
 </div>
