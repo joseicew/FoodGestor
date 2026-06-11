@@ -165,7 +165,7 @@ def guardar_en_bd(datos_ocr):
             alimento = Alimento(
                 nombre=nombre,
                 marca=datos_ocr.get('marca', 'Sin marca'),
-                codigo_barras=datos_ocr.get('codigo_barras'),
+                codigo_barras=datos_ocr.get('ean') or datos_ocr.get('codigo_barras'),
                 categoria='Otros',
                 calorias=datos_ocr.get('macros', {}).get('calorias'),
                 proteinas=datos_ocr.get('macros', {}).get('proteinas'),
