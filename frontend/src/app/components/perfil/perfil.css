@@ -291,7 +291,7 @@
 
 /* ── Perfil edición ── */
 .perfil-edicion-card {
-  background: #fff;
+  background: #f9f9f9;
   border: 3px solid #e8e8e8;
   border-radius: 16px;
   padding: 16px;
@@ -366,7 +366,7 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  margin-top: 24px;
+  margin-top: 8px;
   position: relative;
 }
 
