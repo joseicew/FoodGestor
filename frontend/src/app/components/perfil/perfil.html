@@ -332,6 +332,10 @@
           }
         </div>
 
+        <button type="button" class="btn-cancelar" (click)="cancelarEdicion()" [disabled]="cargando" title="Cancelar edición">
+          ✕
+        </button>
+
         <div class="form-actions">
           <button type="submit" class="btn-guardar" [disabled]="cargando">
             @if (cargando) {
@@ -340,9 +344,6 @@
             } @else {
               ✓ Guardar cambios
             }
-          </button>
-          <button type="button" class="btn-cancelar" (click)="cancelarEdicion()" [disabled]="cargando">
-            ✕ Cancelar
           </button>
         </div>
       </form>
