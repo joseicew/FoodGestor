@@ -223,3 +223,68 @@ def procesar_macros(image_data: bytes, content_type: str) -> dict:
     )
 
     return _extraer_json(message.content[0].text.strip(), 'object')
+
+
+def procesar_datos_completos(image_data: bytes, content_type: str) -> dict:
+    """
+    Procesa una imagen de producto (etiqueta completa) y extrae:
+    - nombre del producto
+    - marca
+    - código de barras (EAN)
+    - ingredientes
+    - macronutrientes
+    """
+    client = _cliente()
+    image_b64 = base64.standard_b64encode(image_data).decode('utf-8')
+
+    message = client.messages.create(
+        model='claude-haiku-4-5-20251001',
+        max_tokens=2048,
+        messages=[{
+            'role': 'user',
+            'content': [
+                {
+                    'type': 'image',
+                    'source': {
+                        'type': 'base64',
+                        'media_type': content_type,
+                        'data': image_b64
+                    }
+                },
+                {
+                    'type': 'text',
+                    'text': (
+                        'Analiza esta etiqueta de producto alimenticio y extrae TODOS estos datos:\n'
+                        '{\n'
+                        '  "nombre": "nombre del producto",\n'
+                        '  "marca": "marca del producto",\n'
+                        '  "codigo_barras": "números del EAN sin espacios",\n'
+                        '  "ingredientes": ["ingrediente1", "ingrediente2", ...],\n'
+                        '  "macros": {\n'
+                        '    "calorias": número,\n'
+                        '    "proteinas": número,\n'
+                        '    "hidratos_carbono": número,\n'
+                        '    "azucares": número,\n'
+                        '    "grasas": número,\n'
+                        '    "grasas_saturadas": número (opcional),\n'
+                        '    "fibra": número (opcional),\n'
+                        '    "sal": número (opcional)\n'
+                        '  }\n'
+                        '}\n'
+                        'Instrucciones:\n'
+                        '- Si hay múltiples idiomas en ingredientes, usa SOLO la versión en ESPAÑOL\n'
+                        '- Los valores de macros deben ser por 100g\n'
+                        '- Si un valor no aparece, usa null (no 0)\n'
+                        '- El código de barras: solo números, sin espacios\n'
+                        '- Responde SOLO con el JSON válido, sin explicaciones\n'
+                    )
+                }
+            ]
+        }]
+    )
+
+    try:
+        datos = _extraer_json(message.content[0].text.strip(), 'object')
+        return datos
+    except Exception as e:
+        raise ValueError(f'Error al procesar datos completos: {str(e)}')

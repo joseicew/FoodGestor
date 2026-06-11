@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.services.ocr_service import procesar_ingredientes, procesar_macros, procesar_codigo_barras
+from app.services.ocr_service import procesar_ingredientes, procesar_macros, procesar_codigo_barras, procesar_datos_completos
 
 ocr_bp = Blueprint('ocr', __name__, url_prefix='/api/ocr')
 
@@ -55,5 +55,19 @@ def ocr_macros():
         data = file.read()
         macros = procesar_macros(data, file.content_type)
         return jsonify({'macros': macros}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@ocr_bp.route('/datos-completos', methods=['POST'])
+def ocr_datos_completos():
+    """Extrae todos los datos (nombre, marca, macros, ingredientes, código) de una sola imagen"""
+    file, err_response, err_code = _validar_imagen()
+    if err_response:
+        return err_response, err_code
+    try:
+        data = file.read()
+        datos = procesar_datos_completos(data, file.content_type)
+        return jsonify({'datos': datos}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

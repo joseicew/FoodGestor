@@ -37,6 +37,15 @@ export class AiVisionService {
     );
     return res.macros ?? {};
   }
+
+  async procesarImagenCompleta(file: File): Promise<DatosProductoExtraidos> {
+    const formData = new FormData();
+    formData.append('imagen', file);
+    const res: any = await firstValueFrom(
+      this.http.post(`${OCR_URL}/datos-completos`, formData)
+    );
+    return res.datos ?? {};
+  }
 }
 
 export interface MacrosExtraidos {
@@ -49,4 +58,12 @@ export interface MacrosExtraidos {
   fibra?: number;
   sal?: number;
   sodio?: number;
+}
+
+export interface DatosProductoExtraidos {
+  nombre?: string;
+  marca?: string;
+  codigo_barras?: string;
+  ingredientes?: string[];
+  macros?: MacrosExtraidos;
 }
