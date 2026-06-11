@@ -17,7 +17,9 @@ def _cliente():
     if not api_key:
         raise RuntimeError(
             'ANTHROPIC_API_KEY no encontrada. '
-            f'Comprueba que existe la clave en {os.path.abspath(_ENV_PATH)}'
+            'Configura la variable de entorno ANTHROPIC_API_KEY con tu clave de API de Anthropic. '
+            f'En desarrollo local, agrégala a {os.path.abspath(_ENV_PATH)}. '
+            f'En Railway, configúrala en el dashboard de variables de entorno.'
         )
     return anthropic.Anthropic(api_key=api_key)
 
