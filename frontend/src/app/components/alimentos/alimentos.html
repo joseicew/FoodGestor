@@ -285,6 +285,12 @@
     <button class="tab" [class.active]="activePanel === 'actualizar'" (click)="cambiarPanel('actualizar')">🔄 Actualizar</button>
   </div>
 
+  <div class="ocr-section">
+    <button class="btn-ocr" (click)="abrirModalOCR()" title="Cargar producto desde imagen">
+      📷 Cargar desde imagen
+    </button>
+  </div>
+
   @if (mensaje) {
     <div class="mensaje" [class.error]="mensajeTipo === 'error'">{{ mensaje }}</div>
   }
