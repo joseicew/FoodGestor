@@ -19,6 +19,7 @@ export class LoginComponent implements OnInit {
   mensajeTipo: 'error' | 'exito' = 'error';
   mostrarModalEmailNoExiste: boolean = false;
   emailNoExiste: string = '';
+  mostrarModalContraseñaIncorrecta: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -93,8 +94,9 @@ export class LoginComponent implements OnInit {
         } else if (esContraseñaIncorrecta) {
           // Limpiar contraseña pero mantener email
           this.password = '';
-          this.mostrarMensaje('🔐 ' + mensaje + ' - Intenta de nuevo', 'error');
-          alert('Contraseña incorrecta.\n\nPor favor, intenta con la contraseña correcta.');
+          this.mostrarModalContraseñaIncorrecta = true;
+          this.cdr.detectChanges();
+          this.mostrarMensaje('🔐 Contraseña incorrecta', 'error');
         } else {
           this.mostrarMensaje(mensaje, 'error');
         }
@@ -105,6 +107,10 @@ export class LoginComponent implements OnInit {
   cerrarModalEmailNoExiste(): void {
     this.mostrarModalEmailNoExiste = false;
     this.emailNoExiste = '';
+  }
+
+  cerrarModalContraseñaIncorrecta(): void {
+    this.mostrarModalContraseñaIncorrecta = false;
   }
 
   irARegistro(): void {
