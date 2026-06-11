@@ -149,6 +149,10 @@
   } @else {
     <!-- VISTA DE EDICIÓN -->
     <div class="perfil-edicion-card">
+      <button type="button" class="btn-cancelar" (click)="cancelarEdicion()" [disabled]="cargando" title="Cancelar edición">
+        ✕
+      </button>
+
       <h2>✏️ Editar Perfil</h2>
 
       <form (ngSubmit)="guardarCambios()" class="form">
@@ -331,10 +335,6 @@
             </div>
           }
         </div>
-
-        <button type="button" class="btn-cancelar" (click)="cancelarEdicion()" [disabled]="cargando" title="Cancelar edición">
-          ✕
-        </button>
 
         <div class="form-actions">
           <button type="submit" class="btn-guardar" [disabled]="cargando">
