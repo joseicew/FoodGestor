@@ -69,5 +69,10 @@ def ocr_datos_completos():
         data = file.read()
         datos = procesar_datos_completos(data, file.content_type)
         return jsonify({'datos': datos}), 200
+    except ValueError as e:
+        return jsonify({'error': f'Error de validación: {str(e)}'}), 422
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        error_details = traceback.format_exc()
+        print(f'Error en OCR datos-completos: {error_details}')
+        return jsonify({'error': f'Error interno: {str(e)}'}), 500

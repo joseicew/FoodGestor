@@ -24,13 +24,44 @@ def _cliente():
 
 def _extraer_json(texto: str, tipo: str):
     """Extrae el primer bloque JSON del tipo indicado ('array' o 'object')."""
+    texto = texto.strip()
+
     if tipo == 'array':
-        match = re.search(r'\[[\s\S]*\]', texto)
+        # Buscar el primer [ y el último ]
+        start = texto.find('[')
+        if start == -1:
+            raise ValueError('No se encontró array JSON en la respuesta')
+        # Encontrar el ] más cercano que cierre correctamente el JSON
+        try:
+            for i in range(start + 1, len(texto) + 1):
+                candidate = texto[start:i]
+                try:
+                    return json.loads(candidate)
+                except json.JSONDecodeError:
+                    continue
+        except:
+            pass
     else:
-        match = re.search(r'\{[\s\S]*\}', texto)
-    if match:
-        return json.loads(match.group())
-    return json.loads(texto)
+        # Buscar el primer { y el último }
+        start = texto.find('{')
+        if start == -1:
+            raise ValueError('No se encontró objeto JSON en la respuesta')
+        # Encontrar el } más cercano que cierre correctamente el JSON
+        try:
+            for i in range(start + 1, len(texto) + 1):
+                candidate = texto[start:i]
+                try:
+                    return json.loads(candidate)
+                except json.JSONDecodeError:
+                    continue
+        except:
+            pass
+
+    # Último intento: parsear directamente
+    try:
+        return json.loads(texto)
+    except json.JSONDecodeError as e:
+        raise ValueError(f'No se pudo extraer JSON válido de la respuesta: {str(e)}')
 
 
 def _validar_tipo_imagen(image_data: bytes, content_type: str, tipo_esperado: str) -> bool:
