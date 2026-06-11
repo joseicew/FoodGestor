@@ -137,6 +137,11 @@ export class Alimentos implements OnInit {
 
   secciones = { macros: true, minerales: false, clasificacion: true };
 
+  // OCR Modal
+  mostrarModalOCR = false;
+  cargandoOCR = false;
+  datosExtraidosOCR: any = null;
+
   // Configuración de OCR
   usarOcrAsincrono = true; // Cambiar a false para usar OCR síncrono
 
@@ -1618,5 +1623,48 @@ export class Alimentos implements OnInit {
     this.mensaje = texto;
     this.mensajeTipo = tipo;
     setTimeout(() => this.mensaje = '', 4000);
+  }
+
+  abrirModalOCR() {
+    this.mostrarModalOCR = true;
+  }
+
+  cerrarModalOCR() {
+    this.mostrarModalOCR = false;
+    this.cargandoOCR = false;
+    this.datosExtraidosOCR = null;
+  }
+
+  async procesarImagenOCR(event: any) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    this.cargandoOCR = true;
+    try {
+      const datos = await this.aiVisionService.procesarImagenCompleta(file);
+      this.datosExtraidosOCR = datos;
+      this.rellenarFormularioConOCR(datos);
+      this.mostrarMensaje('✓ Datos extraídos correctamente', 'exito');
+    } catch (error) {
+      this.mostrarMensaje('Error al procesar imagen: ' + this.mensajeOcr(error), 'error');
+    } finally {
+      this.cargandoOCR = false;
+    }
+  }
+
+  rellenarFormularioConOCR(datos: any) {
+    if (datos.nombre) this.nombre = datos.nombre;
+    if (datos.marca) this.marca = datos.marca;
+    if (datos.codigo_barras) this.codigoBarras = datos.codigo_barras;
+    if (datos.ingredientes) this.ingredientesExtraidos = datos.ingredientes;
+    if (datos.macros) {
+      if (datos.macros.calorias) this.calorias = datos.macros.calorias;
+      if (datos.macros.proteinas) this.proteinas = datos.macros.proteinas;
+      if (datos.macros.hidratos_carbono) this.hidratosCarbono = datos.macros.hidratos_carbono;
+      if (datos.macros.azucares) this.azucares = datos.macros.azucares;
+      if (datos.macros.grasas) this.grasas = datos.macros.grasas;
+    }
+    this.cambiarPanel('anadir');
+    this.cerrarModalOCR();
   }
 }
