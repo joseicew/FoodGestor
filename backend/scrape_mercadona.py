@@ -58,6 +58,18 @@ def descargar_sitemap():
         print(f"[ERROR] Error descargando sitemap: {e}")
         return []
 
+def producto_ya_existe(ean):
+    """Verifica si un producto ya existe en la BD por EAN."""
+    if not ean:
+        return False
+
+    try:
+        with app.app_context():
+            existe = Alimento.query.filter_by(codigo_barras=ean).first()
+            return existe is not None
+    except Exception:
+        return False
+
 def obtener_datos_producto(product_id):
     """Obtiene datos del producto desde la API de Mercadona."""
     try:
@@ -193,7 +205,8 @@ def main():
         'procesados': 0,
         'con_ocr': 0,
         'en_bd': 0,
-        'errores': 0
+        'errores': 0,
+        'ya_existentes': 0
     }
 
     for i, product_id in enumerate(ids, 1):
@@ -204,6 +217,13 @@ def main():
         if not datos_api:
             print(f"[SKIP] No se obtuvieron datos de API")
             contadores['errores'] += 1
+            time.sleep(DELAY_SEGUNDOS)
+            continue
+
+        # Verificar si el producto ya existe
+        if datos_api.get('ean') and producto_ya_existe(datos_api['ean']):
+            print(f"[SKIP] Producto ya existe (EAN: {datos_api['ean']})")
+            contadores['ya_existentes'] += 1
             time.sleep(DELAY_SEGUNDOS)
             continue
 
@@ -224,7 +244,9 @@ def main():
     print("\n" + "=" * 60)
     print("[RESUMEN]")
     print("=" * 60)
-    print(f"Total procesados: {contadores['procesados']}")
+    print(f"Total a procesar: {contadores['total']}")
+    print(f"Ya existentes: {contadores['ya_existentes']}")
+    print(f"Nuevos procesados: {contadores['procesados']}")
     print(f"Con OCR exitoso: {contadores['con_ocr']}")
     print(f"Guardados en BD: {contadores['en_bd']}")
     print(f"Errores: {contadores['errores']}")
