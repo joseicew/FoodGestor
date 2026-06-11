@@ -372,6 +372,7 @@ export class Perfil implements OnInit {
   }
 
   formatearObjetivo(objetivo: string): string {
+    if (!objetivo) return '-';
     const objetivosMap: { [key: string]: string } = {
       'perder_peso': 'PERDER PESO',
       'ganar_musculo': 'GANAR MÚSCULO',
@@ -381,6 +382,7 @@ export class Perfil implements OnInit {
   }
 
   formatearActividad(nivel_actividad: string): string {
+    if (!nivel_actividad) return '-';
     const actividadMap: { [key: string]: string } = {
       'sedentario': 'SEDENTARIO',
       'ligero': 'LIGERO',
