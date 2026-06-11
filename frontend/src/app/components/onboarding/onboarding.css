@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-surface);
   padding: 16px;
 }
 
@@ -73,7 +73,7 @@
 .form-group label {
   font-size: 13px;
   font-weight: 600;
-  color: #2d2d2d;
+  color: var(--text-label);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -148,7 +148,7 @@
 .limite-label {
   display: block;
   font-size: 11px;
-  color: #999;
+  color: var(--text-label);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
