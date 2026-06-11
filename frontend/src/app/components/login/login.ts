@@ -74,22 +74,27 @@ export class LoginComponent implements OnInit {
 
         const mensaje = error.error?.error || error.message || 'Error en el login';
         console.log('Mensaje procesado:', mensaje);
-        console.log('Tipo:', typeof mensaje);
 
         // Si el email no está registrado, mostrar modal especial
         const esEmailNoRegistrado = mensaje &&
                                      (mensaje.includes('Este email no está registrado') ||
                                       mensaje.includes('email no está registrado'));
 
-        console.log('¿Email no registrado?', esEmailNoRegistrado);
+        // Si la contraseña es incorrecta
+        const esContraseñaIncorrecta = mensaje &&
+                                       (mensaje.includes('Contraseña incorrecta') ||
+                                        mensaje.includes('contraseña incorrecta'));
 
         if (esEmailNoRegistrado) {
-          console.log('✓ Mostrando modal de email no registrado');
-          this.cargando = false; // Detener spinner
           this.emailNoExiste = this.email.trim();
           this.mostrarModalEmailNoExiste = true;
-          this.cdr.detectChanges(); // Forzar detección de cambios
-          this.mostrarMensaje('📧 ' + mensaje, 'error'); // Mensaje visual en la pantalla
+          this.cdr.detectChanges();
+          this.mostrarMensaje('📧 ' + mensaje, 'error');
+        } else if (esContraseñaIncorrecta) {
+          // Limpiar contraseña pero mantener email
+          this.password = '';
+          this.mostrarMensaje('🔐 ' + mensaje + ' - Intenta de nuevo', 'error');
+          alert('Contraseña incorrecta.\n\nPor favor, intenta con la contraseña correcta.');
         } else {
           this.mostrarMensaje(mensaje, 'error');
         }
