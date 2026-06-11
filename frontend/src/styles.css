@@ -36,13 +36,13 @@ input[type="number"]::-webkit-outer-spin-button {
 /* Light Theme (Default) */
 :root {
   /* Colores Principales */
-  --primary:          #007AFF;
-  --primary-dark:     #0051D5;
-  --primary-light:    #E8F4FF;
-  --secondary:        #FF6B35;
-  --secondary-light:  #FFE8DB;
-  --accent:           #FFA500;
-  --accent-light:     #FFE8CC;
+  --primary:          #A4C639;
+  --primary-dark:     #8AB821;
+  --primary-light:    #E8F5E9;
+  --secondary:        #6B9117;
+  --secondary-light:  #C8E6C9;
+  --accent:           #654321;
+  --accent-light:     #D7CCC8;
 
   /* Estados */
   --success:          #34C759;
@@ -59,11 +59,11 @@ input[type="number"]::-webkit-outer-spin-button {
   --text-tertiary:    #999999;
   --text-light:       #CCCCCC;
   --text-label:       #333333;
-  --bg-surface:       #FFFFFF;
-  --bg-secondary:     #F2F2F7;
-  --bg-tertiary:      #E5E5EA;
-  --border-color:     #E5E5EA;
-  --border-light:     #F2F2F7;
+  --bg-surface:       #F8FBEF;
+  --bg-secondary:     #F0F5E8;
+  --bg-tertiary:      #E8F0DD;
+  --border-color:     #E0E8D0;
+  --border-light:     #F0F5E8;
   --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-md:        0 8px 24px rgba(0, 0, 0, 0.12);
   --shadow-lg:        0 16px 32px rgba(0, 0, 0, 0.16);
@@ -104,11 +104,11 @@ input[type="number"]::-webkit-outer-spin-button {
     --text-tertiary:    #808080;
     --text-light:       #606060;
     --text-label:       #E0E0E0;
-    --bg-surface:       #0A0E27;
-    --bg-secondary:     #1C1C1E;
-    --bg-tertiary:      #2C2C2E;
-    --border-color:     #3A3A3C;
-    --border-light:     #2C2C2E;
+    --bg-surface:       #1B2514;
+    --bg-secondary:     #2A3A1F;
+    --bg-tertiary:      #384B28;
+    --border-color:     #4A5A38;
+    --border-light:     #384B28;
     --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-md:        0 8px 24px rgba(0, 0, 0, 0.5);
     --shadow-lg:        0 16px 32px rgba(0, 0, 0, 0.6);
@@ -123,11 +123,11 @@ body.dark-mode {
   --text-tertiary:    #808080;
   --text-light:       #606060;
   --text-label:       #E0E0E0;
-  --bg-surface:       #0A0E27;
-  --bg-secondary:     #1C1C1E;
-  --bg-tertiary:      #2C2C2E;
-  --border-color:     #3A3A3C;
-  --border-light:     #2C2C2E;
+  --bg-surface:       #1B2514;
+  --bg-secondary:     #2A3A1F;
+  --bg-tertiary:      #384B28;
+  --border-color:     #4A5A38;
+  --border-light:     #384B28;
   --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md:        0 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-lg:        0 16px 32px rgba(0, 0, 0, 0.6);
