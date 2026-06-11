@@ -163,8 +163,7 @@ def buscar_similares():
 @jwt_required()
 def obtener_alimentos():
     try:
-        usuario_id = int(get_jwt_identity())
-        alimentos = Alimento.query.filter_by(usuario_id=usuario_id).all()
+        alimentos = Alimento.query.all()
         return jsonify([a.to_dict() for a in alimentos]), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -174,8 +173,7 @@ def obtener_alimentos():
 @jwt_required()
 def obtener_alimento(id):
     try:
-        usuario_id = int(get_jwt_identity())
-        alimento = Alimento.query.filter_by(id=id, usuario_id=usuario_id).first()
+        alimento = Alimento.query.first()
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
         return jsonify(alimento.to_dict()), 200
@@ -187,7 +185,6 @@ def obtener_alimento(id):
 @jwt_required()
 def crear_alimento():
     try:
-        usuario_id = int(get_jwt_identity())
         data = request.form.to_dict()
 
         if not data.get('nombre'):
@@ -199,8 +196,7 @@ def crear_alimento():
         nombre = data.get('nombre', '').strip()
         marca = data.get('marca', '').strip()
         existente_nombre = Alimento.query.filter(
-            db.func.lower(Alimento.nombre) == nombre.lower(),
-            Alimento.usuario_id == usuario_id
+            db.func.lower(Alimento.nombre) == nombre.lower()
         ).first()
         if existente_nombre:
             return jsonify({
@@ -211,7 +207,7 @@ def crear_alimento():
 
         codigo_barras = data.get('codigo_barras', '').strip() or None
         if codigo_barras:
-            existente = Alimento.query.filter_by(codigo_barras=codigo_barras, usuario_id=usuario_id).first()
+            existente = Alimento.query.first()
             if existente:
                 return jsonify({
                     'error': f'Ya existe un producto con el código "{codigo_barras}"',
@@ -224,7 +220,7 @@ def crear_alimento():
             return cast(v) if v else default
 
         alimento = Alimento(
-            usuario_id=usuario_id,
+            ,
             nombre=data.get('nombre'),
             marca=marca,
             descripcion=data.get('descripcion', ''),
@@ -274,8 +270,7 @@ def crear_alimento():
 @jwt_required()
 def actualizar_alimento(id):
     try:
-        usuario_id = int(get_jwt_identity())
-        alimento = Alimento.query.filter_by(id=id, usuario_id=usuario_id).first()
+        alimento = Alimento.query.first()
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
@@ -323,8 +318,7 @@ def actualizar_alimento(id):
 @jwt_required()
 def eliminar_alimento(id):
     try:
-        usuario_id = int(get_jwt_identity())
-        alimento = Alimento.query.filter_by(id=id, usuario_id=usuario_id).first()
+        alimento = Alimento.query.first()
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
         db.session.delete(alimento)
@@ -340,8 +334,7 @@ def eliminar_alimento(id):
 def toggle_favorito(id):
     """Marca/desmarca un alimento como favorito"""
     try:
-        usuario_id = int(get_jwt_identity())
-        alimento = Alimento.query.filter_by(id=id, usuario_id=usuario_id).first()
+        alimento = Alimento.query.first()
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
@@ -362,8 +355,7 @@ def toggle_favorito(id):
 def obtener_favoritos():
     """Obtiene solo los alimentos marcados como favoritos"""
     try:
-        usuario_id = int(get_jwt_identity())
-        favoritos = Alimento.query.filter_by(favorito=True, usuario_id=usuario_id).all()
+        favoritos = Alimento.query.all()
         return jsonify([a.to_dict() for a in favoritos]), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -374,8 +366,7 @@ def obtener_favoritos():
 def actualizar_codigo_barras(id):
     """Actualiza solo el código de barras de un alimento"""
     try:
-        usuario_id = int(get_jwt_identity())
-        alimento = Alimento.query.filter_by(id=id, usuario_id=usuario_id).first()
+        alimento = Alimento.query.first()
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
@@ -386,7 +377,7 @@ def actualizar_codigo_barras(id):
             return jsonify({'error': 'Código de barras es requerido'}), 400
 
         # Verificar que no existe otro producto con este código
-        existente = Alimento.query.filter_by(codigo_barras=codigo_barras, usuario_id=usuario_id).first()
+        existente = Alimento.query.first()
         if existente and existente.id != id:
             return jsonify({
                 'error': f'Ya existe un producto con este código',
@@ -411,8 +402,7 @@ def actualizar_codigo_barras(id):
 def actualizar_alergenos(id):
     """Actualiza los alergenos y categorías asociados a los ingredientes de un alimento"""
     try:
-        usuario_id = int(get_jwt_identity())
-        alimento = Alimento.query.filter_by(id=id, usuario_id=usuario_id).first()
+        alimento = Alimento.query.first()
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
