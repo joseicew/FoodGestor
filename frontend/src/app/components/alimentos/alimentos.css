@@ -14,47 +14,47 @@
 /* .obligatorio → global styles.css */
 /* @keyframes spin → global styles.css (was: girar) */
 
+
 @media (min-width: 768px) {
   .tabs { margin-bottom: 14px; }
 }
 
-/* ── Sección OCR ── */
-.ocr-section {
-  padding: 12px 16px;
-  background: linear-gradient(135deg, var(--primary-light) 0%, rgba(164, 198, 57, 0.05) 100%);
+/* ── Sección OCR Superior ── */
+.ocr-top-section {
   display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+  padding: 12px 0;
 }
 
-.btn-ocr {
-  padding: 10px 16px;
+.ocr-top-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
+  padding: 10px 16px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  flex-shrink: 0;
+  user-select: none;
+  line-height: 1;
 }
 
-.btn-ocr:hover:not(:disabled) {
+.ocr-top-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(164, 198, 57, 0.4);
 }
 
-.btn-ocr:disabled {
-  opacity: 0.6;
+.ocr-top-button:disabled,
+.ocr-top-button.scanning {
+  opacity: 0.7;
   cursor: not-allowed;
 }
+
 
 /* ── Auto-save status ── */
 .auto-save-status {
@@ -110,6 +110,29 @@
 
 .btn-scan:hover { opacity: 1; }
 .btn-scan.scanning { opacity: 0.5; cursor: not-allowed; }
+
+/* OCR Carga Completa - Icono de cámara inline */
+.btn-scan-ocr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  user-select: none;
+  opacity: 0.7;
+  padding: 0;
+  transition: opacity 0.2s;
+}
+
+.btn-scan-ocr:hover { opacity: 1; }
+.btn-scan-ocr.scanning { opacity: 0.5; cursor: not-allowed; }
 
 /* Spinner OCR inline (blue) */
 .spinner-sm {

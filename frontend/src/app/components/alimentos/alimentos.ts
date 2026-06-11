@@ -137,10 +137,9 @@ export class Alimentos implements OnInit {
 
   secciones = { macros: true, minerales: false, clasificacion: true };
 
-  // OCR Modal
-  mostrarModalOCR = false;
+  // OCR Carga Completa
   cargandoOCR = false;
-  datosExtraidosOCR: any = null;
+  ocrCompletaEstado: OcrEstado = 'idle';
 
   // Configuración de OCR
   usarOcrAsincrono = true; // Cambiar a false para usar OCR síncrono
@@ -1625,46 +1624,42 @@ export class Alimentos implements OnInit {
     setTimeout(() => this.mensaje = '', 4000);
   }
 
-  abrirModalOCR() {
-    this.mostrarModalOCR = true;
-  }
-
-  cerrarModalOCR() {
-    this.mostrarModalOCR = false;
-    this.cargandoOCR = false;
-    this.datosExtraidosOCR = null;
-  }
-
   async procesarImagenOCR(event: any) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    this.cargandoOCR = true;
+    this.ocrCompletaEstado = 'idle';
+    this.cdr.detectChanges();
+    await this.esperar(100);
+    this.ocrCompletaEstado = 'preparando';
+
+    await this.esperar(300);
+    this.ocrCompletaEstado = 'analizando';
+
     try {
-      const datos = await this.aiVisionService.procesarImagenCompleta(file);
-      this.datosExtraidosOCR = datos;
-      this.rellenarFormularioConOCR(datos);
-      this.mostrarMensaje('✓ Datos extraídos correctamente', 'exito');
+      const datos = await this.aiVision.procesarImagenCompleta(file);
+      if (datos.nombre) this.nuevoAlimento.nombre = datos.nombre;
+      if (datos.marca) this.nuevoAlimento.marca = datos.marca;
+      if (datos.codigo_barras) this.nuevoAlimento.codigo_barras = datos.codigo_barras;
+      if (datos.ingredientes) this.ingredientesExtraidos = datos.ingredientes;
+      if (datos.macros) {
+        if (datos.macros.calorias) this.nuevoAlimento.calorias = datos.macros.calorias;
+        if (datos.macros.proteinas) this.nuevoAlimento.proteinas = datos.macros.proteinas;
+        if (datos.macros.hidratos_carbono) this.nuevoAlimento.hidratos_carbono = datos.macros.hidratos_carbono;
+        if (datos.macros.azucares) this.nuevoAlimento.azucares = datos.macros.azucares;
+        if (datos.macros.grasas) this.nuevoAlimento.grasas = datos.macros.grasas;
+      }
+      this.mostrarMensaje('✓ Datos cargados correctamente', 'exito');
+      this.ocrCompletaEstado = 'listo';
+      await this.esperar(1500);
+      this.ocrCompletaEstado = 'idle';
     } catch (error) {
       this.mostrarMensaje('Error al procesar imagen: ' + this.mensajeOcr(error), 'error');
+      this.ocrCompletaEstado = 'error';
+      await this.esperar(1500);
+      this.ocrCompletaEstado = 'idle';
     } finally {
-      this.cargandoOCR = false;
+      this.resetearInputsFichero();
     }
-  }
-
-  rellenarFormularioConOCR(datos: any) {
-    if (datos.nombre) this.nombre = datos.nombre;
-    if (datos.marca) this.marca = datos.marca;
-    if (datos.codigo_barras) this.codigoBarras = datos.codigo_barras;
-    if (datos.ingredientes) this.ingredientesExtraidos = datos.ingredientes;
-    if (datos.macros) {
-      if (datos.macros.calorias) this.calorias = datos.macros.calorias;
-      if (datos.macros.proteinas) this.proteinas = datos.macros.proteinas;
-      if (datos.macros.hidratos_carbono) this.hidratosCarbono = datos.macros.hidratos_carbono;
-      if (datos.macros.azucares) this.azucares = datos.macros.azucares;
-      if (datos.macros.grasas) this.grasas = datos.macros.grasas;
-    }
-    this.cambiarPanel('anadir');
-    this.cerrarModalOCR();
   }
 }
