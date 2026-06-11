@@ -80,6 +80,7 @@
   border: 2px solid #e0e0e0;
   transition: border-color 0.2s, background 0.2s, box-shadow 0.3s;
   color: #000;
+  background: #fff;
 }
 
 /* ── Código de barras ── */
