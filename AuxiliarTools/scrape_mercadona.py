@@ -327,6 +327,18 @@ def procesar_producto(datos_api):
     marca = datos_api.get('marca', 'Sin marca')
     ean = datos_api.get('ean', '')
 
+    # Intentar extraer categoría del API
+    categoria = 'Otros'
+    if 'categories' in datos_completos and datos_completos['categories']:
+        # Mercadona devuelve array de categorías, usar la última (más específica)
+        categorias = datos_completos['categories']
+        if isinstance(categorias, list) and len(categorias) > 0:
+            categoria = categorias[-1].get('name', 'Otros') if isinstance(categorias[-1], dict) else str(categorias[-1])
+    elif 'category' in datos_completos:
+        # Alternativa: single category field
+        cat = datos_completos['category']
+        categoria = cat.get('name', 'Otros') if isinstance(cat, dict) else str(cat)
+
     # Limpiar nombre removiendo la marca
     display_name = limpiar_nombre_producto(display_name, marca)
 
@@ -407,7 +419,8 @@ def procesar_producto(datos_api):
             'marca': marca,
             'ean': ean,
             'ingredientes': ingredientes,
-            'macros': macros
+            'macros': macros,
+            'categoria': categoria
         }
     else:
         print(f"    [SKIP] No se encontraron macros (OCR ni API)")
@@ -423,12 +436,13 @@ def guardar_en_bd(datos_ocr):
             # Usar nombre del OCR si existe, sino usar nombre de API
             nombre = datos_ocr.get('nombre') or datos_ocr.get('nombre_api', 'Sin nombre')
             marca = datos_ocr.get('marca') or 'Sin marca'
+            categoria = datos_ocr.get('categoria', 'Otros')
 
             alimento = Alimento(
                 nombre=nombre,
                 marca=marca,
                 codigo_barras=datos_ocr.get('ean') or datos_ocr.get('codigo_barras'),
-                categoria='Otros',
+                categoria=categoria,
                 calorias=datos_ocr.get('macros', {}).get('calorias'),
                 proteinas=datos_ocr.get('macros', {}).get('proteinas'),
                 grasas=datos_ocr.get('macros', {}).get('grasas'),

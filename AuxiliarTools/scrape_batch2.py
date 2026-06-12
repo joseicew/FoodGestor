@@ -357,6 +357,16 @@ def procesar_producto(datos_api):
     marca = datos_api.get('marca', 'Sin marca')
     ean = datos_api.get('ean', '')
 
+    # Intentar extraer categoría del API
+    categoria = 'Otros'
+    if 'categories' in datos_completos and datos_completos['categories']:
+        categorias = datos_completos['categories']
+        if isinstance(categorias, list) and len(categorias) > 0:
+            categoria = categorias[-1].get('name', 'Otros') if isinstance(categorias[-1], dict) else str(categorias[-1])
+    elif 'category' in datos_completos:
+        cat = datos_completos['category']
+        categoria = cat.get('name', 'Otros') if isinstance(cat, dict) else str(cat)
+
     # Limpiar nombre removiendo la marca
     display_name = limpiar_nombre_producto(display_name, marca)
     ingredientes = []
@@ -413,7 +423,7 @@ def procesar_producto(datos_api):
                 }
     if macros:
         print(f"    [SAVE] {display_name[:40]}")
-        return {'nombre': display_name, 'marca': marca, 'ean': ean, 'ingredientes': ingredientes, 'macros': macros}
+        return {'nombre': display_name, 'marca': marca, 'ean': ean, 'ingredientes': ingredientes, 'macros': macros, 'categoria': categoria}
     return None
 
 def guardar_en_bd(datos):
@@ -422,11 +432,12 @@ def guardar_en_bd(datos):
             from app.models import Ingrediente
 
             marca = datos.get('marca') or 'Sin marca'
+            categoria = datos.get('categoria', 'Otros')
             alimento = Alimento(
                 nombre=datos.get('nombre'),
                 marca=marca,
                 codigo_barras=datos.get('ean'),
-                categoria='Otros',
+                categoria=categoria,
                 calorias=datos.get('macros', {}).get('calorias'),
                 proteinas=datos.get('macros', {}).get('proteinas'),
                 grasas=datos.get('macros', {}).get('grasas'),
