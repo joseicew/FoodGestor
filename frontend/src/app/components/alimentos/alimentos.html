@@ -23,13 +23,7 @@
               </div>
               <div class="info-item">
                 <span class="info-label">Categoría</span>
-                <select [(ngModel)]="alimentoSeleccionadoDetalle.categoria"
-                        style="border: 1px solid #ddd; padding: 4px 8px; border-radius: 4px; font-size: 13px; background: white; cursor: pointer;">
-                  <option value="">-- Seleccionar --</option>
-                  @for (cat of categorias; track cat) {
-                    <option [value]="cat">{{ cat }}</option>
-                  }
-                </select>
+                <span class="info-valor">{{ alimentoSeleccionadoDetalle.categoria }}</span>
               </div>
               @if (alimentoSeleccionadoDetalle.codigo_barras) {
                 <div class="info-item">
@@ -63,56 +57,56 @@
               <h3 style="margin: 0; display: inline;">📊 Macronutrientes (por 100g)</h3>
             </div>
             <div class="macros-grid">
-              @if (alimentoSeleccionadoDetalle.calorias) {
+              @if (alimentoSeleccionadoDetalle.calorias != null && alimentoSeleccionadoDetalle.calorias !== '') {
                 <div class="macro-item">
                   <span class="macro-icon">🔥</span>
                   <span class="macro-label">Calorías</span>
                   <span class="macro-valor">{{ alimentoSeleccionadoDetalle.calorias }} kcal</span>
                 </div>
               }
-              @if (alimentoSeleccionadoDetalle.proteinas) {
+              @if (alimentoSeleccionadoDetalle.proteinas != null && alimentoSeleccionadoDetalle.proteinas !== '') {
                 <div class="macro-item">
                   <span class="macro-icon">💪</span>
                   <span class="macro-label">Proteínas</span>
                   <span class="macro-valor">{{ alimentoSeleccionadoDetalle.proteinas }}g</span>
                 </div>
               }
-              @if (alimentoSeleccionadoDetalle.hidratos_carbono) {
+              @if (alimentoSeleccionadoDetalle.hidratos_carbono != null && alimentoSeleccionadoDetalle.hidratos_carbono !== '') {
                 <div class="macro-item">
                   <span class="macro-icon">🌾</span>
                   <span class="macro-label">Carbohidratos</span>
                   <span class="macro-valor">{{ alimentoSeleccionadoDetalle.hidratos_carbono }}g</span>
                 </div>
               }
-              @if (alimentoSeleccionadoDetalle.grasas) {
+              @if (alimentoSeleccionadoDetalle.grasas != null && alimentoSeleccionadoDetalle.grasas !== '') {
                 <div class="macro-item">
                   <span class="macro-icon">🧈</span>
                   <span class="macro-label">Grasas</span>
                   <span class="macro-valor">{{ alimentoSeleccionadoDetalle.grasas }}g</span>
                 </div>
               }
-              @if (alimentoSeleccionadoDetalle.grasas_saturadas) {
+              @if (alimentoSeleccionadoDetalle.grasas_saturadas != null && alimentoSeleccionadoDetalle.grasas_saturadas !== '') {
                 <div class="macro-item">
                   <span class="macro-icon">🔗</span>
                   <span class="macro-label">Grasas Sat.</span>
                   <span class="macro-valor">{{ alimentoSeleccionadoDetalle.grasas_saturadas }}g</span>
                 </div>
               }
-              @if (alimentoSeleccionadoDetalle.azucares) {
+              @if (alimentoSeleccionadoDetalle.azucares != null && alimentoSeleccionadoDetalle.azucares !== '') {
                 <div class="macro-item">
                   <span class="macro-icon">🍬</span>
                   <span class="macro-label">Azúcares</span>
                   <span class="macro-valor">{{ alimentoSeleccionadoDetalle.azucares }}g</span>
                 </div>
               }
-              @if (alimentoSeleccionadoDetalle.fibra) {
+              @if (alimentoSeleccionadoDetalle.fibra != null && alimentoSeleccionadoDetalle.fibra !== '') {
                 <div class="macro-item">
                   <span class="macro-icon">🌿</span>
                   <span class="macro-label">Fibra</span>
                   <span class="macro-valor">{{ alimentoSeleccionadoDetalle.fibra }}g</span>
                 </div>
               }
-              @if (alimentoSeleccionadoDetalle.sal) {
+              @if (alimentoSeleccionadoDetalle.sal != null && alimentoSeleccionadoDetalle.sal !== '') {
                 <div class="macro-item">
                   <span class="macro-icon">🧂</span>
                   <span class="macro-label">Sal</span>
