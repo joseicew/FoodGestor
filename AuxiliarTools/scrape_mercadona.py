@@ -58,6 +58,43 @@ def limpiar_html(texto):
     texto = texto.strip()
     return texto
 
+def procesar_ingredientes(texto):
+    """Procesa lista de ingredientes con separadores inteligentes."""
+    if not texto:
+        return []
+
+    # Primero, manejar casos especiales con paréntesis que contienen aditivos (E-xxx)
+    # Ej: "Estabilizantes (E-407, E-415)" -> "Estabilizantes E-407", "Estabilizantes E-415"
+    def expandir_aditivos(match):
+        base = match.group(1).strip()
+        contenido = match.group(2).strip()
+
+        # Si contiene códigos E-xxx, son aditivos separados
+        if re.search(r'E-?\d{3,4}', contenido):
+            # Dividir aditivos por coma
+            aditivos = [a.strip() for a in contenido.split(',')]
+            # Retornar como "Base E-407, Base E-415"
+            return ', '.join([f"{base} {a}" for a in aditivos])
+        # Si no, es información adicional (porcentaje, cantidad) -> eliminar
+        return base
+
+    # Reemplazar paréntesis inteligentemente
+    texto = re.sub(r'([^()]+)\(([^)]*)\)', expandir_aditivos, texto)
+
+    # Dividir por separadores: comas, puntos, "y"
+    # Reemplazar puntos seguidos de espacio por coma
+    texto = texto.replace('. ', ',')
+    # Reemplazar " y " por coma
+    texto = re.sub(r'\s+y\s+', ',', texto, flags=re.IGNORECASE)
+
+    # Dividir y limpiar
+    ingredientes = [
+        i.strip() for i in texto.split(',')
+        if i.strip() and len(i.strip()) > 2
+    ]
+
+    return ingredientes
+
 def esperar_entre_requests():
     """Espera entre requests con delay aleatorio para evitar detección."""
     # Delay base + delay aleatorio entre 1-3 segundos
@@ -220,14 +257,8 @@ def procesar_producto(datos_api):
         if ingredients_text:
             # Limpiar HTML
             ingredients_text = limpiar_html(ingredients_text)
-            # Dividir por comas y puntos seguido de espacio para separar ingredientes complejos
-            # Ej: "Leche (80%), azúcar, sal. Estabilizantes (E-415)" -> separa por . también
-            ingredientes_raw = ingredients_text.replace('. ', ',').split(',')
-            # Limpiar y filtrar ingredientes
-            ingredientes = [
-                i.strip() for i in ingredientes_raw
-                if i.strip() and len(i.strip()) > 2  # Filtrar muy cortos
-            ]
+            # Procesar con lógica inteligente de separadores
+            ingredientes = procesar_ingredientes(ingredients_text)
 
     # Intentar extraer SOLO MACROS del OCR en imágenes
     imagen_urls = datos_api.get('imagen_urls', [])

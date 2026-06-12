@@ -1,0 +1,16 @@
+{
+  "fallos": [
+    {
+      "product_id": "10146",
+      "nombre": "Bebida Lactea Omega 3 Puleva Con Leche Desnatada Pack 6",
+      "motivo": "OCR sin datos o macros incompletas",
+      "timestamp": "2026-06-12T10:22:22.776175"
+    },
+    {
+      "product_id": "10320",
+      "nombre": "Nata Ligera Cocinar Sin Lactosa Hacendado Pack 3",
+      "motivo": "OCR sin datos o macros incompletas",
+      "timestamp": "2026-06-12T10:23:21.134101"
+    }
+  ]
+}

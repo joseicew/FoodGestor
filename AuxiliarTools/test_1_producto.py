@@ -42,6 +42,43 @@ def limpiar_html(texto):
     texto = texto.replace('&oacute;', 'ó').replace('&uacute;', 'ú').replace('&ntilde;', 'ñ')
     return texto.strip()
 
+def procesar_ingredientes(texto):
+    """Procesa lista de ingredientes con separadores inteligentes."""
+    if not texto:
+        return []
+
+    # Primero, manejar casos especiales con paréntesis que contienen aditivos (E-xxx)
+    # Ej: "Estabilizantes (E-407, E-415)" -> "Estabilizantes E-407", "Estabilizantes E-415"
+    def expandir_aditivos(match):
+        base = match.group(1).strip()
+        contenido = match.group(2).strip()
+
+        # Si contiene códigos E-xxx, son aditivos separados
+        if re.search(r'E-?\d{3,4}', contenido):
+            # Dividir aditivos por coma
+            aditivos = [a.strip() for a in contenido.split(',')]
+            # Retornar como "Base E-407, Base E-415"
+            return ', '.join([f"{base} {a}" for a in aditivos])
+        # Si no, es información adicional (porcentaje, cantidad) -> eliminar
+        return base
+
+    # Reemplazar paréntesis inteligentemente
+    texto = re.sub(r'([^()]+)\(([^)]*)\)', expandir_aditivos, texto)
+
+    # Dividir por separadores: comas, puntos, "y"
+    # Reemplazar puntos seguidos de espacio por coma
+    texto = texto.replace('. ', ',')
+    # Reemplazar " y " por coma
+    texto = re.sub(r'\s+y\s+', ',', texto, flags=re.IGNORECASE)
+
+    # Dividir y limpiar
+    ingredientes = [
+        i.strip() for i in texto.split(',')
+        if i.strip() and len(i.strip()) > 2
+    ]
+
+    return ingredientes
+
 def descargar_sitemap():
     print("[*] Descargando sitemap...")
     try:
@@ -127,10 +164,8 @@ def procesar_producto(datos_api):
         ingredients_text = nutrition_info.get('ingredients', '')
         if ingredients_text:
             ingredients_text = limpiar_html(ingredients_text)
-            # Dividir por comas y puntos
-            ingredientes_raw = ingredients_text.replace('. ', ',').split(',')
-            # Filtrar ingredientes
-            ingredientes = [i.strip() for i in ingredientes_raw if i.strip() and len(i.strip()) > 2]
+            # Procesar con lógica inteligente de separadores
+            ingredientes = procesar_ingredientes(ingredients_text)
 
     print(f"    Ingredientes extraidos: {len(ingredientes)}")
     if ingredientes:
