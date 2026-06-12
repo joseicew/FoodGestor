@@ -129,8 +129,8 @@ def procesar_ingredientes(texto):
                     if re.search(r'E-?\d{3,4}', contenido):
                         reemplazo = contenido
                     else:
-                        # Información adicional (%, origen) -> eliminar paréntesis
-                        reemplazo = ''
+                        # Información adicional (%, origen) -> eliminar paréntesis pero PRESERVAR base
+                        reemplazo = base
 
                 ing = ing[:match.start()] + reemplazo + ing[match.end():]
 
