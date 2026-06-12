@@ -253,7 +253,9 @@
       "Bash(curl -s \"https://tienda.mercadona.es/api/products/4717/?lang=es&wh=alc1\")",
       "Bash(python remove_usuario_id_from_alimento.py)",
       "Bash(python update_ean_from_api.py)",
-      "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"test123\"}')"
+      "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"test123\"}')",
+      "Bash(python scrape_batch2.py)",
+      "Bash(python retry_fallos.py)"
     ]
   }
 }
