@@ -125,6 +125,11 @@ def procesar_ingredientes(texto):
         # Limpiar espacios extras
         ing_procesado = re.sub(r'\s+', ' ', ing_procesado)
 
+        # Filtrar información que no es ingrediente
+        # Patrones a ignorar: "Origen de:", "Fabricado en:", "Producido en:", etc.
+        if re.match(r'(origen|fabricado|producido|hecho|procedencia|procedente)\s+(de|en):', ing_procesado, re.IGNORECASE):
+            continue
+
         # Si tiene múltiples ingredientes separados por " y ", dividirlos
         if ' y ' in ing_procesado.lower():
             subingredientes = re.split(r'\s+y\s+', ing_procesado, flags=re.IGNORECASE)
@@ -132,6 +137,9 @@ def procesar_ingredientes(texto):
                 sub = sub.strip()
                 # Limpiar caracteres especiales finales
                 sub = re.sub(r'[.,;:\s]+$', '', sub)
+                # Filtrar información (origen, fabricado, etc.)
+                if re.match(r'(origen|fabricado|producido|hecho|procedencia|procedente)\s+(de|en):', sub, re.IGNORECASE):
+                    continue
                 if sub and len(sub) > 2:
                     ingredientes.append(sub)
         elif ing_procesado and len(ing_procesado) > 2:
