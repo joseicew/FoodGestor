@@ -11,7 +11,9 @@ import xml.etree.ElementTree as ET
 import time
 import re
 import random
+import json
 from pathlib import Path
+from datetime import datetime
 
 # Cargar .env
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -53,6 +55,33 @@ def esperar_entre_requests():
     print(f"    [WAIT] {delay_total:.1f}s...", end='', flush=True)
     time.sleep(delay_total)
     print(" OK")
+
+def cargar_fallos_previos():
+    """Carga fallos de intentos anteriores."""
+    archivo_fallos = 'scrape_fallos.json'
+    if os.path.exists(archivo_fallos):
+        try:
+            with open(archivo_fallos, 'r') as f:
+                return json.load(f)
+        except:
+            return {'fallos': []}
+    return {'fallos': []}
+
+def guardar_fallos(fallos):
+    """Guarda fallos para intentar después."""
+    archivo_fallos = 'scrape_fallos.json'
+    with open(archivo_fallos, 'w') as f:
+        json.dump(fallos, f, indent=2)
+    print(f"\n[FALLOS] Guardados {len(fallos['fallos'])} fallos en {archivo_fallos}")
+
+def registrar_fallo(product_id, nombre, motivo):
+    """Registra un producto que falló para reintentar después."""
+    return {
+        'product_id': product_id,
+        'nombre': nombre,
+        'motivo': motivo,
+        'timestamp': datetime.now().isoformat()
+    }
 
 def descargar_sitemap():
     """Descarga y parsea el sitemap para obtener IDs de productos."""
@@ -288,6 +317,8 @@ def main():
         'ya_existentes': 0
     }
 
+    fallos = {'fallos': []}
+
     for i, product_id in enumerate(ids, 1):
         print(f"[{i}/{len(ids)}]", end=" ")
 
@@ -296,8 +327,11 @@ def main():
         if not datos_api:
             print(f"[SKIP] No se obtuvieron datos de API")
             contadores['errores'] += 1
+            fallos['fallos'].append(registrar_fallo(product_id, 'Desconocido', 'No se obtuvieron datos de API'))
             esperar_entre_requests()
             continue
+
+        nombre_producto = datos_api.get('nombre', 'Desconocido')
 
         # Verificar si el producto ya existe
         if datos_api.get('ean') and producto_ya_existe(datos_api['ean']):
@@ -315,8 +349,12 @@ def main():
             alimento = guardar_en_bd(datos)
             if alimento:
                 contadores['en_bd'] += 1
+            else:
+                contadores['errores'] += 1
+                fallos['fallos'].append(registrar_fallo(product_id, nombre_producto, 'Error al guardar en BD'))
         else:
             contadores['errores'] += 1
+            fallos['fallos'].append(registrar_fallo(product_id, nombre_producto, 'OCR sin datos o macros incompletas'))
 
         esperar_entre_requests()
 
@@ -330,6 +368,10 @@ def main():
     print(f"Guardados en BD: {contadores['en_bd']}")
     print(f"Errores: {contadores['errores']}")
     print("=" * 60)
+
+    # Guardar fallos para intentar después
+    if fallos['fallos']:
+        guardar_fallos(fallos)
 
 if __name__ == '__main__':
     main()
