@@ -10,6 +10,7 @@ import requests
 import xml.etree.ElementTree as ET
 import time
 import re
+import random
 from pathlib import Path
 
 # Cargar .env
@@ -29,14 +30,36 @@ app = create_app()
 
 MERCADONA_SITEMAP = "https://tienda.mercadona.es/sitemap.xml"
 MERCADONA_API = "https://tienda.mercadona.es/api/products/{id}/?lang=es&wh=alc1"
-MAX_PRODUCTOS = 20
-DELAY_SEGUNDOS = 0.5
+MAX_PRODUCTOS = 200  # Aumentado a 200
+DELAY_SEGUNDOS = 3  # Mínimo de 3 segundos entre requests
+
+# User-agents variados para parecer navegadores reales
+USER_AGENTS = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+]
+
+def obtener_user_agent():
+    """Retorna un user-agent aleatorio."""
+    return random.choice(USER_AGENTS)
+
+def esperar_entre_requests():
+    """Espera entre requests con delay aleatorio para evitar detección."""
+    # Delay base + delay aleatorio entre 1-3 segundos
+    delay_total = DELAY_SEGUNDOS + random.uniform(1, 3)
+    print(f"    [WAIT] {delay_total:.1f}s...", end='', flush=True)
+    time.sleep(delay_total)
+    print(" OK")
 
 def descargar_sitemap():
     """Descarga y parsea el sitemap para obtener IDs de productos."""
     print("[*] Descargando sitemap...")
     try:
-        response = requests.get(MERCADONA_SITEMAP, timeout=10)
+        headers = {'User-Agent': obtener_user_agent()}
+        response = requests.get(MERCADONA_SITEMAP, timeout=15, headers=headers)
         response.raise_for_status()
 
         root = ET.fromstring(response.content)
@@ -73,8 +96,9 @@ def producto_ya_existe(ean):
 def obtener_datos_producto(product_id):
     """Obtiene datos del producto desde la API de Mercadona."""
     try:
+        headers = {'User-Agent': obtener_user_agent()}
         url = MERCADONA_API.format(id=product_id)
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=15, headers=headers)
         response.raise_for_status()
 
         data = response.json()
@@ -110,7 +134,8 @@ def obtener_datos_producto(product_id):
 def descargar_imagen(url_imagen):
     """Descarga una imagen y la retorna como bytes."""
     try:
-        response = requests.get(url_imagen, timeout=10)
+        headers = {'User-Agent': obtener_user_agent()}
+        response = requests.get(url_imagen, timeout=15, headers=headers)
         response.raise_for_status()
         return response.content
     except Exception as e:
@@ -271,14 +296,14 @@ def main():
         if not datos_api:
             print(f"[SKIP] No se obtuvieron datos de API")
             contadores['errores'] += 1
-            time.sleep(DELAY_SEGUNDOS)
+            esperar_entre_requests()
             continue
 
         # Verificar si el producto ya existe
         if datos_api.get('ean') and producto_ya_existe(datos_api['ean']):
             print(f"[SKIP] Producto ya existe (EAN: {datos_api['ean']})")
             contadores['ya_existentes'] += 1
-            time.sleep(DELAY_SEGUNDOS)
+            esperar_entre_requests()
             continue
 
         # Procesar producto (descargar imagen y OCR)
@@ -293,7 +318,7 @@ def main():
         else:
             contadores['errores'] += 1
 
-        time.sleep(DELAY_SEGUNDOS)
+        esperar_entre_requests()
 
     print("\n" + "=" * 60)
     print("[RESUMEN]")
