@@ -236,7 +236,7 @@ def procesar_ingredientes(texto):
 
         # Remover información de origen/fabricación si está después de un punto
         # Ej: "lactasa. Origen de la leche: España" → "lactasa"
-        ing_procesado = re.sub(r'\.?\s*(origen|fabricado|producido|hecho|procedencia|procedente)\s+(de|en):.*$', '', ing_procesado, flags=re.IGNORECASE).strip()
+        ing_procesado = re.sub(r'\.?\s*(origen|fabricado|producido|hecho|procedencia|procedente).*?:.*$', '', ing_procesado, flags=re.IGNORECASE).strip()
 
         # Filtrar información que no es ingrediente
         # Patrones a ignorar: "Origen de:", "Fabricado en:", "Producido en:", etc.
