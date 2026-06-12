@@ -262,22 +262,15 @@ def procesar_macros(image_data: bytes, content_type: str) -> dict:
 
 def procesar_datos_completos(image_data: bytes, content_type: str) -> dict:
     """
-    Procesa una imagen de producto (etiqueta completa) y extrae:
-    - nombre del producto
-    - marca
-    - código de barras (EAN)
-    - ingredientes
-    - macronutrientes
-
-    Usa enfoque multi-paso: intenta extraer todo, luego macros por separado si falla.
+    Procesa una imagen de producto y extrae SOLO las macronutrientes.
+    El resto de datos (nombre, marca, ingredientes) deben venir de la API.
     """
     client = _cliente()
     image_b64 = base64.standard_b64encode(image_data).decode('utf-8')
 
-    # PASO 1: Intenta extraer todo de una vez
     message = client.messages.create(
         model='claude-haiku-4-5-20251001',
-        max_tokens=2048,
+        max_tokens=512,
         messages=[{
             'role': 'user',
             'content': [
@@ -292,31 +285,23 @@ def procesar_datos_completos(image_data: bytes, content_type: str) -> dict:
                 {
                     'type': 'text',
                     'text': (
-                        'ANALIZA CON CUIDADO esta etiqueta de producto alimenticio.\n'
-                        'Busca la TABLA DE INFORMACIÓN NUTRICIONAL y extrae estos datos:\n'
+                        'BUSCA LA TABLA DE INFORMACIÓN NUTRICIONAL en esta imagen.\n'
+                        'Extrae LOS VALORES POR 100g (o 100ml si es bebida):\n'
                         '{\n'
-                        '  "nombre": "nombre exacto del producto (lee de la etiqueta)",\n'
-                        '  "marca": "marca del producto",\n'
-                        '  "codigo_barras": "código EAN (números sin espacios, típicamente 13 dígitos)",\n'
-                        '  "ingredientes": ["ingrediente1", "ingrediente2", ...],\n'
-                        '  "macros": {\n'
-                        '    "calorias": número_exacto_por_100g,\n'
-                        '    "proteinas": número_exacto_por_100g,\n'
-                        '    "hidratos_carbono": número_exacto_por_100g,\n'
-                        '    "azucares": número_exacto_por_100g,\n'
-                        '    "grasas": número_exacto_por_100g,\n'
-                        '    "grasas_saturadas": número_exacto_por_100g,\n'
-                        '    "fibra": número_exacto_por_100g,\n'
-                        '    "sal": número_exacto_por_100g\n'
-                        '  }\n'
+                        '  "calorias": número,\n'
+                        '  "proteinas": número,\n'
+                        '  "hidratos_carbono": número,\n'
+                        '  "grasas": número,\n'
+                        '  "azucares": número,\n'
+                        '  "grasas_saturadas": número,\n'
+                        '  "fibra": número,\n'
+                        '  "sal": número\n'
                         '}\n\n'
-                        'INSTRUCCIONES:\n'
-                        '- BUSCA LA TABLA DE INFORMACIÓN NUTRICIONAL (normalmente en parte inferior o reverso)\n'
-                        '- Lee los valores EXACTOS de la tabla\n'
-                        '- Para calorias, usa kcal (o kJ / 4.184)\n'
-                        '- Si no encuentras un valor, usa null\n'
-                        '- El código de barras: solo dígitos, sin espacios\n'
-                        '- Responde ÚNICAMENTE con JSON válido, sin explicaciones\n'
+                        'REGLAS:\n'
+                        '- Lee valores EXACTOS de la tabla visible\n'
+                        '- Para energía: si está en kJ, convierte a kcal (kJ / 4.184)\n'
+                        '- Si no ves un valor en la tabla, usa null\n'
+                        '- SOLO JSON, sin texto adicional\n'
                     )
                 }
             ]
@@ -324,54 +309,7 @@ def procesar_datos_completos(image_data: bytes, content_type: str) -> dict:
     )
 
     try:
-        datos = _extraer_json(message.content[0].text.strip(), 'object')
-
-        # Si tiene macros válidos, retorna
-        macros = datos.get('macros', {})
-        if macros.get('calorias') or macros.get('proteinas') or macros.get('grasas'):
-            return datos
-    except Exception:
-        pass
-
-    # PASO 2: Si no extrajo macros, intenta extraer solo macros por separado
-    try:
-        macros = procesar_macros(image_data, content_type)
-
-        # Extrae otros datos sin macros
-        message2 = client.messages.create(
-            model='claude-haiku-4-5-20251001',
-            max_tokens=512,
-            messages=[{
-                'role': 'user',
-                'content': [
-                    {
-                        'type': 'image',
-                        'source': {
-                            'type': 'base64',
-                            'media_type': content_type,
-                            'data': image_b64
-                        }
-                    },
-                    {
-                        'type': 'text',
-                        'text': (
-                            'Extrae solo estos datos (SIN información nutricional):\n'
-                            '{\n'
-                            '  "nombre": "nombre del producto",\n'
-                            '  "marca": "marca",\n'
-                            '  "codigo_barras": "EAN en números",\n'
-                            '  "ingredientes": ["ingrediente1", ...]\n'
-                            '}\n'
-                            'Solo JSON, sin explicaciones.\n'
-                        )
-                    }
-                ]
-            }]
-        )
-
-        otros_datos = _extraer_json(message2.content[0].text.strip(), 'object')
-        otros_datos['macros'] = macros
-        return otros_datos
-
+        macros = _extraer_json(message.content[0].text.strip(), 'object')
+        return {'macros': macros}
     except Exception as e:
-        raise ValueError(f'Error al procesar datos completos: {str(e)}')
+        raise ValueError(f'Error al extraer macros: {str(e)}')
