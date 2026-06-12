@@ -104,7 +104,10 @@ def procesar_producto(datos_api):
         ingredients_text = nutrition_info.get('ingredients', '')
         if ingredients_text:
             ingredients_text = limpiar_html(ingredients_text)
-            ingredientes = [i.strip() for i in ingredients_text.split(',') if i.strip()]
+            # Dividir por comas y puntos
+            ingredientes_raw = ingredients_text.replace('. ', ',').split(',')
+            # Filtrar ingredientes
+            ingredientes = [i.strip() for i in ingredientes_raw if i.strip() and len(i.strip()) > 2]
     imagen_urls = datos_api.get('imagen_urls', [])
     macros = None
     if imagen_urls:

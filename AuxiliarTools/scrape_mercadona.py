@@ -199,8 +199,16 @@ def procesar_producto(datos_api):
     if isinstance(nutrition_info, dict):
         ingredients_text = nutrition_info.get('ingredients', '')
         if ingredients_text:
+            # Limpiar HTML
             ingredients_text = limpiar_html(ingredients_text)
-            ingredientes = [i.strip() for i in ingredients_text.split(',') if i.strip()]
+            # Dividir por comas y puntos seguido de espacio para separar ingredientes complejos
+            # Ej: "Leche (80%), azúcar, sal. Estabilizantes (E-415)" -> separa por . también
+            ingredientes_raw = ingredients_text.replace('. ', ',').split(',')
+            # Limpiar y filtrar ingredientes
+            ingredientes = [
+                i.strip() for i in ingredientes_raw
+                if i.strip() and len(i.strip()) > 2  # Filtrar muy cortos
+            ]
 
     # Intentar extraer SOLO MACROS del OCR en imágenes
     imagen_urls = datos_api.get('imagen_urls', [])
