@@ -99,6 +99,7 @@ export class Alimentos implements OnInit {
   ingredienteActualVerificacion: any = null;
   ingredientesAVerificar: any[] = [];
   mostrarAlergenosPopup = false;
+  mostrarDropdownCategoriaInline = false;
   ingredienteMostrandoAlergenos: any = null;
   popoverStyle: any = {};
   categoriasAlimentos: string[] = [
