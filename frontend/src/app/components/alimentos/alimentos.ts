@@ -864,22 +864,34 @@ export class Alimentos implements OnInit {
       this.alimentosService.actualizarAlimento(alimentoId, formData).subscribe({
         next: () => {
           console.log('✅ Categoría guardada:', categoriaActual);
-          // Actualizar en la lista
+          // Actualizar en la lista LOCAL
           const index = this.alimentos.findIndex(a => a.id === alimentoId);
           if (index !== -1) {
             this.alimentos[index].categoria = categoriaActual;
           }
+          // Cerrar después de guardar
+          this.cerrarDetallesAlimentoFinal();
         },
-        error: (err) => console.error('❌ Error al guardar categoría:', err)
+        error: (err) => {
+          console.error('❌ Error al guardar categoría:', err);
+          // Aún así cerrar aunque haya error
+          this.cerrarDetallesAlimentoFinal();
+        }
       });
+    } else {
+      // Si no hay cambios, cerrar directamente
+      this.cerrarDetallesAlimentoFinal();
     }
+  }
 
+  private cerrarDetallesAlimentoFinal() {
     this.mostrarDetallesAlimento = false;
     this.alimentoSeleccionadoDetalle = null;
     this.categoriaOriginal = '';
     this.mostrarBotonesEdicion = false;
     this.mostrarDropdownEdicion = false;
     this.mostrarDropdownMacros = false;
+    this.cdr.markForCheck();
   }
 
   abrirDetallesIngrediente(ingrediente: any) {
