@@ -32,7 +32,7 @@ app = create_app()
 
 MERCADONA_SITEMAP = "https://tienda.mercadona.es/sitemap.xml"
 MERCADONA_API = "https://tienda.mercadona.es/api/products/{id}/?lang=es&wh=alc1"
-MAX_PRODUCTOS = 5  # Pruebas con 5 productos para pulir antes de hacer más
+MAX_PRODUCTOS = 50  # Captura de 50 productos
 DELAY_SEGUNDOS = 3  # Mínimo de 3 segundos entre requests
 
 # User-agents variados para parecer navegadores reales
@@ -314,7 +314,7 @@ def descargar_imagen(url_imagen):
 
 def limpiar_nombre_producto(nombre, marca):
     """Elimina la marca del nombre si está incluida para evitar redundancia."""
-    if not nombre or marca == 'Sin marca':
+    if not nombre or not marca or marca == 'Sin marca':
         return nombre
 
     # Remover marca del nombre (case-insensitive)

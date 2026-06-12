@@ -224,7 +224,7 @@ def producto_ya_existe(ean):
 
 def limpiar_nombre_producto(nombre, marca):
     """Elimina la marca del nombre si está incluida para evitar redundancia."""
-    if not nombre or marca == 'Sin marca':
+    if not nombre or not marca or marca == 'Sin marca':
         return nombre
 
     # Remover marca del nombre (case-insensitive)
