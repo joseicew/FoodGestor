@@ -11,9 +11,20 @@ import json
 from datetime import datetime
 
 from dotenv import load_dotenv
+import re
 basedir = os.path.abspath(os.path.dirname(__file__))
 env_path = os.path.join(basedir, '.env')
 load_dotenv(env_path)
+
+def limpiar_html(texto):
+    """Limpia tags HTML del texto."""
+    if not texto:
+        return ""
+    texto = re.sub(r'<[^>]+>', '', texto)
+    texto = texto.replace('&aacute;', 'á').replace('&eacute;', 'é').replace('&iacute;', 'í')
+    texto = texto.replace('&oacute;', 'ó').replace('&uacute;', 'ú').replace('&ntilde;', 'ñ')
+    texto = texto.strip()
+    return texto
 
 sys.path.insert(0, basedir)
 from app import create_app, db
@@ -92,7 +103,8 @@ def procesar_producto(datos_api):
     if isinstance(nutrition_info, dict):
         ingredients_text = nutrition_info.get('ingredients', '')
         if ingredients_text:
-            ingredientes = [i.strip() for i in ingredients_text.split(',')]
+            ingredients_text = limpiar_html(ingredients_text)
+            ingredientes = [i.strip() for i in ingredients_text.split(',') if i.strip()]
     imagen_urls = datos_api.get('imagen_urls', [])
     macros = None
     if imagen_urls:

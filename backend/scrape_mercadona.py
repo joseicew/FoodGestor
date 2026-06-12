@@ -48,6 +48,16 @@ def obtener_user_agent():
     """Retorna un user-agent aleatorio."""
     return random.choice(USER_AGENTS)
 
+def limpiar_html(texto):
+    """Limpia tags HTML del texto."""
+    if not texto:
+        return ""
+    texto = re.sub(r'<[^>]+>', '', texto)
+    texto = texto.replace('&aacute;', 'á').replace('&eacute;', 'é').replace('&iacute;', 'í')
+    texto = texto.replace('&oacute;', 'ó').replace('&uacute;', 'ú').replace('&ntilde;', 'ñ')
+    texto = texto.strip()
+    return texto
+
 def esperar_entre_requests():
     """Espera entre requests con delay aleatorio para evitar detección."""
     # Delay base + delay aleatorio entre 1-3 segundos
@@ -189,7 +199,8 @@ def procesar_producto(datos_api):
     if isinstance(nutrition_info, dict):
         ingredients_text = nutrition_info.get('ingredients', '')
         if ingredients_text:
-            ingredientes = [i.strip() for i in ingredients_text.split(',')]
+            ingredients_text = limpiar_html(ingredients_text)
+            ingredientes = [i.strip() for i in ingredients_text.split(',') if i.strip()]
 
     # Intentar extraer SOLO MACROS del OCR en imágenes
     imagen_urls = datos_api.get('imagen_urls', [])

@@ -11,6 +11,7 @@ import re
 import random
 import json
 from datetime import datetime
+from html.parser import HTMLParser
 
 from dotenv import load_dotenv
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -37,6 +38,18 @@ USER_AGENTS = [
 
 def obtener_user_agent():
     return random.choice(USER_AGENTS)
+
+def limpiar_html(texto):
+    """Limpia tags HTML del texto."""
+    if not texto:
+        return ""
+    # Reemplazar tags HTML comunes
+    texto = re.sub(r'<[^>]+>', '', texto)
+    # Decodificar entidades HTML comunes
+    texto = texto.replace('&aacute;', 'á').replace('&eacute;', 'é').replace('&iacute;', 'í')
+    texto = texto.replace('&oacute;', 'ó').replace('&uacute;', 'ú').replace('&ntilde;', 'ñ')
+    texto = texto.strip()
+    return texto
 
 def esperar():
     delay = DELAY_SEGUNDOS + random.uniform(1, 3)
@@ -130,7 +143,10 @@ def procesar_producto(datos_api):
     if isinstance(nutrition_info, dict):
         ingredients_text = nutrition_info.get('ingredients', '')
         if ingredients_text:
-            ingredientes = [i.strip() for i in ingredients_text.split(',')]
+            # Limpiar HTML
+            ingredients_text = limpiar_html(ingredients_text)
+            # Dividir por comas y limpiar
+            ingredientes = [i.strip() for i in ingredients_text.split(',') if i.strip()]
     imagen_urls = datos_api.get('imagen_urls', [])
     macros = None
     if imagen_urls:
