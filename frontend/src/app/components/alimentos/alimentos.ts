@@ -953,6 +953,14 @@ export class Alimentos implements OnInit {
     this.alergenosAsignados.clear();
   }
 
+  scrollAlCategoria() {
+    const categoriaInput = document.querySelector('select[ng-reflect-ng-model]');
+    if (categoriaInput) {
+      categoriaInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      (categoriaInput as HTMLSelectElement).focus();
+    }
+  }
+
   abrirModalVerificarIngredientes() {
     console.log('🔷 Abriendo modal verificación de ingredientes...');
     this.ingredientesAVerificar = this.obtenerIngredientesSinVerificar();
