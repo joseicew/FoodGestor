@@ -9,14 +9,7 @@
       <div class="popup-box" (click)="$event.stopPropagation()">
         <div class="popup-header">
           <h2>{{ alimentoSeleccionadoDetalle.nombre }}</h2>
-          <div style="display: flex; gap: 8px;">
-            @if (mostrarBotonesEdicion) {
-              <button class="btn-primary" (click)="seleccionarAlimento(alimentoSeleccionadoDetalle); cerrarDetallesAlimento()" style="padding: 6px 12px; font-size: 12px;">
-                ✏️ Editar
-              </button>
-            }
-            <button class="popup-close" (click)="cerrarDetallesAlimento()">✕</button>
-          </div>
+          <button class="popup-close" (click)="cerrarDetallesAlimento()">✕</button>
         </div>
 
         <div class="popup-content" (click)="cerrarDropdowns()">
@@ -30,7 +23,17 @@
               </div>
               <div class="info-item">
                 <span class="info-label">Categoría</span>
-                <span class="info-valor">{{ alimentoSeleccionadoDetalle.categoria }}</span>
+                @if (!mostrarBotonesEdicion) {
+                  <span class="info-valor">{{ alimentoSeleccionadoDetalle.categoria }}</span>
+                } @else {
+                  <select [(ngModel)]="alimentoSeleccionadoDetalle.categoria"
+                          style="border: 1px solid #ddd; background: white; font-size: 13px; color: #333; cursor: pointer; padding: 6px 10px; border-radius: 4px;">
+                    <option value="">-- Seleccionar --</option>
+                    @for (cat of categorias; track cat) {
+                      <option [value]="cat">{{ cat }}</option>
+                    }
+                  </select>
+                }
               </div>
               @if (alimentoSeleccionadoDetalle.codigo_barras) {
                 <div class="info-item">
@@ -985,150 +988,6 @@
               </div>
             </div>
           }
-        </div>
-      }
-
-      @if (alimentoSeleccionado) {
-        <div class="edit-form">
-          <div class="edit-header">
-            <button class="btn-back" (click)="alimentoSeleccionado = null">← Volver</button>
-          </div>
-
-          <!-- ── Información actual (solo lectura) ── -->
-          <div class="info-section">
-            <div style="background: #fafafa; padding: 16px; border-radius: 4px; margin-bottom: 16px;">
-              <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
-                <div>
-                  <h2 style="margin: 0; font-size: 16px;">
-                    {{ alimentoSeleccionado.nombre }}
-                    <span style="font-size: 13px; color: #666; font-weight: normal;">
-                      ({{ alimentoSeleccionado.marca }})
-                    </span>
-                  </h2>
-                </div>
-                @if (alimentoSeleccionado.codigo_barras) {
-                  <div style="font-size: 13px; color: #666;">
-                    📱 {{ alimentoSeleccionado.codigo_barras }}
-                  </div>
-                }
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 13px; color: #666; font-weight: 600;">🏷️ Categoría:</span>
-                  <select [(ngModel)]="alimentoSeleccionado.categoria"
-                          style="border: 1px solid #ddd; background: white; font-size: 13px; color: #333; cursor: pointer; padding: 6px 10px; border-radius: 4px;">
-                    <option value="">-- Seleccionar --</option>
-                    @for (cat of categorias; track cat) {
-                      <option [value]="cat">{{ cat }}</option>
-                    }
-                  </select>
-                </div>
-              </div>
-
-              <div style="display: flex; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
-                <div>
-                  <span style="font-size: 11px; color: #999; text-transform: uppercase;">Calorías</span>
-                  <div style="font-size: 16px; font-weight: 600;">{{ alimentoSeleccionado.calorias }} kcal</div>
-                </div>
-                <div>
-                  <span style="font-size: 11px; color: #999; text-transform: uppercase;">Proteínas</span>
-                  <div style="font-size: 16px; font-weight: 600;">{{ alimentoSeleccionado.proteinas }}g</div>
-                </div>
-                <div>
-                  <span style="font-size: 11px; color: #999; text-transform: uppercase;">Carbohidratos</span>
-                  <div style="font-size: 16px; font-weight: 600;">{{ alimentoSeleccionado.hidratos_carbono }}g</div>
-                </div>
-                <div>
-                  <span style="font-size: 11px; color: #999; text-transform: uppercase;">Grasas</span>
-                  <div style="font-size: 16px; font-weight: 600;">{{ alimentoSeleccionado.grasas }}g</div>
-                </div>
-              </div>
-
-              @if (alimentoSeleccionado.ingredientes?.length > 0) {
-                <div style="margin-top: 12px; border-top: 1px solid #e0e0e0; padding-top: 12px;">
-                  <span style="font-size: 11px; color: #999; text-transform: uppercase; display: block; margin-bottom: 8px;">Ingredientes</span>
-                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                    @for (ingrediente of alimentoSeleccionado.ingredientes; track ingrediente) {
-                      <span style="background: #e3f2fd; color: #1565c0; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
-                        {{ ingrediente }}
-                      </span>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- ── Opciones para actualizar ── -->
-          <div class="update-section">
-            <h4>🔄 Actualizar Información</h4>
-            <p class="update-hint">Sube una imagen para actualizar automáticamente los datos</p>
-
-            <div class="update-opciones">
-              <!-- Ingredientes -->
-              <div class="update-opcion">
-                <label class="foto-label">📸 Foto de Ingredientes</label>
-                <input type="file" accept="image/*"
-                       (change)="onFotoIngredientesEditar($event)"
-                       [disabled]="ocrIngredientesEstado === 'preparando' || ocrIngredientesEstado === 'analizando'" />
-                @if (ocrIngredientesEstado === 'listo') {
-                  <span class="ocr-hint exito">✅ Ingredientes actualizados</span>
-                }
-                @if (ocrIngredientesEstado === 'error') {
-                  <span class="ocr-hint error-ocr">❌ Error al procesar</span>
-                }
-              </div>
-
-              <!-- Macros -->
-              <div class="update-opcion">
-                <label class="foto-label">📊 Foto de Información Nutricional</label>
-                <input type="file" accept="image/*"
-                       (change)="onFotoMacrosEditar($event)"
-                       [disabled]="ocrMacrosEstado === 'preparando' || ocrMacrosEstado === 'analizando'" />
-                @if (ocrMacrosEstado === 'listo') {
-                  <span class="ocr-hint exito">✅ Macros actualizados</span>
-                }
-                @if (ocrMacrosEstado === 'error') {
-                  <span class="ocr-hint error-ocr">❌ Error al procesar</span>
-                }
-              </div>
-
-              <!-- Código de barras -->
-              <div class="update-opcion">
-                <label class="foto-label">📱 Foto de Código de Barras</label>
-                <input type="file" accept="image/*"
-                       (change)="onFotoCodigoEditar($event)"
-                       [disabled]="ocrCodigoEstado === 'preparando' || ocrCodigoEstado === 'analizando'" />
-                @if (ocrCodigoEstado === 'listo') {
-                  <span class="ocr-hint exito">✅ Código actualizado</span>
-                }
-                @if (ocrCodigoEstado === 'error') {
-                  <span class="ocr-hint error-ocr">❌ Error al procesar</span>
-                }
-              </div>
-
-              <!-- Categoría -->
-              <div class="update-opcion">
-                <label class="foto-label">🏷️ Categoría</label>
-                <select [(ngModel)]="alimentoSeleccionado.categoria"
-                        style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: white; cursor: pointer;">
-                  <option value="">-- Seleccionar categoría --</option>
-                  @for (cat of categorias; track cat) {
-                    <option [value]="cat">{{ cat }}</option>
-                  }
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- ── Botones ── -->
-          <div class="edit-buttons">
-            <button class="btn-primary" (click)="editarAlimento()" [disabled]="cargando">
-              @if (cargando) {
-                <span class="spinner spinner-sm"></span> Guardando...
-              } @else {
-                💾 Guardar cambios
-              }
-            </button>
-          </div>
         </div>
       }
     </div>
