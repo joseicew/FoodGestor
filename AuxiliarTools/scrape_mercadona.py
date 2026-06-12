@@ -157,6 +157,10 @@ def procesar_ingredientes(texto):
         # Limpiar espacios extras
         ing_procesado = re.sub(r'\s+', ' ', ing_procesado)
 
+        # Remover información de origen/fabricación si está después de un punto
+        # Ej: "lactasa. Origen de la leche: España" → "lactasa"
+        ing_procesado = re.sub(r'\.\s+(origen|fabricado|producido|hecho|procedencia|procedente)\s+(de|en):.*', '', ing_procesado, flags=re.IGNORECASE)
+
         # Filtrar información que no es ingrediente
         # Patrones a ignorar: "Origen de:", "Fabricado en:", "Producido en:", etc.
         if re.match(r'(origen|fabricado|producido|hecho|procedencia|procedente)\s+(de|en):', ing_procesado, re.IGNORECASE):
