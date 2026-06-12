@@ -181,6 +181,22 @@ def descargar_imagen(url_imagen):
         print(f"      [ERROR] Descargando imagen: {e}")
         return None
 
+def limpiar_nombre_producto(nombre, marca):
+    """Elimina la marca del nombre si está incluida para evitar redundancia."""
+    if not nombre or marca == 'Sin marca':
+        return nombre
+
+    # Remover marca del nombre (case-insensitive)
+    nombre_limpio = nombre
+    palabras_marca = marca.split()
+    for palabra in palabras_marca:
+        # Usar regex para remover palabra de manera case-insensitive
+        nombre_limpio = re.sub(rf'\b{re.escape(palabra)}\b', '', nombre_limpio, flags=re.IGNORECASE)
+
+    # Limpiar espacios extras
+    nombre_limpio = ' '.join(nombre_limpio.split()).strip()
+    return nombre_limpio if nombre_limpio else nombre
+
 def procesar_producto(datos_api):
     """Procesa un producto: OCR solo para macros, API para el resto."""
     nombre = datos_api.get('nombre', 'N/A')
@@ -192,6 +208,9 @@ def procesar_producto(datos_api):
     display_name = datos_completos.get('display_name', datos_api.get('nombre', 'Sin nombre'))
     marca = datos_api.get('marca', 'Sin marca')
     ean = datos_api.get('ean', '')
+
+    # Limpiar nombre removiendo la marca
+    display_name = limpiar_nombre_producto(display_name, marca)
 
     # Extraer ingredientes del API
     ingredientes = []

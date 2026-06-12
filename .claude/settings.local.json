@@ -255,7 +255,8 @@
       "Bash(python update_ean_from_api.py)",
       "Bash(curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"test123\"}')",
       "Bash(python scrape_batch2.py)",
-      "Bash(python retry_fallos.py)"
+      "Bash(python retry_fallos.py)",
+      "Bash(python test_1_producto.py)"
     ]
   }
 }
