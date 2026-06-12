@@ -1082,7 +1082,7 @@
 
       <!-- Botón Flotante para Verificar Ingredientes del Sistema -->
       @if (obtenerIngredientesSinVerificar().length > 0) {
-        <button class="fab-button-alergenos" (click)="abrirModalVerificarIngredientes()" title="Verificar ingredientes sin revisar" style="display: none;">
+        <button class="fab-button-alergenos" (click)="abrirModalVerificarIngredientes()" title="Verificar ingredientes sin revisar">
           <span class="fab-icon">✓</span>
           <span class="fab-texto">Verificar Ingredientes ({{ obtenerIngredientesSinVerificar().length }})</span>
         </button>
