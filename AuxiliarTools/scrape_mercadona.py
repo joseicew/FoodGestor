@@ -35,6 +35,26 @@ MERCADONA_API = "https://tienda.mercadona.es/api/products/{id}/?lang=es&wh=alc1"
 MAX_PRODUCTOS = 50  # Captura de 50 productos con OCR de ingredientes
 DELAY_SEGUNDOS = 3  # Mínimo de 3 segundos entre requests
 
+# Categorías válidas que deben coincidir con las del frontend
+CATEGORIAS_VALIDAS = [
+    'Carnes y Aves',
+    'Pescados y Mariscos',
+    'Lácteos y Huevos',
+    'Frutas',
+    'Verduras y Hortalizas',
+    'Cereales y Derivados',
+    'Legumbres',
+    'Grasas y Aceites',
+    'Frutos Secos',
+    'Bebidas',
+    'Snacks y Aperitivos',
+    'Dulces y Repostería',
+    'Condimentos y Salsas',
+    'Platos Preparados',
+    'Suplementos',
+    'Otros',
+]
+
 # User-agents variados para parecer navegadores reales
 USER_AGENTS = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -47,6 +67,78 @@ USER_AGENTS = [
 def obtener_user_agent():
     """Retorna un user-agent aleatorio."""
     return random.choice(USER_AGENTS)
+
+def normalizar_categoria(categoria_api):
+    """Intenta encontrar una categoría válida que haga match con la categoría de la API."""
+    if not categoria_api:
+        return 'Otros'
+
+    # Limpiar la categoría
+    categoria_limpia = str(categoria_api).strip().lower()
+
+    # Búsqueda exacta (case-insensitive)
+    for cat_valida in CATEGORIAS_VALIDAS:
+        if cat_valida.lower() == categoria_limpia:
+            return cat_valida
+
+    # Búsqueda parcial: si la categoría de API contiene palabras clave
+    palabras_clave = {
+        'carne': 'Carnes y Aves',
+        'pollo': 'Carnes y Aves',
+        'res': 'Carnes y Aves',
+        'cerdo': 'Carnes y Aves',
+        'pescado': 'Pescados y Mariscos',
+        'marisco': 'Pescados y Mariscos',
+        'lácteo': 'Lácteos y Huevos',
+        'queso': 'Lácteos y Huevos',
+        'leche': 'Lácteos y Huevos',
+        'yogur': 'Lácteos y Huevos',
+        'huevo': 'Lácteos y Huevos',
+        'fruta': 'Frutas',
+        'verdura': 'Verduras y Hortalizas',
+        'hortaliza': 'Verduras y Hortalizas',
+        'cereal': 'Cereales y Derivados',
+        'pan': 'Cereales y Derivados',
+        'pasta': 'Cereales y Derivados',
+        'arroz': 'Cereales y Derivados',
+        'legumbre': 'Legumbres',
+        'lentejas': 'Legumbres',
+        'garbanzos': 'Legumbres',
+        'aceite': 'Grasas y Aceites',
+        'grasa': 'Grasas y Aceites',
+        'mantequilla': 'Grasas y Aceites',
+        'fruto seco': 'Frutos Secos',
+        'nuez': 'Frutos Secos',
+        'almendra': 'Frutos Secos',
+        'bebida': 'Bebidas',
+        'agua': 'Bebidas',
+        'zumo': 'Bebidas',
+        'refr': 'Bebidas',
+        'cerveza': 'Bebidas',
+        'vino': 'Bebidas',
+        'snack': 'Snacks y Aperitivos',
+        'aperitivo': 'Snacks y Aperitivos',
+        'patata': 'Snacks y Aperitivos',
+        'dulce': 'Dulces y Repostería',
+        'chocolate': 'Dulces y Repostería',
+        'caramelo': 'Dulces y Repostería',
+        'galleta': 'Dulces y Repostería',
+        'condimento': 'Condimentos y Salsas',
+        'salsa': 'Condimentos y Salsas',
+        'especias': 'Condimentos y Salsas',
+        'sal': 'Condimentos y Salsas',
+        'plato preparado': 'Platos Preparados',
+        'comida preparada': 'Platos Preparados',
+        'suplemento': 'Suplementos',
+        'vitamina': 'Suplementos',
+    }
+
+    for palabra, categoria_valida in palabras_clave.items():
+        if palabra in categoria_limpia:
+            return categoria_valida
+
+    # Si no hay match, usar "Otros"
+    return 'Otros'
 
 def limpiar_html(texto):
     """Limpia tags HTML del texto."""
@@ -328,16 +420,19 @@ def procesar_producto(datos_api):
     ean = datos_api.get('ean', '')
 
     # Intentar extraer categoría del API
-    categoria = 'Otros'
+    categoria_api = None
     if 'categories' in datos_completos and datos_completos['categories']:
         # Mercadona devuelve array de categorías, usar la última (más específica)
         categorias = datos_completos['categories']
         if isinstance(categorias, list) and len(categorias) > 0:
-            categoria = categorias[-1].get('name', 'Otros') if isinstance(categorias[-1], dict) else str(categorias[-1])
+            categoria_api = categorias[-1].get('name', None) if isinstance(categorias[-1], dict) else str(categorias[-1])
     elif 'category' in datos_completos:
         # Alternativa: single category field
         cat = datos_completos['category']
-        categoria = cat.get('name', 'Otros') if isinstance(cat, dict) else str(cat)
+        categoria_api = cat.get('name', None) if isinstance(cat, dict) else str(cat)
+
+    # Normalizar categoría a una de las válidas
+    categoria = normalizar_categoria(categoria_api)
 
     # Limpiar nombre removiendo la marca
     display_name = limpiar_nombre_producto(display_name, marca)
