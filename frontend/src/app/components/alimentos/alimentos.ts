@@ -869,6 +869,8 @@ export class Alimentos implements OnInit {
           if (index !== -1) {
             this.alimentos[index].categoria = categoriaActual;
           }
+          // Recalcular filtros para que se actualicen los productos mostrados
+          this.buscarAlimento();
           // Cerrar después de guardar
           this.cerrarDetallesAlimentoFinal();
         },
