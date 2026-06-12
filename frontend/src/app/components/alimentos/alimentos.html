@@ -158,9 +158,9 @@
             <div style="margin-bottom: 16px;">
               <span style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">Ingredientes actuales</span>
               <div class="ingredientes-wrapper" style="margin-top: 8px;">
-                @for (ing of alimentoSeleccionadoDetalle.ingredientes; track ing; let i = $index) {
+                @for (ing of alimentoSeleccionadoDetalle.ingredientes; track ing.id || ing; let i = $index) {
                   <div style="display: flex; align-items: center; gap: 6px;">
-                    <span class="ingrediente-item" style="flex: 1;">{{ ing }}</span>
+                    <span class="ingrediente-item" style="flex: 1;">{{ ing.nombre || ing }}</span>
                     <button (click)="eliminarIngrediente(i)"
                             style="background: #ffebee; color: #c62828; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">
                       ✕
