@@ -1070,6 +1070,18 @@
                   <span class="ocr-hint error-ocr">❌ Error al procesar</span>
                 }
               </div>
+
+              <!-- Categoría -->
+              <div class="update-opcion">
+                <label class="foto-label">🏷️ Categoría</label>
+                <select [(ngModel)]="alimentoSeleccionado.categoria"
+                        style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: white; cursor: pointer;">
+                  <option value="">-- Seleccionar categoría --</option>
+                  @for (cat of categorias; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                  }
+                </select>
+              </div>
             </div>
           </div>
 
