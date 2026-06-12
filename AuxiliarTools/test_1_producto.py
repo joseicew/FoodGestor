@@ -45,15 +45,14 @@ def limpiar_html(texto):
 def procesar_ingredientes(texto):
     """Procesa lista de ingredientes con separadores inteligentes.
 
-    Maneja:
-    - Divisiones por comas, puntos, "y"
-    - Paréntesis con compuestos (colorantes, estabilizantes, etc.)
-    - Paréntesis con información adicional (porcentajes, cantidades)
+    Estrategia:
+    1. Dividir por comas que están fuera de paréntesis
+    2. Para cada ingrediente, procesar sus paréntesis
+    3. Manejar categorías de compuestos de manera inteligente
     """
     if not texto:
         return []
 
-    # Palabras clave que indican categorías de compuestos
     categorias_compuestos = {
         'colorante', 'colorantes',
         'estabilizante', 'estabilizantes',
@@ -69,60 +68,88 @@ def procesar_ingredientes(texto):
         'vitaminas', 'vitamina'
     }
 
-    # Procesar paréntesis anidados recursivamente
-    def limpiar_parentesis_anidados(txt):
-        """Remueve paréntesis anidados manteniendo solo nivel 1."""
-        # Remover paréntesis anidados (dentro de paréntesis)
-        while '(' in txt and ')' in txt:
-            # Buscar el paréntesis más interno y remover su contenido
-            txt_new = re.sub(r'\([^()]*\)', lambda m: '', txt)
-            if txt_new == txt:
-                break
-            txt = txt_new
-        return txt
+    # Dividir por comas FUERA de paréntesis
+    def dividir_por_comas_fuera_parentesis(txt):
+        """Divide por comas que no están dentro de paréntesis."""
+        partes = []
+        parte_actual = []
+        nivel_parentesis = 0
 
-    # Primero, simplificar paréntesis anidados dentro de categorías
-    # Ej: "vitaminas (acetato de retinilo (vitamina A), ...)" -> "vitaminas (acetato de retinilo, ...)"
-    texto = re.sub(r'(\w+)\s*\(([^()]*(?:\([^()]*\)[^()]*)*)\)',
-                   lambda m: f"{m.group(1)} ({limpiar_parentesis_anidados(m.group(2))})",
-                   texto)
+        for char in txt:
+            if char == '(':
+                nivel_parentesis += 1
+                parte_actual.append(char)
+            elif char == ')':
+                nivel_parentesis -= 1
+                parte_actual.append(char)
+            elif char == ',' and nivel_parentesis == 0:
+                partes.append(''.join(parte_actual).strip())
+                parte_actual = []
+            else:
+                parte_actual.append(char)
 
-    def procesar_parentesis_simple(match):
-        """Procesa paréntesis de nivel único."""
-        base = match.group(1).strip()
-        contenido = match.group(2).strip()
+        if parte_actual:
+            partes.append(''.join(parte_actual).strip())
 
-        # Obtener la palabra clave (último sustantivo antes del paréntesis)
-        palabras_base = base.lower().split()
-        palabra_clave = palabras_base[-1] if palabras_base else ''
+        return partes
 
-        # Si la palabra clave indica una categoría de compuestos
-        if palabra_clave in categorias_compuestos:
-            # Extraer solo los compuestos del paréntesis
-            compuestos = [c.strip() for c in contenido.split(',')]
-            # Retornar como "E-407, E-451" etc (sin "Estabilizantes")
-            return ', '.join(compuestos)
+    # Procesar cada ingrediente
+    ingredientes_raw = dividir_por_comas_fuera_parentesis(texto)
+    ingredientes = []
 
-        # Si contiene códigos E-xxx u otros aditivos
-        if re.search(r'E-?\d{3,4}', contenido):
-            compuestos = [c.strip() for c in contenido.split(',')]
-            return ', '.join(compuestos)
+    for ing_raw in ingredientes_raw:
+        if not ing_raw or len(ing_raw) <= 2:
+            continue
 
-        # Si no, es información adicional (porcentaje, cantidad, origen) -> eliminar
-        return base
+        # Procesar paréntesis en este ingrediente
+        def procesar_ingrediente_individual(ing):
+            """Procesa un ingrediente individual."""
+            # Encontrar paréntesis y procesar contenido
+            while '(' in ing and ')' in ing:
+                match = re.search(r'([^()]*)\(([^()]*)\)', ing)
+                if not match:
+                    break
 
-    # Reemplazar paréntesis de nivel único
-    texto = re.sub(r'([^()]+)\(([^()]*)\)', procesar_parentesis_simple, texto)
+                base = match.group(1).strip()
+                contenido = match.group(2).strip()
 
-    # Dividir por separadores: comas, puntos, "y"
-    texto = texto.replace('. ', ',')
-    texto = re.sub(r'\s+y\s+', ',', texto, flags=re.IGNORECASE)
+                # Obtener palabra clave
+                palabras = base.lower().split()
+                palabra_clave = palabras[-1] if palabras else ''
 
-    # Dividir y limpiar
-    ingredientes = [
-        i.strip() for i in texto.split(',')
-        if i.strip() and len(i.strip()) > 2
-    ]
+                # Si es categoría de compuestos, extraer solo los compuestos
+                if palabra_clave in categorias_compuestos:
+                    # Dividir compuestos por coma o "y"
+                    compuestos = re.split(r',|\s+y\s+', contenido, flags=re.IGNORECASE)
+                    compuestos = [c.strip() for c in compuestos if c.strip() and len(c.strip()) > 2]
+                    # No incluir la palabra clave, solo los compuestos
+                    reemplazo = ' y '.join(compuestos) if compuestos else ''
+                else:
+                    # Si contiene E-xxx, son aditivos que sí queremos
+                    if re.search(r'E-?\d{3,4}', contenido):
+                        reemplazo = contenido
+                    else:
+                        # Información adicional (%, origen) -> eliminar paréntesis
+                        reemplazo = ''
+
+                ing = ing[:match.start()] + reemplazo + ing[match.end():]
+
+            return ing.strip()
+
+        ing_procesado = procesar_ingrediente_individual(ing_raw)
+
+        # Limpiar espacios extras
+        ing_procesado = re.sub(r'\s+', ' ', ing_procesado)
+
+        # Si tiene múltiples ingredientes separados por " y ", dividirlos
+        if ' y ' in ing_procesado.lower():
+            subingredientes = re.split(r'\s+y\s+', ing_procesado, flags=re.IGNORECASE)
+            for sub in subingredientes:
+                sub = sub.strip()
+                if sub and len(sub) > 2:
+                    ingredientes.append(sub)
+        elif ing_procesado and len(ing_procesado) > 2:
+            ingredientes.append(ing_procesado)
 
     return ingredientes
 
