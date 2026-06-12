@@ -99,7 +99,6 @@ export class Alimentos implements OnInit {
   ingredienteActualVerificacion: any = null;
   ingredientesAVerificar: any[] = [];
   mostrarAlergenosPopup = false;
-  mostrarDropdownCategoriaInline = false;
   ingredienteMostrandoAlergenos: any = null;
   popoverStyle: any = {};
   categoriasAlimentos: string[] = [
@@ -952,14 +951,6 @@ export class Alimentos implements OnInit {
     this.mostrarFormularioAlergenos = false;
     this.alimentoSeleccionadoAlergenos = null;
     this.alergenosAsignados.clear();
-  }
-
-  scrollAlCategoria() {
-    const categoriaInput = document.querySelector('select[ng-reflect-ng-model]');
-    if (categoriaInput) {
-      categoriaInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      (categoriaInput as HTMLSelectElement).focus();
-    }
   }
 
   abrirModalVerificarIngredientes() {

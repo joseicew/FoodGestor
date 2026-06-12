@@ -978,28 +978,8 @@
                     📱 {{ alimentoSeleccionado.codigo_barras }}
                   </div>
                 }
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  @if (!mostrarDropdownCategoriaInline) {
-                    <div style="font-size: 13px; color: #999; opacity: 0.7;">
-                      {{ alimentoSeleccionado.categoria }}
-                    </div>
-                    <button (click)="mostrarDropdownCategoriaInline = true"
-                            style="background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 4px;"
-                            title="Editar categoría">
-                      ✏️
-                    </button>
-                  } @else {
-                    <select [(ngModel)]="alimentoSeleccionado.categoria"
-                            (blur)="mostrarDropdownCategoriaInline = false"
-                            (change)="mostrarDropdownCategoriaInline = false"
-                            autofocus
-                            style="padding: 6px 8px; border: 2px solid #2196F3; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: white; cursor: pointer;">
-                      <option value="">-- Seleccionar --</option>
-                      @for (cat of categorias; track cat) {
-                        <option [value]="cat">{{ cat }}</option>
-                      }
-                    </select>
-                  }
+                <div style="font-size: 13px; color: #999; opacity: 0.7;">
+                  {{ alimentoSeleccionado.categoria }}
                 </div>
               </div>
 
