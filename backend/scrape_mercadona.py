@@ -118,58 +118,108 @@ def descargar_imagen(url_imagen):
         return None
 
 def procesar_producto(datos_api):
-    """Procesa un producto: intenta múltiples imágenes y procesa OCR."""
+    """Procesa un producto: intenta OCR en imágenes, fallback a datos de API."""
     nombre = datos_api.get('nombre', 'N/A')
     print(f"  [PROC] {nombre[:40]}")
 
     imagen_urls = datos_api.get('imagen_urls', [])
-    if not imagen_urls:
-        print(f"    [ERROR] Sin URLs de imagen")
-        return None
 
-    # Intentar procesar cada imagen
-    for idx, imagen_url in enumerate(imagen_urls, 1):
-        try:
-            # Descargar imagen
-            print(f"    Descargando imagen [{idx}/{len(imagen_urls)}]...")
-            img_data = descargar_imagen(imagen_url)
-            if not img_data:
-                print(f"    [SKIP] No se pudo descargar imagen {idx}")
-                continue
-
-            # Procesar con OCR
-            print(f"    Procesando con OCR...")
-            datos_ocr = procesar_datos_completos(img_data, 'image/jpeg')
-
-            if datos_ocr:
-                # Validar que tenga datos nutricionales completos
-                macros = datos_ocr.get('macros', {})
-                kcal = macros.get('calorias')
-                prot = macros.get('proteinas')
-                grasas = macros.get('grasas')
-                carbs = macros.get('hidratos_carbono')
-
-                # Si tiene datos nutricionales completos, usar esta imagen
-                if kcal and prot is not None and grasas is not None and carbs is not None:
-                    print(f"    [OK] Nombre OCR: {datos_ocr.get('nombre', 'N/A')[:40]}")
-                    # Combinar datos de API con OCR
-                    datos_ocr['nombre_api'] = datos_api.get('nombre', '')
-                    datos_ocr['marca_api'] = datos_api.get('marca', '')
-                    datos_ocr['ean'] = datos_api.get('ean', '')
-                    return datos_ocr
-                else:
-                    print(f"    [SKIP] Imagen {idx}: Macros incompletas")
+    # Intentar procesar cada imagen con OCR
+    if imagen_urls:
+        for idx, imagen_url in enumerate(imagen_urls, 1):
+            try:
+                # Descargar imagen
+                print(f"    Descargando imagen [{idx}/{len(imagen_urls)}]...")
+                img_data = descargar_imagen(imagen_url)
+                if not img_data:
+                    print(f"    [SKIP] No se pudo descargar imagen {idx}")
                     continue
-            else:
-                print(f"    [SKIP] Imagen {idx}: OCR vacío")
+
+                # Procesar con OCR
+                print(f"    Procesando con OCR...")
+                datos_ocr = procesar_datos_completos(img_data, 'image/jpeg')
+
+                if datos_ocr:
+                    # Validar que tenga datos nutricionales completos
+                    macros = datos_ocr.get('macros', {})
+                    kcal = macros.get('calorias')
+                    prot = macros.get('proteinas')
+                    grasas = macros.get('grasas')
+                    carbs = macros.get('hidratos_carbono')
+
+                    # Si tiene datos nutricionales completos, usar esta imagen
+                    if kcal and prot is not None and grasas is not None and carbs is not None:
+                        print(f"    [OK] OCR exitoso: {datos_ocr.get('nombre', 'N/A')[:40]}")
+                        # Combinar datos de API con OCR
+                        datos_ocr['ean'] = datos_api.get('ean', '')
+                        return datos_ocr
+                    else:
+                        print(f"    [SKIP] Imagen {idx}: Macros incompletas")
+                        continue
+                else:
+                    print(f"    [SKIP] Imagen {idx}: OCR vacío")
+                    continue
+
+            except Exception as e:
+                print(f"    [SKIP] Imagen {idx}: {e}")
                 continue
 
-        except Exception as e:
-            print(f"    [SKIP] Imagen {idx}: {e}")
-            continue
+    # Fallback: usar datos directamente de la API si OCR falló
+    print(f"    [FALLBACK] Usando datos de la API")
+    try:
+        datos_completos = datos_api.get('datos_completos', {})
 
-    print(f"    [FAIL] Ninguna imagen tuvo datos nutricionales completos")
-    return None
+        # Extraer información nutricional
+        nutrition_info = datos_completos.get('nutrition_information', {})
+
+        # Intentar extraer macros del JSON
+        kcal = None
+        prot = None
+        grasas = None
+        carbs = None
+
+        # La información nutricional puede estar en diferentes formatos
+        if isinstance(nutrition_info, dict):
+            # Buscar valores de macros en el diccionario
+            kcal = nutrition_info.get('energy') or nutrition_info.get('kcal') or nutrition_info.get('calories')
+            prot = nutrition_info.get('protein') or nutrition_info.get('proteins')
+            grasas = nutrition_info.get('fat') or nutrition_info.get('fats')
+            carbs = nutrition_info.get('carbohydrate') or nutrition_info.get('carbohydrates')
+
+        # Si faltan macros, no usar este producto
+        if not (kcal and prot is not None and grasas is not None and carbs is not None):
+            print(f"    [SKIP] API: Macros incompletas en nutrition_information")
+            return None
+
+        # Extraer ingredientes
+        ingredientes = []
+        if isinstance(nutrition_info, dict) and 'ingredients' in nutrition_info:
+            ingredients_text = nutrition_info.get('ingredients', '')
+            if ingredients_text:
+                # Parsear ingredientes separados por comas
+                ingredientes = [i.strip() for i in ingredients_text.split(',')]
+
+        print(f"    [OK] API fallback: {datos_completos.get('display_name', nombre)[:40]}")
+
+        return {
+            'nombre': datos_completos.get('display_name', datos_api.get('nombre', '')),
+            'marca': datos_api.get('marca', 'Sin marca'),
+            'ean': datos_api.get('ean', ''),
+            'ingredientes': ingredientes,
+            'macros': {
+                'calorias': kcal,
+                'proteinas': prot,
+                'grasas': grasas,
+                'hidratos_carbono': carbs,
+                'azucares': nutrition_info.get('sugar') if isinstance(nutrition_info, dict) else None,
+                'fibra': nutrition_info.get('fiber') if isinstance(nutrition_info, dict) else None,
+                'sal': nutrition_info.get('sodium') or nutrition_info.get('salt') if isinstance(nutrition_info, dict) else None,
+            }
+        }
+
+    except Exception as e:
+        print(f"    [FAIL] API fallback error: {e}")
+        return None
 
 def guardar_en_bd(datos_ocr):
     """Guarda los datos extraídos en la base de datos."""
