@@ -32,7 +32,7 @@ app = create_app()
 
 MERCADONA_SITEMAP = "https://tienda.mercadona.es/sitemap.xml"
 MERCADONA_API = "https://tienda.mercadona.es/api/products/{id}/?lang=es&wh=alc1"
-MAX_PRODUCTOS = 20  # Aumentado a 200
+MAX_PRODUCTOS = 5  # Pruebas con 5 productos para pulir antes de hacer más
 DELAY_SEGUNDOS = 3  # Mínimo de 3 segundos entre requests
 
 # User-agents variados para parecer navegadores reales
