@@ -27,27 +27,57 @@ def limpiar_html(texto):
     return texto
 
 def procesar_ingredientes(texto):
-    """Procesa lista de ingredientes con separadores inteligentes."""
+    """Procesa lista de ingredientes con separadores inteligentes.
+
+    Maneja:
+    - Divisiones por comas, puntos, "y"
+    - Paréntesis con compuestos (colorantes, estabilizantes, etc.)
+    - Paréntesis con información adicional (porcentajes, cantidades)
+    """
     if not texto:
         return []
 
-    # Primero, manejar casos especiales con paréntesis que contienen aditivos (E-xxx)
-    # Ej: "Estabilizantes (E-407, E-415)" -> "Estabilizantes E-407", "Estabilizantes E-415"
-    def expandir_aditivos(match):
+    # Palabras clave que indican categorías de compuestos
+    categorias_compuestos = {
+        'colorante', 'colorantes',
+        'estabilizante', 'estabilizantes',
+        'conservante', 'conservantes',
+        'edulcorante', 'edulcorantes',
+        'emulsionante', 'emulsionantes',
+        'antioxidante', 'antioxidantes',
+        'acidulante', 'acidulantes',
+        'aroma', 'aromas', 'aromatizante', 'aromatizantes',
+        'espesante', 'espesantes',
+        'regulador', 'reguladores',
+        'gelificante', 'gelificantes'
+    }
+
+    def procesar_parentesis(match):
+        """Procesa el contenido entre paréntesis."""
         base = match.group(1).strip()
         contenido = match.group(2).strip()
 
-        # Si contiene códigos E-xxx, son aditivos separados
+        # Obtener la palabra clave (último sustantivo antes del paréntesis)
+        palabras_base = base.lower().split()
+        palabra_clave = palabras_base[-1] if palabras_base else ''
+
+        # Si la palabra clave indica una categoría de compuestos
+        if palabra_clave in categorias_compuestos:
+            # Extraer solo los compuestos del paréntesis, no la categoría
+            compuestos = [c.strip() for c in contenido.split(',')]
+            # Retornar como "E-407, acesulfame K" etc (sin "Estabilizantes")
+            return ', '.join(compuestos)
+
+        # Si contiene códigos E-xxx u otros aditivos, son componentes adicionales
         if re.search(r'E-?\d{3,4}', contenido):
-            # Dividir aditivos por coma
-            aditivos = [a.strip() for a in contenido.split(',')]
-            # Retornar como "Base E-407, Base E-415"
-            return ', '.join([f"{base} {a}" for a in aditivos])
-        # Si no, es información adicional (porcentaje, cantidad) -> eliminar
+            compuestos = [c.strip() for c in contenido.split(',')]
+            return ', '.join(compuestos)
+
+        # Si no, es información adicional (porcentaje, cantidad, origen) -> eliminar
         return base
 
     # Reemplazar paréntesis inteligentemente
-    texto = re.sub(r'([^()]+)\(([^)]*)\)', expandir_aditivos, texto)
+    texto = re.sub(r'([^()]+)\(([^)]*)\)', procesar_parentesis, texto)
 
     # Dividir por separadores: comas, puntos, "y"
     # Reemplazar puntos seguidos de espacio por coma
