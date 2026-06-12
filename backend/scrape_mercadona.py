@@ -135,6 +135,18 @@ def procesar_producto(datos_api):
         datos_ocr = procesar_datos_completos(img_data, 'image/jpeg')
 
         if datos_ocr:
+            # Validar que tenga datos nutricionales completos
+            macros = datos_ocr.get('macros', {})
+            kcal = macros.get('calorias')
+            prot = macros.get('proteinas')
+            grasas = macros.get('grasas')
+            carbs = macros.get('hidratos_carbono')
+
+            # Si faltan datos nutricionales, descartar
+            if not (kcal and prot is not None and grasas is not None and carbs is not None):
+                print(f"    [SKIP] Macros incompletas: kcal={kcal}, prot={prot}, grasas={grasas}, carbs={carbs}")
+                return None
+
             print(f"    [OK] Nombre OCR: {datos_ocr.get('nombre', 'N/A')[:40]}")
             # Combinar datos de API con OCR
             datos_ocr['nombre_api'] = datos_api.get('nombre', '')
@@ -142,17 +154,11 @@ def procesar_producto(datos_api):
             datos_ocr['ean'] = datos_api.get('ean', '')
             return datos_ocr
         else:
-            print(f"    [WARNING] OCR sin datos, usando datos de API")
-            # Usar datos de API si OCR falló
-            return {
-                'nombre': datos_api.get('nombre', ''),
-                'marca': datos_api.get('marca', ''),
-                'codigo_barras': datos_api.get('ean', ''),
-                'macros': {}
-            }
+            print(f"    [SKIP] OCR retornó datos vacíos")
+            return None
 
     except Exception as e:
-        print(f"    [ERROR] {e}")
+        print(f"    [SKIP] Error OCR: {e}")
         return None
 
 def guardar_en_bd(datos_ocr):
