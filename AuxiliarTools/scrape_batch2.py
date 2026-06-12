@@ -51,7 +51,7 @@ def limpiar_html(texto):
     texto = texto.strip()
     return texto
 
-def procesar_ingredientes(texto):
+def procesar_ingredientes_old(texto):
     """Procesa lista de ingredientes con separadores inteligentes.
 
     Maneja:
@@ -132,6 +132,117 @@ def procesar_ingredientes(texto):
         i.strip() for i in texto.split(',')
         if i.strip() and len(i.strip()) > 2
     ]
+
+    return ingredientes
+
+def procesar_ingredientes(texto):
+    """Procesa lista de ingredientes con separadores inteligentes.
+
+    Estrategia:
+    1. Dividir por comas que están fuera de paréntesis
+    2. Para cada ingrediente, procesar sus paréntesis
+    3. Manejar categorías de compuestos de manera inteligente
+    """
+    if not texto:
+        return []
+
+    categorias_compuestos = {
+        'colorante', 'colorantes',
+        'estabilizante', 'estabilizantes',
+        'conservante', 'conservantes',
+        'edulcorante', 'edulcorantes',
+        'emulsionante', 'emulsionantes',
+        'antioxidante', 'antioxidantes',
+        'acidulante', 'acidulantes',
+        'aroma', 'aromas', 'aromatizante', 'aromatizantes',
+        'espesante', 'espesantes',
+        'regulador', 'reguladores',
+        'gelificante', 'gelificantes',
+        'vitaminas', 'vitamina'
+    }
+
+    # Dividir por comas FUERA de paréntesis
+    def dividir_por_comas_fuera_parentesis(txt):
+        """Divide por comas que no están dentro de paréntesis."""
+        partes = []
+        parte_actual = []
+        nivel_parentesis = 0
+
+        for char in txt:
+            if char == '(':
+                nivel_parentesis += 1
+                parte_actual.append(char)
+            elif char == ')':
+                nivel_parentesis -= 1
+                parte_actual.append(char)
+            elif char == ',' and nivel_parentesis == 0:
+                partes.append(''.join(parte_actual).strip())
+                parte_actual = []
+            else:
+                parte_actual.append(char)
+
+        if parte_actual:
+            partes.append(''.join(parte_actual).strip())
+
+        return partes
+
+    # Procesar cada ingrediente
+    ingredientes_raw = dividir_por_comas_fuera_parentesis(texto)
+    ingredientes = []
+
+    for ing_raw in ingredientes_raw:
+        if not ing_raw or len(ing_raw) <= 2:
+            continue
+
+        # Procesar paréntesis en este ingrediente
+        def procesar_ingrediente_individual(ing):
+            """Procesa un ingrediente individual."""
+            # Encontrar paréntesis y procesar contenido
+            while '(' in ing and ')' in ing:
+                match = re.search(r'([^()]*)\(([^()]*)\)', ing)
+                if not match:
+                    break
+
+                base = match.group(1).strip()
+                contenido = match.group(2).strip()
+
+                # Obtener palabra clave
+                palabras = base.lower().split()
+                palabra_clave = palabras[-1] if palabras else ''
+
+                # Si es categoría de compuestos, extraer solo los compuestos
+                if palabra_clave in categorias_compuestos:
+                    # Dividir compuestos por coma o "y"
+                    compuestos = re.split(r',|\s+y\s+', contenido, flags=re.IGNORECASE)
+                    compuestos = [c.strip() for c in compuestos if c.strip() and len(c.strip()) > 2]
+                    # No incluir la palabra clave, solo los compuestos
+                    reemplazo = ' y '.join(compuestos) if compuestos else ''
+                else:
+                    # Si contiene E-xxx, son aditivos que sí queremos
+                    if re.search(r'E-?\d{3,4}', contenido):
+                        reemplazo = contenido
+                    else:
+                        # Información adicional (%, origen) -> eliminar paréntesis
+                        reemplazo = ''
+
+                ing = ing[:match.start()] + reemplazo + ing[match.end():]
+
+            return ing.strip()
+
+        ing_procesado = procesar_ingrediente_individual(ing_raw)
+
+        # Limpiar espacios extras
+        ing_procesado = re.sub(r'\s+', ' ', ing_procesado)
+
+        # Si tiene múltiples ingredientes separados por " y ", dividirlos
+        if ' y ' in ing_procesado.lower():
+            subingredientes = re.split(r'\s+y\s+', ing_procesado, flags=re.IGNORECASE)
+            for sub in subingredientes:
+                sub = sub.strip()
+                if sub and len(sub) > 2:
+                    ingredientes.append(sub)
+        elif ing_procesado and len(ing_procesado) > 2:
+            ingredientes.append(ing_procesado)
 
     return ingredientes
 
