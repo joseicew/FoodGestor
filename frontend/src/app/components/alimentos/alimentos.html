@@ -63,45 +63,60 @@
               <h3 style="margin: 0; display: inline;">📊 Macronutrientes (por 100g)</h3>
             </div>
             <div class="macros-grid">
-              <div class="macro-item">
-                <span class="macro-icon">🔥</span>
-                <span class="macro-label">Calorías</span>
-                <span class="macro-valor">{{ alimentoSeleccionadoDetalle.calorias }} kcal</span>
-              </div>
-              <div class="macro-item">
-                <span class="macro-icon">💪</span>
-                <span class="macro-label">Proteínas</span>
-                <span class="macro-valor">{{ alimentoSeleccionadoDetalle.proteinas }}g</span>
-              </div>
-              <div class="macro-item">
-                <span class="macro-icon">🌾</span>
-                <span class="macro-label">Carbohidratos</span>
-                <span class="macro-valor">{{ alimentoSeleccionadoDetalle.hidratos_carbono }}g</span>
-              </div>
-              <div class="macro-item">
-                <span class="macro-icon">🧈</span>
-                <span class="macro-label">Grasas</span>
-                <span class="macro-valor">{{ alimentoSeleccionadoDetalle.grasas }}g</span>
-              </div>
-              <div class="macro-item">
-                <span class="macro-icon">🔗</span>
-                <span class="macro-label">Grasas Sat.</span>
-                <span class="macro-valor">{{ alimentoSeleccionadoDetalle.grasas_saturadas }}g</span>
-              </div>
-              <div class="macro-item">
-                <span class="macro-icon">🍬</span>
-                <span class="macro-label">Azúcares</span>
-                <span class="macro-valor">{{ alimentoSeleccionadoDetalle.azucares }}g</span>
-              </div>
-              <div class="macro-item">
-                <span class="macro-icon">🌿</span>
-                <span class="macro-label">Fibra</span>
-                <span class="macro-valor">{{ alimentoSeleccionadoDetalle.fibra }}g</span>
-              </div>
-              <div class="macro-item">
-                <span class="macro-icon">🧂</span>
-                <span class="macro-label">Sal</span>
-                <span class="macro-valor">{{ alimentoSeleccionadoDetalle.sal }}g</span>
+              @if (alimentoSeleccionadoDetalle.calorias) {
+                <div class="macro-item">
+                  <span class="macro-icon">🔥</span>
+                  <span class="macro-label">Calorías</span>
+                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.calorias }} kcal</span>
+                </div>
+              }
+              @if (alimentoSeleccionadoDetalle.proteinas) {
+                <div class="macro-item">
+                  <span class="macro-icon">💪</span>
+                  <span class="macro-label">Proteínas</span>
+                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.proteinas }}g</span>
+                </div>
+              }
+              @if (alimentoSeleccionadoDetalle.hidratos_carbono) {
+                <div class="macro-item">
+                  <span class="macro-icon">🌾</span>
+                  <span class="macro-label">Carbohidratos</span>
+                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.hidratos_carbono }}g</span>
+                </div>
+              }
+              @if (alimentoSeleccionadoDetalle.grasas) {
+                <div class="macro-item">
+                  <span class="macro-icon">🧈</span>
+                  <span class="macro-label">Grasas</span>
+                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.grasas }}g</span>
+                </div>
+              }
+              @if (alimentoSeleccionadoDetalle.grasas_saturadas) {
+                <div class="macro-item">
+                  <span class="macro-icon">🔗</span>
+                  <span class="macro-label">Grasas Sat.</span>
+                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.grasas_saturadas }}g</span>
+                </div>
+              }
+              @if (alimentoSeleccionadoDetalle.azucares) {
+                <div class="macro-item">
+                  <span class="macro-icon">🍬</span>
+                  <span class="macro-label">Azúcares</span>
+                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.azucares }}g</span>
+                </div>
+              }
+              @if (alimentoSeleccionadoDetalle.fibra) {
+                <div class="macro-item">
+                  <span class="macro-icon">🌿</span>
+                  <span class="macro-label">Fibra</span>
+                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.fibra }}g</span>
+                </div>
+              }
+              @if (alimentoSeleccionadoDetalle.sal) {
+                <div class="macro-item">
+                  <span class="macro-icon">🧂</span>
+                  <span class="macro-label">Sal</span>
+                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.sal }}g</span>
               </div>
             </div>
           </div>
