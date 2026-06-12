@@ -856,18 +856,16 @@ export class Alimentos implements OnInit {
     // Guardar cambios de categoría si cambió
     if (this.alimentoSeleccionadoDetalle &&
         this.alimentoSeleccionadoDetalle.categoria !== this.categoriaOriginal) {
+      const alimentoId = this.alimentoSeleccionadoDetalle.id;
       const categoriaActual = this.alimentoSeleccionadoDetalle.categoria;
       const formData = new FormData();
       formData.append('categoria', categoriaActual);
 
-      this.alimentosService.actualizarAlimento(
-        this.alimentoSeleccionadoDetalle.id,
-        formData
-      ).subscribe({
+      this.alimentosService.actualizarAlimento(alimentoId, formData).subscribe({
         next: () => {
           console.log('✅ Categoría guardada:', categoriaActual);
           // Actualizar en la lista
-          const index = this.alimentos.findIndex(a => a.id === this.alimentoSeleccionadoDetalle.id);
+          const index = this.alimentos.findIndex(a => a.id === alimentoId);
           if (index !== -1) {
             this.alimentos[index].categoria = categoriaActual;
           }
