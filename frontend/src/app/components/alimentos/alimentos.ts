@@ -81,6 +81,7 @@ export class Alimentos implements OnInit {
 
   mostrarDetallesAlimento = false;
   alimentoSeleccionadoDetalle: any = null;
+  categoriaOriginal: string = '';
   mostrarBotonesEdicion = false;
   mostrarDropdownEdicion = false;
   mostrarDropdownMacros = false;
@@ -845,14 +846,37 @@ export class Alimentos implements OnInit {
 
   abrirDetallesAlimento(alimento: any, desdeActualizar = false) {
     this.alimentoSeleccionadoDetalle = { ...alimento };
+    this.categoriaOriginal = alimento.categoria || '';
     this.mostrarDetallesAlimento = true;
     this.mostrarBotonesEdicion = desdeActualizar;
     this.cdr.markForCheck();
   }
 
   cerrarDetallesAlimento() {
+    // Guardar cambios de categoría si cambió
+    if (this.alimentoSeleccionadoDetalle &&
+        this.alimentoSeleccionadoDetalle.categoria !== this.categoriaOriginal) {
+      const categoriaActual = this.alimentoSeleccionadoDetalle.categoria;
+
+      this.alimentosService.actualizarAlimento(
+        this.alimentoSeleccionadoDetalle.id,
+        { categoria: categoriaActual }
+      ).subscribe({
+        next: () => {
+          console.log('✅ Categoría guardada:', categoriaActual);
+          // Actualizar en la lista
+          const index = this.alimentos.findIndex(a => a.id === this.alimentoSeleccionadoDetalle.id);
+          if (index !== -1) {
+            this.alimentos[index].categoria = categoriaActual;
+          }
+        },
+        error: (err) => console.error('❌ Error al guardar categoría:', err)
+      });
+    }
+
     this.mostrarDetallesAlimento = false;
     this.alimentoSeleccionadoDetalle = null;
+    this.categoriaOriginal = '';
     this.mostrarBotonesEdicion = false;
     this.mostrarDropdownEdicion = false;
     this.mostrarDropdownMacros = false;
