@@ -12,7 +12,7 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 import re
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend'))
 env_path = os.path.join(basedir, '.env')
 load_dotenv(env_path)
 

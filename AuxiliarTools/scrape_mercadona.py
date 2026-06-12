@@ -16,7 +16,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Cargar .env
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend'))
 env_path = os.path.join(basedir, '.env')
 if os.path.exists(env_path):
     from dotenv import load_dotenv
