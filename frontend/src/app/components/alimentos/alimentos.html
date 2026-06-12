@@ -933,6 +933,16 @@
           <input type="text" [(ngModel)]="terminoBusqueda" placeholder="🔍 Buscar alimento..."
                  (ngModelChange)="buscarAlimento()" />
         </div>
+
+        <div class="filtro-categoria">
+          <select [(ngModel)]="categoriaFiltro" (ngModelChange)="buscarAlimento()">
+            <option value="">🔍 Todas las categorías</option>
+            @for (cat of categorias; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+        </div>
+
         @if (alimentosFiltrados.length === 0) {
           <p class="empty-state">Sin resultados</p>
         }
