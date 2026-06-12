@@ -161,9 +161,9 @@ def procesar_ingredientes(texto):
         'vitaminas', 'vitamina'
     }
 
-    # Dividir por comas FUERA de paréntesis
+    # Dividir por comas y puntos FUERA de paréntesis
     def dividir_por_comas_fuera_parentesis(txt):
-        """Divide por comas que no están dentro de paréntesis."""
+        """Divide por comas y puntos que no están dentro de paréntesis."""
         partes = []
         parte_actual = []
         nivel_parentesis = 0
@@ -175,14 +175,18 @@ def procesar_ingredientes(texto):
             elif char == ')':
                 nivel_parentesis -= 1
                 parte_actual.append(char)
-            elif char == ',' and nivel_parentesis == 0:
-                partes.append(''.join(parte_actual).strip())
+            elif (char == ',' or char == '.') and nivel_parentesis == 0:
+                parte_str = ''.join(parte_actual).strip()
+                if parte_str:
+                    partes.append(parte_str)
                 parte_actual = []
             else:
                 parte_actual.append(char)
 
         if parte_actual:
-            partes.append(''.join(parte_actual).strip())
+            parte_str = ''.join(parte_actual).strip()
+            if parte_str:
+                partes.append(parte_str)
 
         return partes
 
