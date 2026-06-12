@@ -216,7 +216,8 @@ export class Alimentos implements OnInit {
       next: (data) => {
         console.log(`Cargados ${data.length} alimentos del servidor`);
         this.alimentos = data;
-        this.alimentosFiltrados = data;
+        // Reapliar filtros después de cargar nuevos datos
+        this.buscarAlimento();
         this.cdr.detectChanges();
       },
       error: (err) => {

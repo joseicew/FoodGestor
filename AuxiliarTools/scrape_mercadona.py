@@ -32,7 +32,7 @@ app = create_app()
 
 MERCADONA_SITEMAP = "https://tienda.mercadona.es/sitemap.xml"
 MERCADONA_API = "https://tienda.mercadona.es/api/products/{id}/?lang=es&wh=alc1"
-MAX_PRODUCTOS = 50  # Captura de 50 productos
+MAX_PRODUCTOS = 50  # Captura de 50 productos con OCR de ingredientes
 DELAY_SEGUNDOS = 3  # Mínimo de 3 segundos entre requests
 
 # User-agents variados para parecer navegadores reales
@@ -59,133 +59,120 @@ def limpiar_html(texto):
     return texto
 
 def procesar_ingredientes(texto):
-    """Procesa lista de ingredientes con separadores inteligentes.
-
-    Estrategia:
-    1. Dividir por comas que están fuera de paréntesis
-    2. Para cada ingrediente, procesar sus paréntesis
-    3. Manejar categorías de compuestos de manera inteligente
-    """
+    """Parser robusto para ingredientes con manejo de paréntesis desbalanceados."""
     if not texto:
         return []
 
-    categorias_compuestos = {
-        'colorante', 'colorantes',
-        'estabilizante', 'estabilizantes',
-        'conservante', 'conservantes',
-        'edulcorante', 'edulcorantes',
-        'emulsionante', 'emulsionantes',
-        'antioxidante', 'antioxidantes',
-        'acidulante', 'acidulantes',
-        'aroma', 'aromas', 'aromatizante', 'aromatizantes',
-        'espesante', 'espesantes',
-        'regulador', 'reguladores',
-        'gelificante', 'gelificantes',
-        'vitaminas', 'vitamina'
-    }
+    # Paso 1: Balancear paréntesis desbalanceados
+    aperturas = texto.count('(')
+    cierres = texto.count(')')
 
-    # Dividir por comas y puntos FUERA de paréntesis
-    def dividir_por_comas_fuera_parentesis(txt):
-        """Divide por comas y puntos que no están dentro de paréntesis."""
-        partes = []
-        parte_actual = []
-        nivel_parentesis = 0
+    if cierres > aperturas:
+        for _ in range(cierres - aperturas):
+            idx = texto.find(')')
+            if idx != -1:
+                texto = texto[:idx] + texto[idx+1:]
+    elif aperturas > cierres:
+        for _ in range(aperturas - cierres):
+            idx = texto.rfind('(')
+            if idx != -1:
+                texto = texto[:idx] + texto[idx+1:]
 
-        for char in txt:
-            if char == '(':
-                nivel_parentesis += 1
-                parte_actual.append(char)
-            elif char == ')':
-                nivel_parentesis -= 1
-                parte_actual.append(char)
-            elif (char == ',' or char == '.') and nivel_parentesis == 0:
-                parte_str = ''.join(parte_actual).strip()
-                if parte_str:
-                    partes.append(parte_str)
-                parte_actual = []
-            else:
-                parte_actual.append(char)
+    # Paso 2: Dividir por separadores principales (coma y punto fuera de paréntesis)
+    partes = []
+    actual = []
+    nivel = 0
 
-        if parte_actual:
-            parte_str = ''.join(parte_actual).strip()
-            if parte_str:
-                partes.append(parte_str)
+    for char in texto:
+        if char == '(':
+            nivel += 1
+            actual.append(char)
+        elif char == ')':
+            nivel -= 1
+            actual.append(char)
+        elif (char == ',' or char == '.') and nivel == 0:
+            parte = ''.join(actual).strip()
+            if parte:
+                partes.append(parte)
+            actual = []
+        else:
+            actual.append(char)
 
-        return partes
+    if actual:
+        parte = ''.join(actual).strip()
+        if parte:
+            partes.append(parte)
 
-    # Procesar cada ingrediente
-    ingredientes_raw = dividir_por_comas_fuera_parentesis(texto)
+    # Paso 3: Procesar cada parte
     ingredientes = []
 
-    for ing_raw in ingredientes_raw:
-        if not ing_raw or len(ing_raw) <= 2:
+    for parte in partes:
+        # 3a: Remover paréntesis y su contenido (recursivamente)
+        parte_limpia = parte
+        max_iter = 10
+        while '(' in parte_limpia and max_iter > 0:
+            parte_nueva = re.sub(r'\([^()]*\)', '', parte_limpia)
+            if parte_nueva == parte_limpia:
+                # No hay cambios, hay desbalance, remover todos
+                parte_limpia = parte_limpia.replace('(', '').replace(')', '')
+                break
+            parte_limpia = parte_nueva
+            max_iter -= 1
+
+        # 3b: Limpiar espacios múltiples
+        parte_limpia = re.sub(r'\s+', ' ', parte_limpia).strip()
+
+        # 3c: Remover caracteres especiales al inicio/final
+        parte_limpia = re.sub(r'^[)\]\}]+\s*', '', parte_limpia)
+        parte_limpia = re.sub(r'\s*[(\[\{]+$', '', parte_limpia)
+
+        # 3d: Remover porcentajes sueltos
+        parte_limpia = re.sub(r'\s*\d+[.,]\d*%\s*', ' ', parte_limpia)
+
+        # 3e: Limpiar dos puntos seguidos de espacios
+        parte_limpia = re.sub(r':\s+', ': ', parte_limpia)
+        # Si tiene dos puntos y solo el lado derecho es E-xxx, quedarse con eso
+        if ':' in parte_limpia:
+            partes_dos_puntos = parte_limpia.split(':')
+            if len(partes_dos_puntos) == 2:
+                derecha = partes_dos_puntos[1].strip()
+                # Si el lado derecho es un código E-xxx o algo importante, usar eso
+                if re.search(r'E-?\d+|vitamina|ácido', derecha, re.IGNORECASE):
+                    parte_limpia = derecha
+                # Si el lado izquierdo es una categoría (estabilizador, colorante) e izq está vacío
+                elif re.search(r'estabilizador|colorante|conservante|emulgente|aditivo', partes_dos_puntos[0], re.IGNORECASE):
+                    parte_limpia = derecha if derecha else partes_dos_puntos[0]
+
+        # 3f: Dividir por " y " si tiene múltiples ingredientes
+        if ' y ' in parte_limpia.lower():
+            subpartes = re.split(r'\s+y\s+', parte_limpia, flags=re.IGNORECASE)
+            for subparte in subpartes:
+                subparte = subparte.strip()
+                subparte = re.sub(r':\s*', ': ', subparte)
+                # Si tiene dos puntos, procesar
+                if ':' in subparte:
+                    izq, der = subparte.split(':', 1)
+                    izq = izq.strip()
+                    der = der.strip()
+                    # Siempre usar derecha si existe, excepto si está vacía
+                    if der:
+                        subparte = der
+                    elif izq:
+                        subparte = izq
+
+                subparte = re.sub(r'\s+', ' ', subparte).strip()
+                if (len(subparte) > 2 and
+                    not re.search(r'origen|fabricad', subparte, re.IGNORECASE)):
+                    ingredientes.append(subparte)
             continue
 
-        # Procesar paréntesis en este ingrediente
-        def procesar_ingrediente_individual(ing):
-            """Procesa un ingrediente individual."""
-            # Encontrar paréntesis y procesar contenido
-            while '(' in ing and ')' in ing:
-                match = re.search(r'([^()]*)\(([^()]*)\)', ing)
-                if not match:
-                    break
+        # 3g: Limpiar espacios finales
+        parte_limpia = re.sub(r'\s+', ' ', parte_limpia).strip()
 
-                base = match.group(1).strip()
-                contenido = match.group(2).strip()
-
-                # Obtener palabra clave
-                palabras = base.lower().split()
-                palabra_clave = palabras[-1] if palabras else ''
-
-                # Si es categoría de compuestos, extraer solo los compuestos
-                if palabra_clave in categorias_compuestos:
-                    # Dividir compuestos por coma o "y"
-                    compuestos = re.split(r',|\s+y\s+', contenido, flags=re.IGNORECASE)
-                    compuestos = [c.strip() for c in compuestos if c.strip() and len(c.strip()) > 2]
-                    # No incluir la palabra clave, solo los compuestos
-                    reemplazo = ' y '.join(compuestos) if compuestos else ''
-                else:
-                    # Si contiene E-xxx, son aditivos que sí queremos
-                    if re.search(r'E-?\d{3,4}', contenido):
-                        reemplazo = contenido
-                    else:
-                        # Información adicional (%, origen) -> eliminar paréntesis pero PRESERVAR base
-                        reemplazo = base
-
-                ing = ing[:match.start()] + reemplazo + ing[match.end():]
-
-            return ing.strip()
-
-        ing_procesado = procesar_ingrediente_individual(ing_raw)
-
-        # Limpiar espacios extras
-        ing_procesado = re.sub(r'\s+', ' ', ing_procesado)
-
-        # Remover información de origen/fabricación si está después de un punto
-        # Ej: "lactasa. Origen de la leche: España" → "lactasa"
-        ing_procesado = re.sub(r'\.?\s*(origen|fabricado|producido|hecho|procedencia|procedente).*?:.*$', '', ing_procesado, flags=re.IGNORECASE).strip()
-
-        # Filtrar información que no es ingrediente
-        # Patrones a ignorar: "Origen de:", "Fabricado en:", "Producido en:", etc.
-        if re.match(r'(origen|fabricado|producido|hecho|procedencia|procedente)\s+(de|en):', ing_procesado, re.IGNORECASE):
-            continue
-
-        # Si tiene múltiples ingredientes separados por " y ", dividirlos
-        if ' y ' in ing_procesado.lower():
-            subingredientes = re.split(r'\s+y\s+', ing_procesado, flags=re.IGNORECASE)
-            for sub in subingredientes:
-                sub = sub.strip()
-                # Limpiar caracteres especiales finales
-                sub = re.sub(r'[.,;:\s]+$', '', sub)
-                # Filtrar información (origen, fabricado, etc.)
-                if re.match(r'(origen|fabricado|producido|hecho|procedencia|procedente)\s+(de|en):', sub, re.IGNORECASE):
-                    continue
-                if sub and len(sub) > 2:
-                    ingredientes.append(sub)
-        elif ing_procesado and len(ing_procesado) > 2:
-            # Limpiar caracteres especiales finales
-            ing_procesado = re.sub(r'[.,;:\s]+$', '', ing_procesado)
-            ingredientes.append(ing_procesado)
+        # 3h: Filtrar vacíos, muy cortos y origen
+        if (len(parte_limpia) > 2 and
+            not re.search(r'origen|fabricad', parte_limpia, re.IGNORECASE)):
+            ingredientes.append(parte_limpia)
 
     return ingredientes
 
@@ -343,7 +330,7 @@ def procesar_producto(datos_api):
     # Limpiar nombre removiendo la marca
     display_name = limpiar_nombre_producto(display_name, marca)
 
-    # Extraer ingredientes del API
+    # Extraer ingredientes del API con parser mejorado
     ingredientes = []
     nutrition_info = datos_completos.get('nutrition_information', {})
     if isinstance(nutrition_info, dict):
