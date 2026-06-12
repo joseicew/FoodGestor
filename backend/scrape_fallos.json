@@ -1,0 +1,28 @@
+{
+  "fallos": [
+    {
+      "product_id": "10376",
+      "nombre": "Crema Soja Hacendado Brick",
+      "motivo": "Sin macros",
+      "timestamp": "2026-06-12T09:54:51.408698"
+    },
+    {
+      "product_id": "10449",
+      "nombre": "Crema Leche Cafe Campina Paquete",
+      "motivo": "Sin macros",
+      "timestamp": "2026-06-12T09:55:58.509017"
+    },
+    {
+      "product_id": "10453",
+      "nombre": "Mini Burgers Vacuno Cerdo Bandeja",
+      "motivo": "Error BD",
+      "timestamp": "2026-06-12T09:56:05.905305"
+    },
+    {
+      "product_id": "10467",
+      "nombre": "Mini Burgers Pollo Bandeja",
+      "motivo": "Error BD",
+      "timestamp": "2026-06-12T09:56:20.642670"
+    }
+  ]
+}
