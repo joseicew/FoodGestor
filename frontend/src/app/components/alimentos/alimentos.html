@@ -1004,10 +1004,11 @@
                     📱 {{ alimentoSeleccionado.codigo_barras }}
                   </div>
                 }
-                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f5f5f5; border-radius: 4px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 13px; color: #666; font-weight: 600;">🏷️ Categoría:</span>
                   <select [(ngModel)]="alimentoSeleccionado.categoria"
-                          style="border: none; background: transparent; font-size: 13px; color: #333; cursor: pointer; padding: 0; font-weight: 600;">
-                    <option value="">-- Categoría --</option>
+                          style="border: 1px solid #ddd; background: white; font-size: 13px; color: #333; cursor: pointer; padding: 6px 10px; border-radius: 4px;">
+                    <option value="">-- Seleccionar --</option>
                     @for (cat of categorias; track cat) {
                       <option [value]="cat">{{ cat }}</option>
                     }
