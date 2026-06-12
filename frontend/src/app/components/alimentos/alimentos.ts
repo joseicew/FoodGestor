@@ -857,10 +857,12 @@ export class Alimentos implements OnInit {
     if (this.alimentoSeleccionadoDetalle &&
         this.alimentoSeleccionadoDetalle.categoria !== this.categoriaOriginal) {
       const categoriaActual = this.alimentoSeleccionadoDetalle.categoria;
+      const formData = new FormData();
+      formData.append('categoria', categoriaActual);
 
       this.alimentosService.actualizarAlimento(
         this.alimentoSeleccionadoDetalle.id,
-        { categoria: categoriaActual }
+        formData
       ).subscribe({
         next: () => {
           console.log('✅ Categoría guardada:', categoriaActual);
