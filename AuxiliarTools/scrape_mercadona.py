@@ -438,13 +438,17 @@ def guardar_en_bd(datos_ocr):
                 sal=datos_ocr.get('macros', {}).get('sal'),
             )
 
-            # Guardar ingredientes
+            # Guardar ingredientes (sin verificar por defecto)
             ingredientes = datos_ocr.get('ingredientes', [])
             for ing_nombre in ingredientes:
                 if ing_nombre.strip():
                     ingrediente = Ingrediente.query.filter_by(nombre=ing_nombre.strip()).first()
                     if not ingrediente:
-                        ingrediente = Ingrediente(nombre=ing_nombre.strip())
+                        # Nuevo ingrediente del scraper - sin verificar alérgenos/intolerancias
+                        ingrediente = Ingrediente(
+                            nombre=ing_nombre.strip(),
+                            verificado=False  # Pendiente de valorar alergenos/intolerancias
+                        )
                         db.session.add(ingrediente)
                         db.session.flush()
                     alimento.ingredientes.append(ingrediente)
