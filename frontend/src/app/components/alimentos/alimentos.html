@@ -9,7 +9,14 @@
       <div class="popup-box" (click)="$event.stopPropagation()">
         <div class="popup-header">
           <h2>{{ alimentoSeleccionadoDetalle.nombre }}</h2>
-          <button class="popup-close" (click)="cerrarDetallesAlimento()">✕</button>
+          <div style="display: flex; gap: 8px;">
+            @if (mostrarBotonesEdicion) {
+              <button class="btn-primary" (click)="seleccionarAlimento(alimentoSeleccionadoDetalle); cerrarDetallesAlimento()" style="padding: 6px 12px; font-size: 12px;">
+                ✏️ Editar
+              </button>
+            }
+            <button class="popup-close" (click)="cerrarDetallesAlimento()">✕</button>
+          </div>
         </div>
 
         <div class="popup-content" (click)="cerrarDropdowns()">
