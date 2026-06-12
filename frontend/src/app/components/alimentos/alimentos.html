@@ -23,7 +23,13 @@
               </div>
               <div class="info-item">
                 <span class="info-label">Categoría</span>
-                <span class="info-valor">{{ alimentoSeleccionadoDetalle.categoria }}</span>
+                <select [(ngModel)]="alimentoSeleccionadoDetalle.categoria"
+                        style="border: 1px solid #ddd; padding: 4px 8px; border-radius: 4px; font-size: 13px; background: white; cursor: pointer;">
+                  <option value="">-- Seleccionar --</option>
+                  @for (cat of categorias; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                  }
+                </select>
               </div>
               @if (alimentoSeleccionadoDetalle.codigo_barras) {
                 <div class="info-item">
