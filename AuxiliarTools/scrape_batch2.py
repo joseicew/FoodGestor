@@ -74,11 +74,30 @@ def procesar_ingredientes(texto):
         'aroma', 'aromas', 'aromatizante', 'aromatizantes',
         'espesante', 'espesantes',
         'regulador', 'reguladores',
-        'gelificante', 'gelificantes'
+        'gelificante', 'gelificantes',
+        'vitaminas', 'vitamina'
     }
 
-    def procesar_parentesis(match):
-        """Procesa el contenido entre paréntesis."""
+    # Procesar paréntesis anidados recursivamente
+    def limpiar_parentesis_anidados(txt):
+        """Remueve paréntesis anidados manteniendo solo nivel 1."""
+        # Remover paréntesis anidados (dentro de paréntesis)
+        while '(' in txt and ')' in txt:
+            # Buscar el paréntesis más interno y remover su contenido
+            txt_new = re.sub(r'\([^()]*\)', lambda m: '', txt)
+            if txt_new == txt:
+                break
+            txt = txt_new
+        return txt
+
+    # Primero, simplificar paréntesis anidados dentro de categorías
+    # Ej: "vitaminas (acetato de retinilo (vitamina A), ...)" -> "vitaminas (acetato de retinilo, ...)"
+    texto = re.sub(r'(\w+)\s*\(([^()]*(?:\([^()]*\)[^()]*)*)\)',
+                   lambda m: f"{m.group(1)} ({limpiar_parentesis_anidados(m.group(2))})",
+                   texto)
+
+    def procesar_parentesis_simple(match):
+        """Procesa paréntesis de nivel único."""
         base = match.group(1).strip()
         contenido = match.group(2).strip()
 
@@ -88,12 +107,12 @@ def procesar_ingredientes(texto):
 
         # Si la palabra clave indica una categoría de compuestos
         if palabra_clave in categorias_compuestos:
-            # Extraer solo los compuestos del paréntesis, no la categoría
+            # Extraer solo los compuestos del paréntesis
             compuestos = [c.strip() for c in contenido.split(',')]
-            # Retornar como "E-407, acesulfame K" etc (sin "Estabilizantes")
+            # Retornar como "E-407, E-451" etc (sin "Estabilizantes")
             return ', '.join(compuestos)
 
-        # Si contiene códigos E-xxx u otros aditivos, son componentes adicionales
+        # Si contiene códigos E-xxx u otros aditivos
         if re.search(r'E-?\d{3,4}', contenido):
             compuestos = [c.strip() for c in contenido.split(',')]
             return ', '.join(compuestos)
@@ -101,13 +120,11 @@ def procesar_ingredientes(texto):
         # Si no, es información adicional (porcentaje, cantidad, origen) -> eliminar
         return base
 
-    # Reemplazar paréntesis inteligentemente
-    texto = re.sub(r'([^()]+)\(([^)]*)\)', procesar_parentesis, texto)
+    # Reemplazar paréntesis de nivel único
+    texto = re.sub(r'([^()]+)\(([^()]*)\)', procesar_parentesis_simple, texto)
 
     # Dividir por separadores: comas, puntos, "y"
-    # Reemplazar puntos seguidos de espacio por coma
     texto = texto.replace('. ', ',')
-    # Reemplazar " y " por coma
     texto = re.sub(r'\s+y\s+', ',', texto, flags=re.IGNORECASE)
 
     # Dividir y limpiar
