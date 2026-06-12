@@ -32,7 +32,7 @@ app = create_app()
 
 MERCADONA_SITEMAP = "https://tienda.mercadona.es/sitemap.xml"
 MERCADONA_API = "https://tienda.mercadona.es/api/products/{id}/?lang=es&wh=alc1"
-MAX_PRODUCTOS = 200  # Aumentado a 200
+MAX_PRODUCTOS = 20  # Aumentado a 200
 DELAY_SEGUNDOS = 3  # Mínimo de 3 segundos entre requests
 
 # User-agents variados para parecer navegadores reales
@@ -267,12 +267,16 @@ def guardar_en_bd(datos_ocr):
     """Guarda los datos extraídos en la base de datos."""
     try:
         with app.app_context():
+            from app import db
+            from app.models import Ingrediente
+
             # Usar nombre del OCR si existe, sino usar nombre de API
             nombre = datos_ocr.get('nombre') or datos_ocr.get('nombre_api', 'Sin nombre')
+            marca = datos_ocr.get('marca') or 'Sin marca'
 
             alimento = Alimento(
                 nombre=nombre,
-                marca=datos_ocr.get('marca', 'Sin marca'),
+                marca=marca,
                 codigo_barras=datos_ocr.get('ean') or datos_ocr.get('codigo_barras'),
                 categoria='Otros',
                 calorias=datos_ocr.get('macros', {}).get('calorias'),
@@ -283,7 +287,18 @@ def guardar_en_bd(datos_ocr):
                 fibra=datos_ocr.get('macros', {}).get('fibra'),
                 sal=datos_ocr.get('macros', {}).get('sal'),
             )
-            from app import db
+
+            # Guardar ingredientes
+            ingredientes = datos_ocr.get('ingredientes', [])
+            for ing_nombre in ingredientes:
+                if ing_nombre.strip():
+                    ingrediente = Ingrediente.query.filter_by(nombre=ing_nombre.strip()).first()
+                    if not ingrediente:
+                        ingrediente = Ingrediente(nombre=ing_nombre.strip())
+                        db.session.add(ingrediente)
+                        db.session.flush()
+                    alimento.ingredientes.append(ingrediente)
+
             db.session.add(alimento)
             db.session.commit()
             print(f"      [SAVE] Guardado en BD")

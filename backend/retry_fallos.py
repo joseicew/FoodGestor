@@ -144,6 +144,8 @@ def procesar_producto(datos_api):
 def guardar_en_bd(datos):
     try:
         with app.app_context():
+            from app.models import Ingrediente
+
             marca = datos.get('marca') or 'Sin marca'
             alimento = Alimento(
                 nombre=datos.get('nombre'),
@@ -159,6 +161,18 @@ def guardar_en_bd(datos):
                 fibra=datos.get('macros', {}).get('fibra'),
                 sal=datos.get('macros', {}).get('sal'),
             )
+
+            # Guardar ingredientes
+            ingredientes = datos.get('ingredientes', [])
+            for ing_nombre in ingredientes:
+                if ing_nombre.strip():
+                    ingrediente = Ingrediente.query.filter_by(nombre=ing_nombre.strip()).first()
+                    if not ingrediente:
+                        ingrediente = Ingrediente(nombre=ing_nombre.strip())
+                        db.session.add(ingrediente)
+                        db.session.flush()
+                    alimento.ingredientes.append(ingrediente)
+
             db.session.add(alimento)
             db.session.commit()
             return alimento
