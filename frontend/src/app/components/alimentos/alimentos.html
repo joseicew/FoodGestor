@@ -1160,12 +1160,13 @@
             <span>{{ ingredientesAVerificar.length }} ingredient{{ ingredientesAVerificar.length !== 1 ? 'es' : '' }} pendiente{{ ingredientesAVerificar.length !== 1 ? 's' : '' }}</span>
           </div>
 
-          <!-- Nombre del ingrediente (no editable) -->
+          <!-- Nombre del ingrediente (editable) -->
           <div>
             <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Ingrediente</label>
-            <div style="background: #f5f5f5; padding: 12px; border-radius: 4px; font-weight: 600; color: #333; font-size: 14px;">
-              {{ ingredienteActualVerificacion.nombre }}
-            </div>
+            <input type="text"
+                   [(ngModel)]="ingredienteActualVerificacion.nombre"
+                   style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; font-weight: 600; background: white;"
+                   placeholder="Nombre del ingrediente" />
           </div>
 
           <!-- Categoría (dropdown) -->
