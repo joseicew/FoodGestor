@@ -239,9 +239,13 @@ def procesar_ingredientes(texto):
             subingredientes = re.split(r'\s+y\s+', ing_procesado, flags=re.IGNORECASE)
             for sub in subingredientes:
                 sub = sub.strip()
+                # Limpiar caracteres especiales finales
+                sub = re.sub(r'[.,;:\s]+$', '', sub)
                 if sub and len(sub) > 2:
                     ingredientes.append(sub)
         elif ing_procesado and len(ing_procesado) > 2:
+            # Limpiar caracteres especiales finales
+            ing_procesado = re.sub(r'[.,;:\s]+$', '', ing_procesado)
             ingredientes.append(ing_procesado)
 
     return ingredientes
