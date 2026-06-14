@@ -1136,20 +1136,6 @@
                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; min-height: 80px; resize: vertical; font-family: inherit;"></textarea>
           </div>
 
-          <!-- Alergenos asignados -->
-          @if (ingredienteActualVerificacion.alergenos_categorias && ingredienteActualVerificacion.alergenos_categorias.length > 0) {
-            <div>
-              <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 8px;">Alergenos asignados</label>
-              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                @for (alergia of ingredienteActualVerificacion.alergenos_categorias; track alergia) {
-                  <span style="background: #ffebee; color: #c62828; padding: 6px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;">
-                    {{ alergia }}
-                  </span>
-                }
-              </div>
-            </div>
-          }
-
           <!-- Botones de acción -->
           <div style="display: flex; gap: 10px; margin-top: 8px;">
             <button (click)="cerrarModalVerificarIngredientes()"
