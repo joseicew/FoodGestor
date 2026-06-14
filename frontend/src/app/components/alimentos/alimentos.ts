@@ -1359,8 +1359,8 @@ export class Alimentos implements OnInit {
   }
 
   async agregarIngrediente() {
-    const ingrediente = this.nuevoIngrediente.trim();
-    if (!ingrediente) return;
+    const nombreIngrediente = this.nuevoIngrediente.trim();
+    if (!nombreIngrediente) return;
 
     this.cargandoIngrediente = true;
 
@@ -1370,44 +1370,67 @@ export class Alimentos implements OnInit {
       }
 
       // Evitar duplicados
-      if (this.alimentoSeleccionadoDetalle.ingredientes.includes(ingrediente)) {
+      const yaExiste = this.alimentoSeleccionadoDetalle.ingredientes.some(
+        (ing: any) => (ing.nombre || ing).toLowerCase() === nombreIngrediente.toLowerCase()
+      );
+      if (yaExiste) {
         this.nuevoIngrediente = '';
         this.cdr.detectChanges();
         return;
       }
 
-      // Verificar si es un ingrediente NUEVO (no existe en la base de datos)
-      const esNuevo = !this.todosLosIngredientes.has(ingrediente);
+      // Crear o obtener el ingrediente del backend
+      const nombreCapitalizado = nombreIngrediente.charAt(0).toUpperCase() + nombreIngrediente.slice(1);
+      const respuesta = await this.http.post<any>(
+        'http://192.168.1.17:5000/api/ingredientes/',
+        { nombre: nombreCapitalizado, verificado: false },
+        this.getHeaders()
+      ).toPromise();
 
-      if (esNuevo) {
-        // Crear el ingrediente manualmente
-        try {
-          await this.http.post<any>(
-            'http://192.168.1.17:5000/api/ingredientes/',
-            { nombre: ingrediente, verificado: false },
-            this.getHeaders()
-          ).toPromise();
-          this.mostrarMensaje(`Ingrediente "${ingrediente}" creado. Asigna sus alérgenos desde la gestión de ingredientes.`, 'exito');
-        } catch (error: any) {
-          // Si el ingrediente ya existe (409), simplemente continuar
-          if (error.status !== 409) {
-            this.mostrarMensaje(`Error creando ingrediente: ${error.message}`, 'error');
-            return;
-          }
-          // Si es 409, continuamos para agregar el ingrediente existente
-        }
+      // Agregar el objeto ingrediente (con id y nombre) a la lista
+      if (respuesta && respuesta.id) {
+        this.alimentoSeleccionadoDetalle.ingredientes.push({
+          id: respuesta.id,
+          nombre: respuesta.nombre,
+          verificado: respuesta.verificado || false,
+          alergenos_categorias: respuesta.alergenos_categorias || []
+        });
       }
 
-      // Agregar el ingrediente (existente o recién creado)
-      this.alimentoSeleccionadoDetalle.ingredientes.push(ingrediente);
-      this.todosLosIngredientes.add(ingrediente);
-
+      this.todosLosIngredientes.add(nombreIngrediente);
       this.nuevoIngrediente = '';
       this.ingredientesFiltrados = [];
 
       // Forzar actualización de vistas
       this.cdr.detectChanges();
       setTimeout(() => this.cdr.detectChanges(), 100);
+    } catch (error: any) {
+      // Si el ingrediente ya existe (409), obtenerlo y agregarlo
+      if (error.status === 409) {
+        try {
+          const respuesta = await this.http.get<any>(
+            `http://192.168.1.17:5000/api/ingredientes/?nombre=${encodeURIComponent(nombreIngrediente)}`,
+            this.getHeaders()
+          ).toPromise();
+
+          if (respuesta && respuesta.length > 0) {
+            const ingrediente = respuesta[0];
+            this.alimentoSeleccionadoDetalle.ingredientes.push({
+              id: ingrediente.id,
+              nombre: ingrediente.nombre,
+              verificado: ingrediente.verificado || false,
+              alergenos_categorias: ingrediente.alergenos_categorias || []
+            });
+            this.nuevoIngrediente = '';
+            this.ingredientesFiltrados = [];
+            this.cdr.detectChanges();
+          }
+        } catch (searchError: any) {
+          this.mostrarMensaje('Error al agregar ingrediente', 'error');
+        }
+      } else {
+        this.mostrarMensaje(`Error: ${error.message || 'No se pudo agregar ingrediente'}`, 'error');
+      }
     } finally {
       this.cargandoIngrediente = false;
     }
