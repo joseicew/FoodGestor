@@ -1388,12 +1388,13 @@ export class Alimentos implements OnInit {
       ).toPromise();
 
       // Agregar el objeto ingrediente (con id y nombre) a la lista
-      if (respuesta && respuesta.id) {
+      if (respuesta && (respuesta.id || respuesta.ingrediente)) {
+        const ingrediente = respuesta.ingrediente || respuesta;
         this.alimentoSeleccionadoDetalle.ingredientes.push({
-          id: respuesta.id,
-          nombre: respuesta.nombre,
-          verificado: respuesta.verificado || false,
-          alergenos_categorias: respuesta.alergenos_categorias || []
+          id: ingrediente.id,
+          nombre: ingrediente.nombre,
+          verificado: ingrediente.verificado || false,
+          alergenos_categorias: ingrediente.alergenos_categorias || []
         });
       }
 
@@ -1413,14 +1414,20 @@ export class Alimentos implements OnInit {
             this.getHeaders()
           ).toPromise();
 
-          if (respuesta && respuesta.length > 0) {
-            const ingrediente = respuesta[0];
-            this.alimentoSeleccionadoDetalle.ingredientes.push({
-              id: ingrediente.id,
-              nombre: ingrediente.nombre,
-              verificado: ingrediente.verificado || false,
-              alergenos_categorias: ingrediente.alergenos_categorias || []
-            });
+          if (respuesta && respuesta.ingredientes && respuesta.ingredientes.length > 0) {
+            const ingrediente = respuesta.ingredientes[0];
+            const yaExiste = this.alimentoSeleccionadoDetalle.ingredientes.some(
+              (ing: any) => ing.id === ingrediente.id
+            );
+
+            if (!yaExiste) {
+              this.alimentoSeleccionadoDetalle.ingredientes.push({
+                id: ingrediente.id,
+                nombre: ingrediente.nombre,
+                verificado: ingrediente.verificado || false,
+                alergenos_categorias: ingrediente.alergenos_categorias || []
+              });
+            }
             this.nuevoIngrediente = '';
             this.ingredientesFiltrados = [];
             this.cdr.detectChanges();

@@ -7,15 +7,20 @@ ingredientes_bp = Blueprint('ingredientes', __name__, url_prefix='/api/ingredien
 
 @ingredientes_bp.route('/', methods=['GET'])
 def obtener_ingredientes():
-    """Obtener lista de ingredientes"""
+    """Obtener lista de ingredientes con filtros opcionales"""
     try:
         es_aditivo = request.args.get('es_aditivo', None)
+        nombre = request.args.get('nombre', None)
 
         query = Ingrediente.query
 
         if es_aditivo is not None:
             es_aditivo = es_aditivo.lower() == 'true'
             query = query.filter_by(es_aditivo=es_aditivo)
+
+        if nombre is not None:
+            nombre_lower = nombre.lower().strip()
+            query = query.filter(db.func.lower(Ingrediente.nombre) == nombre_lower)
 
         ingredientes = query.order_by(Ingrediente.nombre).all()
 
