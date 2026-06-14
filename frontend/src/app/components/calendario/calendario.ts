@@ -6,6 +6,8 @@ import { CalendarioService } from '../../services/calendario';
 import { RacionesService } from '../../services/raciones';
 import { AlimentosService } from '../../services/alimentos';
 import { AuthService } from '../../services/auth';
+import { OptimisticUpdateService } from '../../services/optimistic-update';
+import { CacheService } from '../../services/cache';
 
 @Component({
   selector: 'app-calendario',
@@ -77,7 +79,9 @@ export class Calendario implements OnInit {
     private alimentosService: AlimentosService,
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private optimisticUpdateService: OptimisticUpdateService,
+    private cacheService: CacheService
   ) {}
 
   ngOnInit() {
@@ -283,18 +287,36 @@ export class Calendario implements OnInit {
     if (!this.tipoComidaActual) return;
 
     const fechaStr = this.formatoFecha(this.fechaSeleccionada);
-    this.calendarioService.agregarRacionAlComida(
+
+    // Mostrar feedback inmediato al usuario
+    this.mostrarMensaje(`⏳ Guardando ${racion.nombre}...`, 'exito');
+    this.cerrarModalRacion();
+
+    // Sincronización optimista
+    this.optimisticUpdateService.agregarRacionOptimista(
       fechaStr,
       this.tipoComidaActual,
       racion.id,
-      1
+      1,
+      this.diaActual,
+      () => this.calendarioService.agregarRacionAlComida(
+        fechaStr,
+        this.tipoComidaActual,
+        racion.id,
+        1
+      )
     ).subscribe({
       next: () => {
-        this.mostrarMensaje(`✓ ${racion.nombre} agregado`, 'exito');
+        // Recargar el día para obtener datos actualizados del servidor
         this.cargarDia(this.fechaSeleccionada);
-        this.cerrarModalRacion();
+        this.mostrarMensaje(`✅ ${racion.nombre} agregado`, 'exito');
       },
-      error: () => this.mostrarMensaje('Error al agregar ración', 'error')
+      error: (err) => {
+        console.error('Error al agregar ración:', err);
+        this.mostrarMensaje(`❌ Error al guardar ${racion.nombre}. Reintentando...`, 'error');
+        // El OptimisticUpdateService ya revirtió los cambios locales
+        // Aquí podrías agregar un botón de reintentar
+      }
     });
   }
 
@@ -346,18 +368,32 @@ export class Calendario implements OnInit {
       gramosAgregar = this.convertirFraccionANumero(this.cantidadAlimento);
     }
 
-    this.calendarioService.agregarAlimentoAlComida(
+    // Mostrar feedback inmediato
+    this.mostrarMensaje(`⏳ Guardando ${alimento.nombre}...`, 'exito');
+    this.cerrarModalAlimento();
+
+    // Sincronización optimista
+    this.optimisticUpdateService.agregarAlimentoOptimista(
       fechaStr,
       this.tipoComidaActual,
       alimento.id,
-      gramosAgregar
+      gramosAgregar,
+      () => this.calendarioService.agregarAlimentoAlComida(
+        fechaStr,
+        this.tipoComidaActual,
+        alimento.id,
+        gramosAgregar
+      )
     ).subscribe({
       next: () => {
-        this.mostrarMensaje(`✓ ${alimento.nombre} agregado`, 'exito');
+        // Recargar el día para obtener datos actualizados del servidor
         this.cargarDia(this.fechaSeleccionada);
-        this.cerrarModalAlimento();
+        this.mostrarMensaje(`✅ ${alimento.nombre} agregado`, 'exito');
       },
-      error: () => this.mostrarMensaje('Error al agregar alimento', 'error')
+      error: (err) => {
+        console.error('Error al agregar alimento:', err);
+        this.mostrarMensaje(`❌ Error al guardar ${alimento.nombre}. Reintentando...`, 'error');
+      }
     });
   }
 
