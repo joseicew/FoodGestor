@@ -104,6 +104,7 @@ export class Alimentos implements OnInit {
   mostrarAlergenosPopup = false;
   ingredienteMostrandoAlergenos: any = null;
   popoverStyle: any = {};
+  alergenoSeleccionado: string = '';
   categoriasAlimentos: string[] = [
     'Cereales y derivados',
     'Legumbres',
@@ -1154,6 +1155,29 @@ export class Alimentos implements OnInit {
       ingrediente.alergenos_categorias.splice(index, 1);
     } else {
       ingrediente.alergenos_categorias.push(categoria);
+    }
+  }
+
+  agregarAlergeno() {
+    if (!this.alergenoSeleccionado || !this.ingredienteActualVerificacion) return;
+
+    if (!this.ingredienteActualVerificacion.alergenos_categorias) {
+      this.ingredienteActualVerificacion.alergenos_categorias = [];
+    }
+
+    if (!this.ingredienteActualVerificacion.alergenos_categorias.includes(this.alergenoSeleccionado)) {
+      this.ingredienteActualVerificacion.alergenos_categorias.push(this.alergenoSeleccionado);
+    }
+
+    this.alergenoSeleccionado = '';
+  }
+
+  quitarAlergeno(alergeno: string) {
+    if (!this.ingredienteActualVerificacion || !this.ingredienteActualVerificacion.alergenos_categorias) return;
+
+    const index = this.ingredienteActualVerificacion.alergenos_categorias.indexOf(alergeno);
+    if (index > -1) {
+      this.ingredienteActualVerificacion.alergenos_categorias.splice(index, 1);
     }
   }
 

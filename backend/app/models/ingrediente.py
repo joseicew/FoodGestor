@@ -11,12 +11,7 @@ ALERGENO_CATEGORIAS = [
     'Marisco',
     'Huevo',
     'Soja',
-    'Cacahuete',
     'Pescado',
-    'Mostaza',
-    'Apio',
-    'Sésamo',
-    'Dióxido de azufre',
     'Moluscos'
 ]
 
