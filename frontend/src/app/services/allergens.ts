@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, map } from 'rxjs/operators';
 import { AuthService } from './auth';
 import { environment } from '../../environments/environment';
 import { of } from 'rxjs';
@@ -41,8 +41,8 @@ export class AllergensService {
     }
 
     return this.http.get<{categorias: string[]}>(this.apiUrl, this.getHeaders()).pipe(
-      tap((response) => {
-        const alergenos = response.categorias || [];
+      map((response) => response.categorias || []),
+      tap((alergenos) => {
         this.allergensCached = alergenos;
         this.allergensSubject.next(alergenos);
         console.log('✅ Alergenos cargados:', alergenos.length);
