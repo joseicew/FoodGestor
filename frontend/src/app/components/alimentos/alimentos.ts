@@ -231,6 +231,10 @@ export class Alimentos implements OnInit {
   }
 
   cambiarPanel(panel: 'anadir' | 'buscar' | 'actualizar') {
+    // Guardar cambios pendientes del popup si está abierto
+    if (this.mostrarDetallesAlimento) {
+      this.cerrarDetallesAlimento();
+    }
     this.activePanel = panel;
     this.mensaje = '';
     this.alimentoSeleccionado = null;
@@ -816,6 +820,10 @@ export class Alimentos implements OnInit {
   }
 
   irAFavoritos() {
+    // Guardar cambios pendientes del popup si está abierto
+    if (this.mostrarDetallesAlimento) {
+      this.cerrarDetallesAlimento();
+    }
     this.categoriaFiltro = '';
     this.terminoBusqueda = '';
     this.activePanel = 'favoritos';
