@@ -259,3 +259,78 @@
 .onboarding-box::-webkit-scrollbar-thumb:hover {
   background: #bbb;
 }
+
+/* Sección de Intolerancias */
+.intolerancias-group {
+  background: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.intolerancias-group label:first-child {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2d2d2d;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: #666;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.intolerancias-lista {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.checkbox-label:hover {
+  background-color: #f0f0f0;
+}
+
+.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: #6B9117;
+}
+
+.checkbox-label input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkbox-label span {
+  flex: 1;
+}
+
+.loading {
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  padding: 16px;
+}
+
+.no-options {
+  text-align: center;
+  color: #c33;
+  font-size: 14px;
+  padding: 16px;
+}

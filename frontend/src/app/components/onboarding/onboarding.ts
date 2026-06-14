@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
+import { AllergensService } from '../../services/allergens';
 
 interface LimitesCalculados {
   calorias: number;
@@ -27,16 +28,20 @@ export class OnboardingComponent implements OnInit {
   peso: number | null = null; // en kg
   nivelActividad: string = 'moderado';
   objetivo: string = 'mantener';
+  intolerancias: string[] = []; // Alergias/intolerancias del usuario
 
   // Estado
   cargando: boolean = false;
   mensaje: string = '';
   mensajeTipo: 'error' | 'exito' = 'error';
+  cargandoAlergenos: boolean = true;
 
   // Límites calculados
   limitesCalculados: LimitesCalculados | null = null;
 
   // Opciones
+  opcionesAlergenos: string[] = [];
+
   opcicionesSexo = [
     { value: 'M', label: 'Hombre' },
     { value: 'F', label: 'Mujer' },
@@ -59,6 +64,7 @@ export class OnboardingComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private allergensService: AllergensService,
     private router: Router
   ) {}
 
@@ -66,7 +72,21 @@ export class OnboardingComponent implements OnInit {
     // Si no está autenticado, redirigir a registro
     if (!this.authService.estaAutenticado()) {
       this.router.navigate(['/registro']);
+      return;
     }
+
+    // Cargar alergenos disponibles
+    this.allergensService.obtenerAlergenos().subscribe({
+      next: (alergenos) => {
+        this.opcionesAlergenos = alergenos;
+        this.cargandoAlergenos = false;
+        console.log('✅ Alergenos cargados para selector:', alergenos.length);
+      },
+      error: (err) => {
+        console.error('Error cargando alergenos:', err);
+        this.cargandoAlergenos = false;
+      }
+    });
   }
 
   /**
@@ -204,7 +224,8 @@ export class OnboardingComponent implements OnInit {
       limites_calorias: this.limitesCalculados.calorias,
       limites_proteinas: this.limitesCalculados.proteinas,
       limites_grasas: this.limitesCalculados.grasas,
-      limites_azucares: this.limitesCalculados.azucares
+      limites_azucares: this.limitesCalculados.azucares,
+      intolerancias: this.intolerancias
     };
 
     this.authService.actualizarPerfil(datosOnboarding).subscribe({
@@ -218,6 +239,19 @@ export class OnboardingComponent implements OnInit {
         this.mostrarMensaje(mensaje, 'error');
       }
     });
+  }
+
+  /**
+   * Toggle de intolerancia
+   */
+  toggleIntolerancia(alergeno: string): void {
+    const index = this.intolerancias.indexOf(alergeno);
+    if (index > -1) {
+      this.intolerancias.splice(index, 1);
+    } else {
+      this.intolerancias.push(alergeno);
+    }
+    console.log('Intolerancias seleccionadas:', this.intolerancias);
   }
 
   /**

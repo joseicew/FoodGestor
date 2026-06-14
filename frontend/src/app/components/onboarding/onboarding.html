@@ -125,6 +125,33 @@
         </select>
       </div>
 
+      <!-- Intolerancias/Alergias -->
+      <div class="form-group intolerancias-group">
+        <label>Intolerancias y Alergias</label>
+        <p class="form-hint">Selecciona si tienes intolerancia o alergia a alguno de estos alimentos</p>
+
+        @if (cargandoAlergenos) {
+          <p class="loading">Cargando opciones...</p>
+        } @else if (opcionesAlergenos.length > 0) {
+          <div class="intolerancias-lista">
+            @for (alergeno of opcionesAlergenos; track alergeno) {
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [value]="alergeno"
+                  [checked]="intolerancias.includes(alergeno)"
+                  (change)="toggleIntolerancia(alergeno)"
+                  [disabled]="cargando"
+                />
+                <span>{{ alergeno }}</span>
+              </label>
+            }
+          </div>
+        } @else {
+          <p class="no-options">No se pudieron cargar las opciones</p>
+        }
+      </div>
+
       <!-- Límites Calculados -->
       @if (limitesCalculados) {
         <div class="limites-calculados">
