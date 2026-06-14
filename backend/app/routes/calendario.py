@@ -414,3 +414,27 @@ def actualizar_cantidad_alimento(fecha, tipo_comida, alimento_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@calendario_bp.route('/sync/diff', methods=['POST'])
+@jwt_required()
+def verificar_cambios_calendario():
+    """Verifica si hay cambios en el calendario del usuario desde la última carga"""
+    try:
+        usuario_id = int(get_jwt_identity())
+        data = request.get_json() or {}
+        cliente_count = data.get('count', 0)
+
+        # Contar entradas de calendario actuales en el servidor para este usuario
+        total_calendario = ComidaDiaria.query.filter_by(usuario_id=usuario_id).count()
+
+        # Si la cantidad cambió, hay cambios
+        hay_cambios = cliente_count != total_calendario
+
+        return jsonify({
+            'hay_cambios': hay_cambios,
+            'count_servidor': total_calendario,
+            'count_cliente': cliente_count
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

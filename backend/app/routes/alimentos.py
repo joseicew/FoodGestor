@@ -449,3 +449,26 @@ def actualizar_alergenos(id):
         return jsonify({'error': str(e)}), 500
 
 
+@alimentos_bp.route('/sync/diff', methods=['POST'])
+@jwt_required()
+def verificar_cambios_alimentos():
+    """Verifica si hay cambios en los alimentos desde la última carga"""
+    try:
+        data = request.get_json() or {}
+        cliente_count = data.get('count', 0)
+
+        # Contar alimentos actuales en el servidor
+        total_alimentos = Alimento.query.count()
+
+        # Si la cantidad cambió, hay cambios
+        hay_cambios = cliente_count != total_alimentos
+
+        return jsonify({
+            'hay_cambios': hay_cambios,
+            'count_servidor': total_alimentos,
+            'count_cliente': cliente_count
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
