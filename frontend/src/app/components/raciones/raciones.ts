@@ -119,34 +119,62 @@ export class Raciones implements OnInit, AfterViewInit {
       return;
     }
 
-    this.cargando = true;
-    this.racionesService.crearRacion({ nombre, descripcion: '' }).subscribe({
-      next: (res) => {
-        const nuevoRacion = res.racion;
-        this.raciones.push(nuevoRacion);
-        this.racionSeleccionada = { ...nuevoRacion };
+    this.mostrarMensaje(`⏳ Creando ración...`, 'exito');
+    this.mostrarModalCrear = false;
+
+    // Crear ración temporal para mostrar inmediatamente
+    const nuevoRacionTemp = {
+      id: Date.now(), // ID temporal
+      nombre: nombre,
+      alimentos: [],
+      descripcion: ''
+    };
+
+    // Agregar localmente de inmediato
+    this.raciones.push(nuevoRacionTemp);
+    this.racionSeleccionada = { ...nuevoRacionTemp };
+    this.cargando = false;
+
+    // Sincronización optimista
+    this.optimisticUpdateService.executar({
+      updateLocal: () => {
+        console.log(`📝 Ración "${nombre}" creada localmente`);
+      },
+      serverAction: () => this.racionesService.crearRacion({ nombre, descripcion: '' }),
+      rollback: () => {
+        // Revertir la ración local si falla
+        const index = this.raciones.findIndex(r => r.id === nuevoRacionTemp.id);
+        if (index !== -1) {
+          this.raciones.splice(index, 1);
+        }
+        console.log('↩️ Ración removida (rollback)');
+      },
+      onSuccess: (res) => {
+        // Reemplazar ID temporal con ID del servidor
+        const index = this.raciones.findIndex(r => r.id === nuevoRacionTemp.id);
+        if (index !== -1) {
+          this.raciones[index] = res.racion;
+          this.racionSeleccionada = { ...res.racion };
+        }
+      }
+    }).subscribe({
+      next: () => {
         this.nuevoRacionNombre = '';
         this.terminoBusquedaAlimentos = '';
         this.alimentosFiltrados = this.alimentos;
-
-        // Cerrar modal primero
-        this.mostrarModalCrear = false;
         this.cargando = false;
-        this.cdr.detectChanges();
 
-        // Cambiar panel después de un pequeño delay para transición suave
         setTimeout(() => {
           this.activePanel = 'editar';
-          this.mostrarMensaje(`✓ "${nuevoRacion.nombre}" creado`, 'exito');
+          this.mostrarMensaje(`✅ "${nombre}" creado`, 'exito');
           this.crearGrafica();
           this.cdr.detectChanges();
         }, 300);
       },
       error: (err) => {
         const msg = err.error?.error || 'Error al crear ración';
-        this.mostrarMensaje(msg, 'error');
+        this.mostrarMensaje(`❌ ${msg}. Reintentando...`, 'error');
         this.cargando = false;
-        this.cdr.detectChanges();
       }
     });
   }
