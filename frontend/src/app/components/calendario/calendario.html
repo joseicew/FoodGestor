@@ -127,7 +127,7 @@
                   <div class="items-section">
                     <h4>Raciones</h4>
                     @for (racion of diaActual[tipoComida].raciones; track racion.id) {
-                      <div class="item-card">
+                      <div class="item-card" [class.allergen-warning]="tieneAlergeno(racion)">
                         <div class="item-info">
                           <span class="item-nombre">{{ racion.nombre }}</span>
                           <div class="item-cantidad-edit">
@@ -152,7 +152,7 @@
                   <div class="items-section">
                     <h4>Alimentos</h4>
                     @for (alimento of diaActual[tipoComida].alimentos; track alimento.id) {
-                      <div class="item-card">
+                      <div class="item-card" [class.allergen-warning]="tieneAlergeno(alimento)">
                         <span class="item-nombre">{{ alimento.nombre }} <span class="item-marca">({{ alimento.marca }})</span></span>
                         <div class="item-cantidad-edit">
                           <input type="text"

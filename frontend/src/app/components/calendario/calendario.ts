@@ -8,6 +8,7 @@ import { AlimentosService } from '../../services/alimentos';
 import { AuthService } from '../../services/auth';
 import { OptimisticUpdateService } from '../../services/optimistic-update';
 import { CacheService } from '../../services/cache';
+import { AllergensService } from '../../services/allergens';
 
 @Component({
   selector: 'app-calendario',
@@ -73,6 +74,9 @@ export class Calendario implements OnInit {
   cantidadAlimento: string | number = 1;
   modoAgregarAlimento: 'unidades' | 'gramos' = 'unidades';
 
+  // Alergias del usuario
+  intoleranciaUsuario: string[] = [];
+
   constructor(
     private calendarioService: CalendarioService,
     private racionesService: RacionesService,
@@ -81,7 +85,8 @@ export class Calendario implements OnInit {
     private authService: AuthService,
     private router: Router,
     private optimisticUpdateService: OptimisticUpdateService,
-    private cacheService: CacheService
+    private cacheService: CacheService,
+    private allergensService: AllergensService
   ) {}
 
   ngOnInit() {
@@ -94,6 +99,14 @@ export class Calendario implements OnInit {
     }
 
     console.log('✓ [Calendario.ngOnInit] Autenticado, cargando datos...');
+
+    // Cargar intolerancias del usuario
+    const usuarioData = this.authService.obtenerDatos();
+    if (usuarioData && usuarioData.intolerancias) {
+      this.intoleranciaUsuario = usuarioData.intolerancias;
+      console.log('✅ Intolerancias del usuario cargadas:', this.intoleranciaUsuario.length);
+    }
+
     this.cargarDia(this.fechaSeleccionada);
     this.cargarRaciones();
     this.cargarAlimentos();
@@ -501,5 +514,9 @@ export class Calendario implements OnInit {
     this.mensaje = texto;
     this.mensajeTipo = tipo;
     setTimeout(() => this.mensaje = '', 4000);
+  }
+
+  tieneAlergeno(alimento: any): boolean {
+    return this.allergensService.tieneAlergeno(alimento, this.intoleranciaUsuario);
   }
 }

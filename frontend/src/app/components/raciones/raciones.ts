@@ -6,6 +6,8 @@ import { AlimentosService } from '../../services/alimentos';
 import { OptimisticUpdateService } from '../../services/optimistic-update';
 import { SyncStatusService } from '../../services/sync-status';
 import { CacheService } from '../../services/cache';
+import { AllergensService } from '../../services/allergens';
+import { AuthService } from '../../services/auth';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -44,6 +46,9 @@ export class Raciones implements OnInit, AfterViewInit {
   cantidadAgregarAlimento: string | number = 1;
   modoAgregarAlimentoRacion: 'unidades' | 'gramos' = 'unidades';
 
+  // Alergias del usuario
+  intoleranciaUsuario: string[] = [];
+
 
   constructor(
     private racionesService: RacionesService,
@@ -51,10 +56,19 @@ export class Raciones implements OnInit, AfterViewInit {
     private optimisticUpdateService: OptimisticUpdateService,
     private syncStatusService: SyncStatusService,
     private cacheService: CacheService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private allergensService: AllergensService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    // Cargar intolerancias del usuario
+    const usuarioData = this.authService.obtenerDatos();
+    if (usuarioData && usuarioData.intolerancias) {
+      this.intoleranciaUsuario = usuarioData.intolerancias;
+      console.log('✅ Intolerancias del usuario cargadas en raciones:', this.intoleranciaUsuario.length);
+    }
+
     this.cargarRaciones();
     this.cargarAlimentos();
   }
@@ -485,5 +499,9 @@ export class Raciones implements OnInit, AfterViewInit {
     this.mensaje = texto;
     this.mensajeTipo = tipo;
     setTimeout(() => this.mensaje = '', 4000);
+  }
+
+  tieneAlergeno(alimento: any): boolean {
+    return this.allergensService.tieneAlergeno(alimento, this.intoleranciaUsuario);
   }
 }

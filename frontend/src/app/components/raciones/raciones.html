@@ -169,7 +169,7 @@
         @if (racionSeleccionada.alimentos.length > 0) {
           <div class="alimentos-agregados">
             @for (alimento of racionSeleccionada.alimentos; track alimento.id) {
-              <div class="alimento-en-menu">
+              <div class="alimento-en-menu" [class.allergen-warning]="tieneAlergeno(alimento)">
                 <div class="alimento-data">
                   <span class="alimento-nombre">{{ alimento.nombre }}</span>
                   <span class="alimento-marca">{{ alimento.marca }}</span>

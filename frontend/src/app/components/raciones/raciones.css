@@ -610,6 +610,23 @@
   background: #fff;
 }
 
+/* ── Alergenos/Intolerancias ── */
+.alimento-en-menu.allergen-warning {
+  border: 2px solid #d32f2f;
+  background-color: rgba(211, 47, 47, 0.05);
+  box-shadow: inset 0 0 0 1px #d32f2f, 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.alimento-en-menu.allergen-warning .alimento-nombre {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.alimento-en-menu.allergen-warning::before {
+  content: '⚠️ ';
+  margin-right: 4px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .raciones-grid { grid-template-columns: 1fr; }
