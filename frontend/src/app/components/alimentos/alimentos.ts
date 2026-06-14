@@ -1125,7 +1125,7 @@ export class Alimentos implements OnInit {
     }
 
     // Eliminar el ingrediente en el backend
-    this.alimentosService.eliminarIngrediente(ingrediente.id).subscribe({
+    this.alimentosService.eliminarAlimento(ingrediente.id).subscribe({
       next: (response: any) => {
         this.mostrarMensaje('Ingrediente eliminado correctamente', 'exito');
         this.pasarAlSiguienteIngrediente(ingrediente.id);
