@@ -158,4 +158,46 @@ export class OptimisticUpdateService {
       }
     });
   }
+
+  /**
+   * Especifico para actualizar cantidad de ración
+   */
+  actualizarCantidadRacionOptimista(
+    fecha: string,
+    tipoComida: string,
+    racionId: number,
+    cantidad: number,
+    serverAction: () => Observable<any>
+  ): Observable<any> {
+    return this.executar({
+      updateLocal: () => {
+        console.log(`📝 Actualizando cantidad de ración ${racionId} a ${cantidad}`);
+      },
+      serverAction,
+      rollback: () => {
+        console.log('↩️ Rollback de cantidad de ración');
+      }
+    });
+  }
+
+  /**
+   * Especifico para actualizar cantidad de alimento
+   */
+  actualizarCantidadAlimentoOptimista(
+    fecha: string,
+    tipoComida: string,
+    alimentoId: number,
+    cantidad: number,
+    serverAction: () => Observable<any>
+  ): Observable<any> {
+    return this.executar({
+      updateLocal: () => {
+        console.log(`📝 Actualizando cantidad de alimento ${alimentoId} a ${cantidad}`);
+      },
+      serverAction,
+      rollback: () => {
+        console.log('↩️ Rollback de cantidad de alimento');
+      }
+    });
+  }
 }

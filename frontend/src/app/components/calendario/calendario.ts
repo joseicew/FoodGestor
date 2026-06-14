@@ -436,16 +436,27 @@ export class Calendario implements OnInit {
     if (isNaN(cant) || cant <= 0) return;
 
     const fechaStr = this.formatoFecha(this.fechaSeleccionada);
-    this.calendarioService.actualizarCantidadRacion(
+
+    // Sincronización optimista para actualizar cantidad
+    this.optimisticUpdateService.actualizarCantidadRacionOptimista(
       fechaStr,
       tipoComida,
       racionId,
-      cant
+      cant,
+      () => this.calendarioService.actualizarCantidadRacion(
+        fechaStr,
+        tipoComida,
+        racionId,
+        cant
+      )
     ).subscribe({
       next: () => {
         this.cargarDia(this.fechaSeleccionada);
       },
-      error: () => this.mostrarMensaje('Error al actualizar cantidad', 'error')
+      error: (err) => {
+        console.error('Error al actualizar cantidad:', err);
+        this.mostrarMensaje('❌ Error al actualizar cantidad. Reintentando...', 'error');
+      }
     });
   }
 
@@ -454,16 +465,27 @@ export class Calendario implements OnInit {
     if (cant <= 0) return;
 
     const fechaStr = this.formatoFecha(this.fechaSeleccionada);
-    this.calendarioService.actualizarCantidadAlimento(
+
+    // Sincronización optimista para actualizar cantidad
+    this.optimisticUpdateService.actualizarCantidadAlimentoOptimista(
       fechaStr,
       tipoComida,
       alimentoId,
-      cant
+      cant,
+      () => this.calendarioService.actualizarCantidadAlimento(
+        fechaStr,
+        tipoComida,
+        alimentoId,
+        cant
+      )
     ).subscribe({
       next: () => {
         this.cargarDia(this.fechaSeleccionada);
       },
-      error: () => this.mostrarMensaje('Error al actualizar cantidad', 'error')
+      error: (err) => {
+        console.error('Error al actualizar cantidad:', err);
+        this.mostrarMensaje('❌ Error al actualizar cantidad. Reintentando...', 'error');
+      }
     });
   }
 
