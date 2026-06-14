@@ -1128,6 +1128,11 @@ export class Alimentos implements OnInit {
           }
 
           this.ingredienteActualVerificacion = siguienteIngrediente;
+
+          // Inicializar alérgeno del siguiente ingrediente (si tiene uno)
+          this.alergenoDelIngrediente = siguienteIngrediente.alergenos_categorias && siguienteIngrediente.alergenos_categorias.length > 0
+            ? siguienteIngrediente.alergenos_categorias[0]
+            : '';
         } else {
           this.mostrarMensaje('¡Todos los ingredientes han sido verificados!', 'exito');
           this.cerrarModalVerificarIngredientes();
