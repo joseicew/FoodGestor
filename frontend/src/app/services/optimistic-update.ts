@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, finalize } from 'rxjs/operators';
 import { CacheService } from './cache';
+import { SyncStatusService } from './sync-status';
 
 interface OptimisticUpdateConfig<T> {
   // Acción a realizar localmente antes de enviar al servidor
@@ -24,7 +25,10 @@ interface OptimisticUpdateConfig<T> {
   providedIn: 'root'
 })
 export class OptimisticUpdateService {
-  constructor(private cacheService: CacheService) {}
+  constructor(
+    private cacheService: CacheService,
+    private syncStatusService: SyncStatusService
+  ) {}
 
   /**
    * Ejecuta una actualización optimista
@@ -46,9 +50,14 @@ export class OptimisticUpdateService {
     }
 
     // Paso 3: Enviar cambios al servidor en background
+    this.syncStatusService.startSync();
+    this.syncStatusService.incrementPendingChanges();
+
     return config.serverAction().pipe(
       tap((data) => {
         console.log('✅ Sincronización con servidor exitosa');
+        this.syncStatusService.decrementPendingChanges();
+        this.syncStatusService.completeSync();
         if (config.onSuccess) {
           config.onSuccess(data);
         }
@@ -64,6 +73,9 @@ export class OptimisticUpdateService {
         } catch (rollbackError) {
           console.error('❌ Error revirtiendo cambios:', rollbackError);
         }
+
+        this.syncStatusService.syncError(error.message || 'Error desconocido');
+        this.syncStatusService.decrementPendingChanges();
 
         if (config.onError) {
           config.onError(error);
