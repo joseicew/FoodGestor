@@ -70,10 +70,10 @@ class Usuario(db.Model):
         # Fórmula de Mifflin-St Jeor
         # ============================================
         if self.sexo == 'M':
-            # Hombres: TMB = (10×peso) + (6.25×altura) - (5×edad) + 5
+            # Hombres: TMB = (10*peso) + (6.25*altura) - (5*edad) + 5
             tmb = (10 * self.peso) + (6.25 * self.altura) - (5 * self.edad) + 5
         else:  # F/Otro
-            # Mujeres: TMB = (10×peso) + (6.25×altura) - (5×edad) - 161
+            # Mujeres: TMB = (10*peso) + (6.25*altura) - (5*edad) - 161
             tmb = (10 * self.peso) + (6.25 * self.altura) - (5 * self.edad) - 161
 
         self.tmb_calculada = round(tmb, 1)
@@ -90,7 +90,7 @@ class Usuario(db.Model):
         }
         factor_actividad = factores_actividad.get(self.nivel_actividad, 1.55)
 
-        # GETD = TMB × factor_actividad
+        # GETD = TMB * factor_actividad
         getd = tmb * factor_actividad
         self.getd_calculada = round(getd, 1)
 
