@@ -168,7 +168,7 @@
               <div class="ingredientes-wrapper">
                 @for (ing of alimentoSeleccionadoDetalle.ingredientes; track ing.id) {
                   <button class="ingrediente-item"
-                          [class.con-alergenos]="ing.alergenos_categorias && ing.alergenos_categorias.length > 0"
+                          [class.con-alergenos]="tieneAlergeniaIngrediente(ing) || (ing.alergenos_categorias && ing.alergenos_categorias.length > 0)"
                           (click)="ing.alergenos_categorias && ing.alergenos_categorias.length > 0 ? mostrarAlergenosIngrediente(ing, $event) : abrirDetallesIngrediente(ing)">
                     {{ ing.nombre }}
                   </button>
@@ -187,6 +187,20 @@
           }
         </div>
 
+        <!-- Footer con botones de guardar -->
+        <div style="display: flex; gap: 8px; padding: 16px; border-top: 1px solid #eee; align-items: center;">
+          @if (cargandoDetalles) {
+            <div style="display: flex; align-items: center; justify-content: center; flex: 1; gap: 8px;">
+              <div class="spinner"></div>
+              <span style="color: #666; font-size: 14px;">Guardando...</span>
+            </div>
+          } @else {
+            <button class="btn-secondary" (click)="cerrarDetallesAlimento()" style="flex: 1;">Cerrar</button>
+            @if (mostrarBotonesEdicion) {
+              <button class="btn-primary" (click)="guardarDetallesAlimento()" style="flex: 1;">💾 Guardar cambios</button>
+            }
+          }
+        </div>
       </div>
     </div>
   }
@@ -227,12 +241,19 @@
             <div style="display: flex; gap: 8px;">
               <input type="text" [(ngModel)]="nuevoIngrediente"
                      (keyup)="filtrarIngredientes()"
-                     (keyup.enter)="agregarIngrediente()"
+                     (keyup.enter)="!cargandoIngrediente && agregarIngrediente()"
                      placeholder="Nuevo ingrediente..."
+                     [disabled]="cargandoIngrediente"
                      style="flex: 1; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 13px;">
               <button (click)="agregarIngrediente()"
-                      style="background: #4CAF50; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; font-weight: 600;">
-                + Añadir
+                      [disabled]="cargandoIngrediente"
+                      style="background: #4CAF50; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; opacity: 1;">
+                @if (cargandoIngrediente) {
+                  <div class="spinner" style="width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                  Agregando...
+                } @else {
+                  + Añadir
+                }
               </button>
             </div>
 
@@ -911,7 +932,9 @@
       }
       <div class="alimentos-list">
         @for (alimento of alimentosFiltrados; track alimento.id) {
-          <div class="alimento-card clickable" (click)="abrirDetallesAlimento(alimento)">
+          <div class="alimento-card clickable"
+               [class.con-alergias]="tieneAlergiaUsuario(alimento)"
+               (click)="abrirDetallesAlimento(alimento)">
             <div style="flex: 1;">
               <div style="margin-bottom: 4px;">
                 <span class="alimento-nombre">{{ alimento.nombre }} - {{ alimento.marca }}</span>
@@ -970,57 +993,66 @@
   <!-- ═══════════════ PANEL EDITAR ═══════════════ -->
   @if (activePanel === 'actualizar') {
     <div class="panel">
-      @if (!alimentoSeleccionado) {
+      <!-- Botón de Verificar Ingredientes -->
+      @if (obtenerIngredientesSinVerificar().length > 0) {
+        <button class="btn-verificar-ingredientes" (click)="abrirModalVerificarIngredientes()" title="Verificar ingredientes sin revisar">
+          <span class="fab-icon">✓</span>
+          <span>Verificar Ingredientes ({{ obtenerIngredientesSinVerificar().length }})</span>
+        </button>
+      }
+
+      <!-- Filtros pegados -->
+      <div class="panel-filtros">
+        <!-- Search bar -->
         <div class="search-bar">
           <input type="text" [(ngModel)]="terminoBusqueda" placeholder="🔍 Buscar alimento..."
                  (ngModelChange)="buscarAlimento()" />
         </div>
 
-        <div class="filtro-categoria">
-          <select [(ngModel)]="categoriaFiltro" (ngModelChange)="buscarAlimento()">
-            <option value="">🔍 Todas las categorías</option>
-            @for (cat of categorias; track cat) {
-              <option [value]="cat">{{ cat }}</option>
-            }
-          </select>
-        </div>
-
-        @if (alimentosFiltrados.length === 0) {
-          <p class="empty-state">Sin resultados</p>
+        @if (!alimentoSeleccionado) {
+          <div class="filtro-categoria">
+            <select [(ngModel)]="categoriaFiltro" (ngModelChange)="buscarAlimento()">
+              <option value="">🔍 Todas las categorías</option>
+              @for (cat of categorias; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+          </div>
         }
-        <div class="alimentos-list">
-          @for (alimento of alimentosFiltrados; track alimento.id) {
-            <div class="alimento-card clickable" (click)="abrirDetallesAlimento(alimento, true)">
-              <div style="flex: 1;">
-                <div style="margin-bottom: 4px;">
-                  <span class="alimento-nombre">{{ alimento.nombre }} - {{ alimento.marca }}</span>
-                </div>
-                @if (alimento.codigo_barras) {
-                  <span class="alimento-barcode" style="display: block; font-size: 12px;">📱 {{ alimento.codigo_barras }}</span>
-                }
-                <span class="alimento-categoria" style="font-size: 11px; color: #999; opacity: 0.7;">
-                  {{ alimento.categoria }}
-                </span>
-              </div>
-              <div class="alimento-acciones">
-                <button class="btn-favorito" [class.favorito]="alimento.favorito"
-                        (click)="toggleFavorito(alimento, $event)" title="Favorito">
-                  {{ alimento.favorito ? '⭐' : '☆' }}
-                </button>
-              </div>
-            </div>
+      </div>
+
+      <!-- Contenedor con scroll para alimentos -->
+      @if (!alimentoSeleccionado) {
+        <div class="panel-alimentos-container">
+          @if (alimentosFiltrados.length === 0) {
+            <p class="empty-state">Sin resultados</p>
           }
+          <div class="alimentos-list">
+            @for (alimento of alimentosFiltrados; track alimento.id) {
+              <div class="alimento-card clickable" (click)="abrirDetallesAlimento(alimento, true)">
+                <div style="flex: 1;">
+                  <div style="margin-bottom: 4px;">
+                    <span class="alimento-nombre">{{ alimento.nombre }} - {{ alimento.marca }}</span>
+                  </div>
+                  @if (alimento.codigo_barras) {
+                    <span class="alimento-barcode" style="display: block; font-size: 12px;">📱 {{ alimento.codigo_barras }}</span>
+                  }
+                  <span class="alimento-categoria" style="font-size: 11px; color: #999; opacity: 0.7;">
+                    {{ alimento.categoria }}
+                  </span>
+                </div>
+                <div class="alimento-acciones">
+                  <button class="btn-favorito" [class.favorito]="alimento.favorito"
+                          (click)="toggleFavorito(alimento, $event)" title="Favorito">
+                    {{ alimento.favorito ? '⭐' : '☆' }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
         </div>
       }
     </div>
-  }
-
-  <!-- Botón Flotante para Verificar Ingredientes del Sistema -->
-  @if (obtenerIngredientesSinVerificar().length > 0) {
-    <button class="fab-button-alergenos" (click)="abrirModalVerificarIngredientes(); $event.stopPropagation()" title="Verificar ingredientes sin revisar">
-      <span class="fab-icon">✓</span>
-      <span class="fab-texto">Verificar Ingredientes ({{ obtenerIngredientesSinVerificar().length }})</span>
-    </button>
   }
 
   <!-- Modal: Formulario de Verificación de Ingredientes -->

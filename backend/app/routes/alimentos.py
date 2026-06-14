@@ -37,8 +37,13 @@ def _vincular_ingredientes(alimento, nombres):
     # Limpiar ingredientes existentes para actualizar la lista
     alimento.ingredientes.clear()
 
-    for nombre in nombres:
-        nombre = nombre.strip()
+    for item in nombres:
+        # Manejar tanto strings como diccionarios
+        if isinstance(item, dict):
+            nombre = item.get('nombre', '').strip()
+        else:
+            nombre = str(item).strip()
+
         if not nombre:
             continue
 
@@ -52,12 +57,12 @@ def _vincular_ingredientes(alimento, nombres):
             ingrediente = Ingrediente(nombre=nombre.capitalize())
             db.session.add(ingrediente)
             db.session.flush()  # Asegurar que se guarde antes de vincularlo
-            print(f'✨ Nuevo ingrediente creado: {nombre}')
+            print(f'[NEW] Nuevo ingrediente creado: {nombre}')
 
         # Vincular al alimento (evita duplicados automáticamente)
         if ingrediente not in alimento.ingredientes:
             alimento.ingredientes.append(ingrediente)
-            print(f'✓ Ingrediente vinculado: {ingrediente.nombre}')
+            print(f'[OK] Ingrediente vinculado: {ingrediente.nombre}')
 
 
 def _calcular_similitud_macros(macros1: dict, macros2: dict, tolerancia: float = 0.1) -> bool:

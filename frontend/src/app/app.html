@@ -2,7 +2,7 @@
   <!-- Indicador de sincronización -->
   @if (authService.estaAutenticado()) {
     @let status = syncStatus$ | async;
-    @if (status) {
+    @if (status && (status.isSyncing || status.pendingChanges > 0 || status.isOffline || status.lastError)) {
       <div class="sync-indicator" [class.syncing]="status.isSyncing" [class.offline]="status.isOffline" [class.error]="status.lastError" title="{{ getSyncText() }}">
         <span class="sync-icon">{{ getSyncIcon() }}</span>
         <span class="sync-text">{{ getSyncText() }}</span>

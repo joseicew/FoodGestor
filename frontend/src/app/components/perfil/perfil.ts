@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth';
 import { SessionService } from '../../services/session';
 import { CalendarioService } from '../../services/calendario';
 import { AutoSyncService } from '../../services/auto-sync';
+import { AllergensService } from '../../services/allergens';
 
 @Component({
   selector: 'app-perfil',
@@ -37,6 +38,10 @@ export class Perfil implements OnInit {
   limites_carbohidratos: number | null = null;
   limites_azucares: number | null = null;
 
+  // Alergias
+  alergenos_disponibles: string[] = [];
+  alergenos_seleccionados: string[] = [];
+
   // Valores calculados para mostrar en tiempo real
   tmb_calculada_temp: number | null = null;
   getd_mantenimiento_temp: number | null = null;  // GETD sin déficit
@@ -55,7 +60,8 @@ export class Perfil implements OnInit {
     private cdr: ChangeDetectorRef,
     private sessionService: SessionService,
     private calendarioService: CalendarioService,
-    private autoSyncService: AutoSyncService
+    private autoSyncService: AutoSyncService,
+    private allergensService: AllergensService
   ) {}
 
   ngOnInit(): void {
@@ -72,11 +78,24 @@ export class Perfil implements OnInit {
     }
 
     console.log('✓ [Perfil.ngOnInit] Autenticado, cargando perfil...');
+    this.cargarAlergenos();
     this.cargarPerfil();
     this.cargarTotalesDelDia();
 
     // Iniciar verificación periódica de cambios
     this.autoSyncService.iniciarVerificacionPeriodica();
+  }
+
+  cargarAlergenos(): void {
+    this.allergensService.obtenerAlergenos().subscribe({
+      next: (alergenos: string[]) => {
+        this.alergenos_disponibles = alergenos;
+        console.log('Alergenos disponibles cargados:', alergenos);
+      },
+      error: (error: any) => {
+        console.error('Error al cargar alergenos:', error);
+      }
+    });
   }
 
   cargarPerfil(): void {
@@ -90,6 +109,7 @@ export class Perfil implements OnInit {
       this.nombreCompleto = this.usuario.nombre_completo;
       this.peso = this.usuario.peso;
       this.altura = this.usuario.altura;
+      this.alergenos_seleccionados = this.usuario.alergenos_seleccionados || [];
       this.cdr.markForCheck();
       return;
     }
@@ -102,6 +122,7 @@ export class Perfil implements OnInit {
         this.nombreCompleto = this.usuario.nombre_completo;
         this.peso = this.usuario.peso;
         this.altura = this.usuario.altura;
+        this.alergenos_seleccionados = this.usuario.alergenos_seleccionados || [];
         this.cdr.markForCheck();
       },
       error: (error) => {
@@ -154,26 +175,41 @@ export class Perfil implements OnInit {
   }
 
   editarPerfil(): void {
-    // Cargar valores actuales para edición
-    this.nombreCompleto = this.usuario.nombre_completo || '';
-    this.edad = this.usuario.edad || 30;
-    this.sexo = this.usuario.sexo || 'M';
-    this.altura = this.usuario.altura || 170;
-    this.peso = this.usuario.peso || 70;
-    this.nivel_actividad = this.usuario.nivel_actividad || 'moderado';
-    this.objetivo = this.usuario.objetivo || 'mantener';
-    this.limites_calorias = this.usuario.limites_calorias || 2500;
-    this.limites_proteinas = this.usuario.limites_proteinas || 100;
-    this.limites_grasas = this.usuario.limites_grasas || 80;
-    this.limites_carbohidratos = this.usuario.limites_carbohidratos || 250;
-    this.limites_azucares = this.usuario.limites_azucares || 62;
+    // Recargar perfil para asegurar datos actualizados
+    this.authService.obtenerPerfil().subscribe({
+      next: (perfilActualizado) => {
+        console.log('Perfil recargado para edición:', perfilActualizado);
+        this.usuario = Object.assign({}, perfilActualizado);
 
-    // Limpiar preview de calorías
-    this.tmb_calculada_temp = 0;
-    this.getd_mantenimiento_temp = 0;
-    this.tdee_calculada_temp = 0;
+        // Cargar valores actuales para edición
+        this.nombreCompleto = this.usuario.nombre_completo || '';
+        this.edad = this.usuario.edad || 30;
+        this.sexo = this.usuario.sexo || 'M';
+        this.altura = this.usuario.altura || 170;
+        this.peso = this.usuario.peso || 70;
+        this.nivel_actividad = this.usuario.nivel_actividad || 'moderado';
+        this.objetivo = this.usuario.objetivo || 'mantener';
+        this.limites_calorias = this.usuario.limites_calorias || 2500;
+        this.limites_proteinas = this.usuario.limites_proteinas || 100;
+        this.limites_grasas = this.usuario.limites_grasas || 80;
+        this.limites_carbohidratos = this.usuario.limites_carbohidratos || 250;
+        this.limites_azucares = this.usuario.limites_azucares || 62;
+        this.alergenos_seleccionados = [...(this.usuario.alergenos_seleccionados || [])];
 
-    this.editando = true;
+        console.log('Alergenos cargados en edición:', this.alergenos_seleccionados);
+
+        // Limpiar preview de calorías
+        this.tmb_calculada_temp = 0;
+        this.getd_mantenimiento_temp = 0;
+        this.tdee_calculada_temp = 0;
+
+        this.editando = true;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error al recargar perfil para edición:', error);
+      }
+    });
   }
 
   cancelarEdicion(): void {
@@ -191,6 +227,7 @@ export class Perfil implements OnInit {
     this.limites_grasas = this.usuario.limites_grasas || null;
     this.limites_carbohidratos = this.usuario.limites_carbohidratos || null;
     this.limites_azucares = this.usuario.limites_azucares || null;
+    this.alergenos_seleccionados = [...(this.usuario.alergenos_seleccionados || [])];
   }
 
   recalcularBases(): void {
@@ -309,7 +346,8 @@ export class Perfil implements OnInit {
       limites_proteinas: this.limites_proteinas,
       limites_grasas: this.limites_grasas,
       limites_carbohidratos: this.limites_carbohidratos,
-      limites_azucares: this.limites_azucares
+      limites_azucares: this.limites_azucares,
+      alergenos_seleccionados: this.alergenos_seleccionados
     };
 
     this.authService.actualizarPerfil(datosActualizados).subscribe({
@@ -331,7 +369,8 @@ export class Perfil implements OnInit {
           limites_carbohidratos: response.limites_carbohidratos || 250,
           limites_azucares: response.limites_azucares || 62,
           tmb_calculada: response.tmb_calculada || 0,
-          tdee_calculada: response.tdee_calculada || 0
+          tdee_calculada: response.tdee_calculada || 0,
+          alergenos_seleccionados: response.alergenos_seleccionados || []
         });
         // Guardar en sesión para futuras cargas
         this.sessionService.guardarPerfil(this.usuario);

@@ -94,6 +94,17 @@ def _migrar_columnas():
     from sqlalchemy import inspect, text
     inspector = inspect(db.engine)
 
+    # Migrar tabla usuario
+    try:
+        columnas = [c['name'] for c in inspector.get_columns('usuario')]
+        if 'alergenos_seleccionados' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE usuario ADD COLUMN alergenos_seleccionados TEXT DEFAULT '[]'"))
+                conn.commit()
+    except Exception as e:
+        logging.error(f"Error migrating usuario table: {e}")
+        pass
+
     # Migrar tabla alimento
     try:
         columnas = [c['name'] for c in inspector.get_columns('alimento')]

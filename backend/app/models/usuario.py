@@ -34,6 +34,9 @@ class Usuario(db.Model):
     getd_calculada = db.Column(db.Float, default=0)  # GETD (sin déficit/superávit)
     tdee_calculada = db.Column(db.Float, default=0)  # Gasto Energético Diario Total (con déficit/superávit)
 
+    # Alergias e intolerancias
+    alergenos_seleccionados = db.Column(db.Text, default='[]')  # JSON array de alergenos seleccionados
+
     # Relaciones inversas
     raciones = db.relationship('Racion', backref='usuario', lazy='select')
     comidas_diarias = db.relationship('ComidaDiaria', backref='usuario', lazy='select')
@@ -156,6 +159,13 @@ class Usuario(db.Model):
 
     def to_dict(self):
         """Convierte el objeto a diccionario (sin incluir password_hash)"""
+        import json
+        alergenos = []
+        try:
+            alergenos = json.loads(self.alergenos_seleccionados) if self.alergenos_seleccionados else []
+        except:
+            alergenos = []
+
         return {
             'id': self.id,
             'email': self.email,
@@ -166,6 +176,7 @@ class Usuario(db.Model):
             'peso': self.peso,
             'nivel_actividad': self.nivel_actividad,
             'objetivo': self.objetivo,
+            'alergenos_seleccionados': alergenos,
             # Límites nutricionales
             'limites_calorias': self.limites_calorias,
             'limites_proteinas': self.limites_proteinas,

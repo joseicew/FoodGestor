@@ -62,6 +62,7 @@ export class Alimentos implements OnInit {
   mensaje = '';
   mensajeTipo: 'exito' | 'error' = 'exito';
   cargando = false;
+  cargandoDetalles = false;
   intentoGuardar = false;
 
   mostrarModal = false;
@@ -91,6 +92,7 @@ export class Alimentos implements OnInit {
   fotoAAbrir: 'ingredientes' | 'macros' | null = null;
   mostrarEditorIngredientes = false;
   mostrarEditorMacros = false;
+  cargandoIngrediente = false;
   nuevoIngrediente = '';
   ingredientesFiltrados: string[] = [];
   mostrarDetallesIngrediente = false;
@@ -107,6 +109,7 @@ export class Alimentos implements OnInit {
   ingredienteMostrandoAlergenos: any = null;
   popoverStyle: any = {};
   alergenoDelIngrediente: string = '';
+  alergenosDelUsuario: string[] = [];
   categoriasAlimentos: string[] = [
     'Cereales y derivados',
     'Legumbres',
@@ -210,6 +213,16 @@ export class Alimentos implements OnInit {
 
     console.log('✓ [Alimentos.ngOnInit] Autenticado, cargando alimentos...');
     this.cargarAlimentos();
+    this.cargarAlergenosUsuario();
+
+    // Suscribirse a cambios del perfil para recargar alergenos cuando cambien
+    this.authService.usuario$.subscribe((usuario) => {
+      if (usuario && usuario.alergenos_seleccionados) {
+        this.alergenosDelUsuario = usuario.alergenos_seleccionados;
+        this.cdr.detectChanges();
+      }
+    });
+
     // Recargar alimentos cada 5 segundos para sincronización en tiempo real
     setInterval(() => {
       if (this.activePanel === 'buscar' || this.activePanel === 'favoritos') {
@@ -1031,6 +1044,7 @@ export class Alimentos implements OnInit {
     this.mostrarFormularioAlergenos = false;
     this.alimentoSeleccionadoAlergenos = null;
     this.alergenosAsignados.clear();
+    this.cargarAlimentos();
   }
 
   abrirModalVerificarIngredientes() {
@@ -1124,8 +1138,7 @@ export class Alimentos implements OnInit {
       return;
     }
 
-    // Eliminar el ingrediente en el backend
-    this.alimentosService.eliminarAlimento(ingrediente.id).subscribe({
+    this.alimentosService.eliminarIngrediente(ingrediente.id).subscribe({
       next: (response: any) => {
         this.mostrarMensaje('Ingrediente eliminado correctamente', 'exito');
         this.pasarAlSiguienteIngrediente(ingrediente.id);
@@ -1311,46 +1324,93 @@ export class Alimentos implements OnInit {
     });
   }
 
+  guardarDetallesAlimento() {
+    if (!this.alimentoSeleccionadoDetalle) return;
+
+    this.cargandoDetalles = true;
+    this.cdr.detectChanges();
+
+    const formData = new FormData();
+    formData.append('nombre', this.alimentoSeleccionadoDetalle.nombre || '');
+    formData.append('marca', this.alimentoSeleccionadoDetalle.marca || '');
+    formData.append('categoria', this.alimentoSeleccionadoDetalle.categoria || '');
+    formData.append('peso_unidad', String(this.alimentoSeleccionadoDetalle.peso_unidad ?? ''));
+    formData.append('nombre_unidad', this.alimentoSeleccionadoDetalle.nombre_unidad || '');
+
+    if (this.alimentoSeleccionadoDetalle.ingredientes) {
+      formData.append('ingredientes', JSON.stringify(this.alimentoSeleccionadoDetalle.ingredientes));
+    }
+
+    this.alimentosService.actualizarAlimento(this.alimentoSeleccionadoDetalle.id, formData).subscribe({
+      next: (res) => {
+        this.cargandoDetalles = false;
+        this.mostrarMensaje('Alimento actualizado correctamente ✅', 'exito');
+        this.cargarAlimentos();
+        this.cerrarDetallesAlimento();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.cargandoDetalles = false;
+        this.mostrarMensaje('Error al guardar cambios', 'error');
+        console.error('Error:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   async agregarIngrediente() {
     const ingrediente = this.nuevoIngrediente.trim();
     if (!ingrediente) return;
 
-    if (!this.alimentoSeleccionadoDetalle.ingredientes) {
-      this.alimentoSeleccionadoDetalle.ingredientes = [];
-    }
+    this.cargandoIngrediente = true;
 
-    // Evitar duplicados
-    if (this.alimentoSeleccionadoDetalle.ingredientes.includes(ingrediente)) {
-      this.nuevoIngrediente = '';
-      this.cdr.detectChanges();
-      return;
-    }
+    try {
+      if (!this.alimentoSeleccionadoDetalle.ingredientes) {
+        this.alimentoSeleccionadoDetalle.ingredientes = [];
+      }
 
-    // Verificar si es un ingrediente NUEVO (no existe en la base de datos)
-    const esNuevo = !this.todosLosIngredientes.has(ingrediente);
-
-    if (esNuevo) {
-      // Crear el ingrediente manualmente
-      try {
-        await this.http.post<any>(
-          'http://192.168.1.17:5000/api/ingredientes/',
-          { nombre: ingrediente },
-          this.getHeaders()
-        ).toPromise();
-        this.mostrarMensaje(`Ingrediente "${ingrediente}" creado. Asigna sus alérgenos desde la gestión de ingredientes.`, 'exito');
-      } catch (error: any) {
-        this.mostrarMensaje(`Error creando ingrediente: ${error.message}`, 'error');
+      // Evitar duplicados
+      if (this.alimentoSeleccionadoDetalle.ingredientes.includes(ingrediente)) {
+        this.nuevoIngrediente = '';
+        this.cdr.detectChanges();
         return;
       }
+
+      // Verificar si es un ingrediente NUEVO (no existe en la base de datos)
+      const esNuevo = !this.todosLosIngredientes.has(ingrediente);
+
+      if (esNuevo) {
+        // Crear el ingrediente manualmente
+        try {
+          await this.http.post<any>(
+            'http://192.168.1.17:5000/api/ingredientes/',
+            { nombre: ingrediente, verificado: false },
+            this.getHeaders()
+          ).toPromise();
+          this.mostrarMensaje(`Ingrediente "${ingrediente}" creado. Asigna sus alérgenos desde la gestión de ingredientes.`, 'exito');
+        } catch (error: any) {
+          // Si el ingrediente ya existe (409), simplemente continuar
+          if (error.status !== 409) {
+            this.mostrarMensaje(`Error creando ingrediente: ${error.message}`, 'error');
+            return;
+          }
+          // Si es 409, continuamos para agregar el ingrediente existente
+        }
+      }
+
+      // Agregar el ingrediente (existente o recién creado)
+      this.alimentoSeleccionadoDetalle.ingredientes.push(ingrediente);
+      this.todosLosIngredientes.add(ingrediente);
+
+      this.nuevoIngrediente = '';
+      this.ingredientesFiltrados = [];
+
+      // Forzar actualización de vistas
+      this.cdr.detectChanges();
+      setTimeout(() => this.cdr.detectChanges(), 100);
+    } finally {
+      this.cargandoIngrediente = false;
     }
-
-    // Agregar el ingrediente
-    this.alimentoSeleccionadoDetalle.ingredientes.push(ingrediente);
-    this.todosLosIngredientes.add(ingrediente);
-
-    this.nuevoIngrediente = '';
-    this.ingredientesFiltrados = [];
-    this.cdr.detectChanges();
   }
 
   eliminarIngrediente(index: number) {
@@ -1389,9 +1449,11 @@ export class Alimentos implements OnInit {
       .sort();
   }
 
-  seleccionarSugerencia(ingrediente: string) {
+  async seleccionarSugerencia(ingrediente: string) {
     this.nuevoIngrediente = ingrediente;
     this.ingredientesFiltrados = [];
+    // Agregar automáticamente el ingrediente seleccionado
+    await this.agregarIngrediente();
   }
 
   editarDesdeDetalles() {
@@ -1804,5 +1866,36 @@ export class Alimentos implements OnInit {
     } finally {
       this.resetearInputsFichero();
     }
+  }
+
+  cargarAlergenosUsuario(): void {
+    this.authService.obtenerPerfil().subscribe({
+      next: (perfil) => {
+        this.alergenosDelUsuario = perfil.alergenos_seleccionados || [];
+        console.log('Alergenos del usuario cargados:', this.alergenosDelUsuario);
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error al cargar alergenos del usuario:', error);
+      }
+    });
+  }
+
+  tieneAlergiaUsuario(alimento: any): boolean {
+    if (!alimento || !alimento.ingredientes || this.alergenosDelUsuario.length === 0) {
+      return false;
+    }
+
+    return this.allergensService.tieneAlergeno(alimento, this.alergenosDelUsuario);
+  }
+
+  tieneAlergeniaIngrediente(ingrediente: any): boolean {
+    if (!ingrediente || !ingrediente.alergenos_categorias || this.alergenosDelUsuario.length === 0) {
+      return false;
+    }
+
+    return ingrediente.alergenos_categorias.some((alergeno: string) =>
+      this.alergenosDelUsuario.includes(alergeno)
+    );
   }
 }

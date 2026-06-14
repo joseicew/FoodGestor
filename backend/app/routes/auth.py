@@ -169,6 +169,14 @@ def actualizar_perfil():
         if 'limites_azucares' in data:
             usuario.limites_azucares = data['limites_azucares']
 
+        # Actualizar alergenos seleccionados
+        if 'alergenos_seleccionados' in data:
+            import json
+            if isinstance(data['alergenos_seleccionados'], list):
+                usuario.alergenos_seleccionados = json.dumps(data['alergenos_seleccionados'])
+            else:
+                usuario.alergenos_seleccionados = '[]'
+
         db.session.commit()
 
         return jsonify(usuario.to_dict()), 200

@@ -227,6 +227,27 @@
           </div>
         </div>
 
+        <!-- ALERGIAS E INTOLERANCIAS -->
+        <div class="form-section">
+          <h3>⚠️ Alergias e Intolerancias</h3>
+          <p class="form-hint">Selecciona tus alergias o intolerancias para que los alimentos se marquen automáticamente.</p>
+
+          <div class="alergenos-grid">
+            @for (alergeno of alergenos_disponibles; track alergeno) {
+              <div class="alergeno-checkbox">
+                <input
+                  type="checkbox"
+                  [id]="'alergeno-' + alergeno"
+                  [checked]="alergenos_seleccionados.includes(alergeno)"
+                  (change)="$event.target.checked ? alergenos_seleccionados.push(alergeno) : (alergenos_seleccionados = alergenos_seleccionados.filter(a => a !== alergeno))"
+                  [disabled]="cargando"
+                />
+                <label [for]="'alergeno-' + alergeno">{{ alergeno }}</label>
+              </div>
+            }
+          </div>
+        </div>
+
         <!-- LÍMITES NUTRICIONALES -->
         <div class="form-section">
           <h3>📊 Límites Nutricionales (Edición Manual)</h3>

@@ -44,6 +44,11 @@ export class AlimentosService {
     return this.http.delete<any>(`${API}/${id}`, this.getHeaders());
   }
 
+  eliminarIngrediente(id: number): Observable<any> {
+    const ingredientesAPI = `${environment.apiUrl}/api/ingredientes`;
+    return this.http.delete<any>(`${ingredientesAPI}/${id}`, this.getHeaders());
+  }
+
   procesarOCRIngredientes(formData: FormData): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/api/ocr/ingredientes`, formData, this.getHeaders());
   }
