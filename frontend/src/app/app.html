@@ -1,13 +1,16 @@
 <div class="app-container">
   <!-- Indicador de sincronización -->
-  @if (authService.estaAutenticado() && (syncStatus$ | async) as status) {
-    <div class="sync-indicator" [class.syncing]="status.isSyncing" [class.offline]="status.isOffline" [class.error]="status.lastError" title="{{ getSyncText() }}">
-      <span class="sync-icon">{{ getSyncIcon() }}</span>
-      <span class="sync-text">{{ getSyncText() }}</span>
-      @if (status.pendingChanges > 0) {
-        <span class="pending-badge">{{ status.pendingChanges }}</span>
-      }
-    </div>
+  @if (authService.estaAutenticado()) {
+    @let status = syncStatus$ | async;
+    @if (status) {
+      <div class="sync-indicator" [class.syncing]="status.isSyncing" [class.offline]="status.isOffline" [class.error]="status.lastError" title="{{ getSyncText() }}">
+        <span class="sync-icon">{{ getSyncIcon() }}</span>
+        <span class="sync-text">{{ getSyncText() }}</span>
+        @if (status.pendingChanges > 0) {
+          <span class="pending-badge">{{ status.pendingChanges }}</span>
+        }
+      </div>
+    }
   }
 
   <main class="content">

@@ -65,7 +65,7 @@ export class Calendario implements OnInit {
   cargando = false;
   mostrarModalRacion = false;
   mostrarModalAlimento = false;
-  tipoComidaActual: string | null = null;
+  tipoComidaActual: string = '';
   terminoBusquedaRacion = '';
   terminoBusquedaAlimento = '';
   mensaje = '';
@@ -102,9 +102,11 @@ export class Calendario implements OnInit {
 
     // Cargar intolerancias del usuario
     const usuarioData = this.authService.obtenerUsuarioActual();
-    if (usuarioData && usuarioData.intolerancias) {
+    if (usuarioData && usuarioData.intolerancias && Array.isArray(usuarioData.intolerancias)) {
       this.intoleranciaUsuario = usuarioData.intolerancias;
       console.log('✅ Intolerancias del usuario cargadas:', this.intoleranciaUsuario.length);
+    } else {
+      this.intoleranciaUsuario = [];
     }
 
     this.cargarDia(this.fechaSeleccionada);
