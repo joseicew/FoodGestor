@@ -25,6 +25,7 @@ ALIMENTOS_CATEGORIAS = [
     'Cereales y derivados',
     'Legumbres',
     'Frutas',
+    'Frutos secos',
     'Verduras',
     'Carnes',
     'Pescados y mariscos',
