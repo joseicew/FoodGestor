@@ -170,3 +170,77 @@ def obtener_alergenos_ingrediente(ingrediente_id):
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@ingredientes_bp.route('/limpieza/orfanos', methods=['POST'])
+def limpiar_ingredientes_orfanos():
+    """
+    Elimina ingredientes que no están vinculados a ningún alimento.
+    Ayuda a reducir la cantidad de ingredientes huérfanos en la BD.
+    """
+    try:
+        # Obtener todos los ingredientes
+        ingredientes = Ingrediente.query.all()
+
+        eliminar_count = 0
+        ingredientes_eliminados = []
+
+        for ing in ingredientes:
+            # Si el ingrediente no tiene alimentos vinculados
+            if not ing.alimentos:
+                ingredientes_eliminados.append(ing.nombre)
+                db.session.delete(ing)
+                eliminar_count += 1
+
+        db.session.commit()
+
+        return jsonify({
+            'mensaje': f'Se eliminaron {eliminar_count} ingredientes huérfanos',
+            'cantidad_eliminados': eliminar_count,
+            'ingredientes': ingredientes_eliminados
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@ingredientes_bp.route('/diagnostico/stats', methods=['GET'])
+def obtener_estadisticas_ingredientes():
+    """
+    Obtiene estadísticas sobre ingredientes: total, huérfanos, verificados, etc.
+    Útil para diagnosticar la base de datos.
+    """
+    try:
+        from app.models.alimento import Alimento
+
+        total_ingredientes = Ingrediente.query.count()
+        total_alimentos = Alimento.query.count()
+
+        # Contar ingredientes huérfanos (sin alimentos)
+        ingredientes_huerfanos = []
+        for ing in Ingrediente.query.all():
+            if not ing.alimentos:
+                ingredientes_huerfanos.append({
+                    'id': ing.id,
+                    'nombre': ing.nombre,
+                    'categoria': ing.categoria
+                })
+
+        verificados = Ingrediente.query.filter_by(verificado=True).count()
+        no_verificados = Ingrediente.query.filter_by(verificado=False).count()
+        aditivos = Ingrediente.query.filter_by(es_aditivo=True).count()
+
+        return jsonify({
+            'total_ingredientes': total_ingredientes,
+            'total_alimentos': total_alimentos,
+            'ingredientes_huerfanos_count': len(ingredientes_huerfanos),
+            'ingredientes_huerfanos': ingredientes_huerfanos,
+            'ingredientes_verificados': verificados,
+            'ingredientes_no_verificados': no_verificados,
+            'aditivos': aditivos,
+            'ratio_ingredientes_por_alimento': total_ingredientes / max(total_alimentos, 1)
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
