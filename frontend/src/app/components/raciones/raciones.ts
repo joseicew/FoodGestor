@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RacionesService } from '../../services/raciones';
 import { AlimentosService } from '../../services/alimentos';
+import { OptimisticUpdateService } from '../../services/optimistic-update';
+import { SyncStatusService } from '../../services/sync-status';
+import { CacheService } from '../../services/cache';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -45,6 +48,9 @@ export class Raciones implements OnInit, AfterViewInit {
   constructor(
     private racionesService: RacionesService,
     private alimentosService: AlimentosService,
+    private optimisticUpdateService: OptimisticUpdateService,
+    private syncStatusService: SyncStatusService,
+    private cacheService: CacheService,
     private cdr: ChangeDetectorRef
   ) {}
 
