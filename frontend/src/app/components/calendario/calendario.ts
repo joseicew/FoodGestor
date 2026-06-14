@@ -241,7 +241,7 @@ export class Calendario implements OnInit {
 
   cerrarModalRacion() {
     this.mostrarModalRacion = false;
-    this.tipoComidaActual = null;
+    this.tipoComidaActual = '';
   }
 
   abrirModalAlimento(tipoComida: string) {
@@ -253,7 +253,7 @@ export class Calendario implements OnInit {
 
   cerrarModalAlimento() {
     this.mostrarModalAlimento = false;
-    this.tipoComidaActual = null;
+    this.tipoComidaActual = '';
     this.alimentoSeleccionadoParaAgregar = null;
     this.cantidadAlimento = 1;
     this.modoAgregarAlimento = 'unidades';
