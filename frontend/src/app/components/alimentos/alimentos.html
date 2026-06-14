@@ -1102,16 +1102,24 @@
                    placeholder="Nombre del ingrediente" />
           </div>
 
-          <!-- Categoría (dropdown) -->
+          <!-- Alérgenos (checkboxes) -->
           <div>
-            <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Categoría</label>
-            <select [(ngModel)]="ingredienteActualVerificacion.categoria"
-                    style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: white; cursor: pointer;">
-              <option value="">-- Seleccionar categoría --</option>
-              @for (cat of categoriasAlimentos; track cat) {
-                <option [value]="cat">{{ cat }}</option>
-              }
-            </select>
+            <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 8px;">Alérgenos/Intolerancias</label>
+            @if (alimentoSeleccionadoAlergenos?.categorias_alergenos && alimentoSeleccionadoAlergenos.categorias_alergenos.length > 0) {
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                @for (alergeno of alimentoSeleccionadoAlergenos.categorias_alergenos; track alergeno) {
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox"
+                           [checked]="ingredienteActualVerificacion.alergenos_categorias && ingredienteActualVerificacion.alergenos_categorias.includes(alergeno)"
+                           (change)="toggleAlergeno(ingredienteActualVerificacion, alergeno)"
+                           style="width: 16px; height: 16px; cursor: pointer; accent-color: #2196F3;" />
+                    <span>{{ alergeno }}</span>
+                  </label>
+                }
+              </div>
+            } @else {
+              <p style="color: #999; font-size: 12px;">Cargando alérgenos...</p>
+            }
           </div>
 
           <!-- Es Aditivo (checkbox) -->
