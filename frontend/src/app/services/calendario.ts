@@ -25,6 +25,13 @@ export class CalendarioService {
   }
 
   /**
+   * Obtiene todo el calendario del usuario
+   */
+  obtenerCalendario(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl, this.getHeaders());
+  }
+
+  /**
    * Obtiene el día completo con todas las 5 comidas
    */
   obtenerDia(fecha: string): Observable<any> {

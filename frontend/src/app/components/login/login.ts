@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth';
+import { SyncService } from '../../services/sync';
 
 @Component({
   selector: 'app-login',
@@ -23,6 +24,7 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private syncService: SyncService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -63,9 +65,20 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         console.log('✓ Login exitoso, respuesta:', response);
         console.log('✓ Token disponible:', !!this.authService.obtenerToken());
-        console.log('✓ Redirigiendo a /perfil...');
-        // Redirigir inmediatamente al perfil
-        this.router.navigate(['/perfil']);
+        console.log('🔄 Cargando datos iniciales...');
+
+        // Cargar datos iniciales (alimentos, raciones, calendario)
+        this.syncService.cargarDatosIniciales().subscribe({
+          next: () => {
+            console.log('✓ Redirigiendo a /perfil...');
+            this.router.navigate(['/perfil']);
+          },
+          error: (err) => {
+            console.error('⚠️ Error cargando datos iniciales, pero continuando:', err);
+            // Continuar a perfil incluso si hay error
+            this.router.navigate(['/perfil']);
+          }
+        });
       },
       error: (error) => {
         this.cargando = false;

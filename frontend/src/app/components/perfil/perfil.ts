@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { SessionService } from '../../services/session';
 import { CalendarioService } from '../../services/calendario';
+import { AutoSyncService } from '../../services/auto-sync';
 
 @Component({
   selector: 'app-perfil',
@@ -53,7 +54,8 @@ export class Perfil implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private sessionService: SessionService,
-    private calendarioService: CalendarioService
+    private calendarioService: CalendarioService,
+    private autoSyncService: AutoSyncService
   ) {}
 
   ngOnInit(): void {
@@ -72,6 +74,9 @@ export class Perfil implements OnInit {
     console.log('✓ [Perfil.ngOnInit] Autenticado, cargando perfil...');
     this.cargarPerfil();
     this.cargarTotalesDelDia();
+
+    // Iniciar verificación periódica de cambios
+    this.autoSyncService.iniciarVerificacionPeriodica();
   }
 
   cargarPerfil(): void {
