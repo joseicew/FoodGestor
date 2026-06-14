@@ -63,7 +63,7 @@ export class Raciones implements OnInit, AfterViewInit {
 
   ngOnInit() {
     // Cargar intolerancias del usuario
-    const usuarioData = this.authService.obtenerDatos();
+    const usuarioData = this.authService.obtenerUsuarioActual();
     if (usuarioData && usuarioData.intolerancias) {
       this.intoleranciaUsuario = usuarioData.intolerancias;
       console.log('✅ Intolerancias del usuario cargadas en raciones:', this.intoleranciaUsuario.length);

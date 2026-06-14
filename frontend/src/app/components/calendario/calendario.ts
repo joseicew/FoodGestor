@@ -101,7 +101,7 @@ export class Calendario implements OnInit {
     console.log('✓ [Calendario.ngOnInit] Autenticado, cargando datos...');
 
     // Cargar intolerancias del usuario
-    const usuarioData = this.authService.obtenerDatos();
+    const usuarioData = this.authService.obtenerUsuarioActual();
     if (usuarioData && usuarioData.intolerancias) {
       this.intoleranciaUsuario = usuarioData.intolerancias;
       console.log('✅ Intolerancias del usuario cargadas:', this.intoleranciaUsuario.length);
