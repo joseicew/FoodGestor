@@ -82,6 +82,8 @@ export class Alimentos implements OnInit {
   mostrarDetallesAlimento = false;
   alimentoSeleccionadoDetalle: any = null;
   categoriaOriginal: string = '';
+  pesoOriginal: number | null = null;
+  unidadOriginal: string | null = null;
   mostrarBotonesEdicion = false;
   mostrarDropdownEdicion = false;
   mostrarDropdownMacros = false;
@@ -847,35 +849,61 @@ export class Alimentos implements OnInit {
   abrirDetallesAlimento(alimento: any, desdeActualizar = false) {
     this.alimentoSeleccionadoDetalle = { ...alimento };
     this.categoriaOriginal = alimento.categoria || '';
+    this.pesoOriginal = alimento.peso_unidad || null;
+    this.unidadOriginal = alimento.nombre_unidad || null;
     this.mostrarDetallesAlimento = true;
     this.mostrarBotonesEdicion = desdeActualizar;
     this.cdr.markForCheck();
   }
 
   cerrarDetallesAlimento() {
-    // Guardar cambios de categoría si cambió
-    if (this.alimentoSeleccionadoDetalle &&
-        this.alimentoSeleccionadoDetalle.categoria !== this.categoriaOriginal) {
+    // Detectar si hay cambios en categoría, peso o unidad
+    const categoriaChanged = this.alimentoSeleccionadoDetalle &&
+        this.alimentoSeleccionadoDetalle.categoria !== this.categoriaOriginal;
+    const pesoChanged = this.alimentoSeleccionadoDetalle &&
+        this.alimentoSeleccionadoDetalle.peso_unidad !== this.pesoOriginal;
+    const unidadChanged = this.alimentoSeleccionadoDetalle &&
+        this.alimentoSeleccionadoDetalle.nombre_unidad !== this.unidadOriginal;
+
+    if (categoriaChanged || pesoChanged || unidadChanged) {
       const alimentoId = this.alimentoSeleccionadoDetalle.id;
-      const categoriaActual = this.alimentoSeleccionadoDetalle.categoria;
       const formData = new FormData();
-      formData.append('categoria', categoriaActual);
+
+      if (categoriaChanged) {
+        formData.append('categoria', this.alimentoSeleccionadoDetalle.categoria);
+      }
+      if (pesoChanged) {
+        formData.append('peso_unidad', this.alimentoSeleccionadoDetalle.peso_unidad || '');
+      }
+      if (unidadChanged) {
+        formData.append('nombre_unidad', this.alimentoSeleccionadoDetalle.nombre_unidad || '');
+      }
 
       this.alimentosService.actualizarAlimento(alimentoId, formData).subscribe({
         next: () => {
-          console.log('✅ Categoría guardada:', categoriaActual);
+          console.log('✅ Cambios guardados');
           // Actualizar en la lista LOCAL
           const index = this.alimentos.findIndex(a => a.id === alimentoId);
           if (index !== -1) {
-            this.alimentos[index].categoria = categoriaActual;
+            if (categoriaChanged) {
+              this.alimentos[index].categoria = this.alimentoSeleccionadoDetalle.categoria;
+            }
+            if (pesoChanged) {
+              this.alimentos[index].peso_unidad = this.alimentoSeleccionadoDetalle.peso_unidad;
+            }
+            if (unidadChanged) {
+              this.alimentos[index].nombre_unidad = this.alimentoSeleccionadoDetalle.nombre_unidad;
+            }
           }
-          // Recalcular filtros para que se actualicen los productos mostrados
-          this.buscarAlimento();
+          // Recalcular filtros si cambió la categoría
+          if (categoriaChanged) {
+            this.buscarAlimento();
+          }
           // Cerrar después de guardar
           this.cerrarDetallesAlimentoFinal();
         },
         error: (err) => {
-          console.error('❌ Error al guardar categoría:', err);
+          console.error('❌ Error al guardar cambios:', err);
           // Aún así cerrar aunque haya error
           this.cerrarDetallesAlimentoFinal();
         }
@@ -890,6 +918,8 @@ export class Alimentos implements OnInit {
     this.mostrarDetallesAlimento = false;
     this.alimentoSeleccionadoDetalle = null;
     this.categoriaOriginal = '';
+    this.pesoOriginal = null;
+    this.unidadOriginal = null;
     this.mostrarBotonesEdicion = false;
     this.mostrarDropdownEdicion = false;
     this.mostrarDropdownMacros = false;

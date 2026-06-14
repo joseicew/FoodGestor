@@ -41,12 +41,34 @@
                   <span class="info-valor">{{ alimentoSeleccionadoDetalle.codigo_barras }}</span>
                 </div>
               }
-              @if (alimentoSeleccionadoDetalle.peso_unidad && alimentoSeleccionadoDetalle.nombre_unidad) {
-                <div class="info-item">
-                  <span class="info-label">Peso/Unidad</span>
-                  <span class="info-valor">{{ alimentoSeleccionadoDetalle.peso_unidad }}g / {{ alimentoSeleccionadoDetalle.nombre_unidad }}</span>
-                </div>
-              }
+              <div class="info-item">
+                <span class="info-label">Peso/Unidad</span>
+                @if (!mostrarBotonesEdicion) {
+                  <span class="info-valor">
+                    @if (alimentoSeleccionadoDetalle.peso_unidad && alimentoSeleccionadoDetalle.nombre_unidad) {
+                      {{ alimentoSeleccionadoDetalle.peso_unidad }}g / {{ alimentoSeleccionadoDetalle.nombre_unidad }}
+                    } @else {
+                      No especificado
+                    }
+                  </span>
+                } @else {
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="number"
+                           [(ngModel)]="alimentoSeleccionadoDetalle.peso_unidad"
+                           placeholder="g"
+                           min="0"
+                           step="0.1"
+                           style="width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
+                    <select [(ngModel)]="alimentoSeleccionadoDetalle.nombre_unidad"
+                            style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                      <option value="">Seleccionar</option>
+                      @for (unidad of unidadesComunes; track unidad) {
+                        <option [value]="unidad">{{ unidad }}</option>
+                      }
+                    </select>
+                  </div>
+                }
+              </div>
             </div>
           </div>
 
