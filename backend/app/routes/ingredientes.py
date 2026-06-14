@@ -210,16 +210,16 @@ def consolidar_ingredientes_duplicados():
     """
     Elimina ingredientes duplicados consolidando sus datos:
     1. Identifica ingredientes con mismo nombre (case-insensitive)
-    2. Mantiene el "principal" (normalmente el más antiguo o verificado)
-    3. Transfiere todos los alimentos del duplicado al principal
-    4. Asegura que ningún alimento pierda el ingrediente
-    5. Elimina el duplicado SOLO después de transferir exitosamente
+    2. Mantiene el principal (verificado o mas antiguo)
+    3. Actualiza las relaciones many-to-many directamente en BD
+    4. Elimina los ingredientes duplicados
 
     Retorna detalles de consolidaciones realizadas.
     """
     try:
         from collections import defaultdict
         from app.models.alimento import Alimento
+        from sqlalchemy import text
 
         # Agrupar ingredientes por nombre normalizado
         grupos_duplicados = defaultdict(list)
@@ -230,7 +230,6 @@ def consolidar_ingredientes_duplicados():
 
         consolidaciones = []
         ingredientes_eliminados = []
-        errores = []
 
         # Procesar cada grupo de duplicados
         for nombre_norm, ingredientes in grupos_duplicados.items():
@@ -238,7 +237,6 @@ def consolidar_ingredientes_duplicados():
                 continue  # No hay duplicados
 
             # Ordenar por: verificado (desc), created_at (asc), id (asc)
-            # Mantener el ingrediente verificado o más antiguo como principal
             ingredientes.sort(
                 key=lambda x: (-x.verificado, x.created_at, x.id)
             )
@@ -246,84 +244,55 @@ def consolidar_ingredientes_duplicados():
             ingrediente_principal = ingredientes[0]
             duplicados = ingredientes[1:]
 
-            print(f'🔀 Consolidando "{ingrediente_principal.nombre}":')
-            print(f'   Principal: ID={ingrediente_principal.id} ({len(ingrediente_principal.alimentos)} alimentos)')
-
             for dup in duplicados:
-                alimentos_dup = list(dup.alimentos)  # Copiar la lista antes de modificar
-                print(f'   Duplicado: ID={dup.id} "{dup.nombre}" ({len(alimentos_dup)} alimentos)')
+                alimentos_count = len(dup.alimentos)
 
-                # PASO 1: Transferir todos los alimentos del duplicado al principal
-                alimentos_transferidos = 0
-                for alimento in alimentos_dup:
-                    # Verificar que el alimento actual tiene este ingrediente
-                    if dup not in alimento.ingredientes:
-                        errores.append({
-                            'tipo': 'inconsistencia',
-                            'mensaje': f'Alimento "{alimento.nombre}" no tiene ingrediente "{dup.nombre}" en su lista'
-                        })
-                        continue
+                # Actualizar relaciones en BD usando SQL directo
+                # Cambiar el ingrediente_id del duplicado al principal
+                # para que todos los alimentos del duplicado apunten al principal
+                db.session.execute(
+                    text('''
+                        UPDATE alimento_ingrediente
+                        SET ingrediente_id = :principal_id
+                        WHERE ingrediente_id = :dup_id
+                    '''),
+                    {'principal_id': ingrediente_principal.id, 'dup_id': dup.id}
+                )
 
-                    # Agregar el principal si no está ya
-                    if ingrediente_principal not in alimento.ingredientes:
-                        alimento.ingredientes.append(ingrediente_principal)
-                        print(f'      ✓ Alimento "{alimento.nombre}" vinculado a principal')
-                        alimentos_transferidos += 1
-                    else:
-                        print(f'      ~ Alimento "{alimento.nombre}" ya tenía principal vinculado')
-                        alimentos_transferidos += 1
+                # Despues del update, ya no hay filas con dup.id,
+                # asi que podemos eliminar el ingrediente duplicado de forma segura
+                # Usar SQL directo para evitar validacion de ORM
+                db.session.execute(
+                    text('DELETE FROM ingrediente WHERE id = :id'),
+                    {'id': dup.id}
+                )
 
-                # PASO 2: Validar que todos los alimentos ahora tienen el principal
-                for alimento in alimentos_dup:
-                    if ingrediente_principal not in alimento.ingredientes:
-                        error_msg = f'CRÍTICO: Alimento "{alimento.nombre}" NO tiene principal vinculado'
-                        print(f'      ❌ {error_msg}')
-                        errores.append({
-                            'tipo': 'error_crítico',
-                            'alimento_id': alimento.id,
-                            'alimento_nombre': alimento.nombre,
-                            'mensaje': error_msg
-                        })
-                        # NO continuar si hay error crítico
-                        raise Exception(error_msg)
-
-                # PASO 3: Eliminar el duplicado SOLO si todo salió bien
-                print(f'      🗑️ Eliminando duplicado ID={dup.id}')
                 ingredientes_eliminados.append({
                     'id': dup.id,
                     'nombre': dup.nombre,
-                    'alimentos_transferidos': alimentos_transferidos
+                    'alimentos_transferidos': alimentos_count
                 })
 
-                # Registrar consolidación
                 consolidaciones.append({
                     'principal_id': ingrediente_principal.id,
                     'principal_nombre': ingrediente_principal.nombre,
                     'duplicado_id': dup.id,
                     'duplicado_nombre': dup.nombre,
-                    'alimentos_transferidos': alimentos_transferidos
+                    'alimentos_transferidos': alimentos_count
                 })
-
-                db.session.delete(dup)
 
         db.session.commit()
 
-        respuesta = {
-            'mensaje': f'Se consolidaron {len(consolidaciones)} grupos de ingredientes duplicados',
+        return jsonify({
+            'mensaje': f'Consolidados {len(consolidaciones)} grupos de duplicados',
             'consolidaciones': consolidaciones,
             'total_consolidados': len(consolidaciones),
             'total_eliminados': len(ingredientes_eliminados),
             'ingredientes_eliminados': ingredientes_eliminados
-        }
-
-        if errores:
-            respuesta['advertencias'] = errores
-
-        return jsonify(respuesta), 200
+        }), 200
 
     except Exception as e:
         db.session.rollback()
-        print(f'❌ Error en consolidación: {str(e)}')
         return jsonify({
             'error': str(e),
             'tipo': 'consolidacion_fallida'
