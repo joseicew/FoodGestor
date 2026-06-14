@@ -205,6 +205,84 @@ def limpiar_ingredientes_orfanos():
         return jsonify({'error': str(e)}), 500
 
 
+@ingredientes_bp.route('/limpieza/duplicados', methods=['POST'])
+def consolidar_ingredientes_duplicados():
+    """
+    Elimina ingredientes duplicados consolidando sus datos:
+    1. Identifica ingredientes con mismo nombre (case-insensitive)
+    2. Mantiene el "principal" (normalmente el más antiguo o verificado)
+    3. Transfiere todos los alimentos del duplicado al principal
+    4. Elimina el duplicado
+
+    Retorna detalles de consolidaciones realizadas.
+    """
+    try:
+        from collections import defaultdict
+        from app.models.alimento import Alimento
+
+        # Agrupar ingredientes por nombre normalizado
+        grupos_duplicados = defaultdict(list)
+
+        for ing in Ingrediente.query.all():
+            nombre_normalizado = ing.nombre.lower().strip()
+            grupos_duplicados[nombre_normalizado].append(ing)
+
+        consolidaciones = []
+        ingredientes_eliminados = []
+
+        # Procesar cada grupo de duplicados
+        for nombre_norm, ingredientes in grupos_duplicados.items():
+            if len(ingredientes) <= 1:
+                continue  # No hay duplicados
+
+            # Ordenar por: verificado (desc), created_at (asc), id (asc)
+            # Mantener el ingrediente verificado o más antiguo como principal
+            ingredientes.sort(
+                key=lambda x: (-x.verificado, x.created_at, x.id)
+            )
+
+            ingrediente_principal = ingredientes[0]
+            duplicados = ingredientes[1:]
+
+            print(f'🔀 Consolidando "{ingrediente_principal.nombre}":')
+            print(f'   Principal: ID={ingrediente_principal.id}')
+
+            for dup in duplicados:
+                print(f'   Duplicado: ID={dup.id} "{dup.nombre}" ({len(dup.alimentos)} alimentos)')
+
+                # Transferir todos los alimentos del duplicado al principal
+                for alimento in dup.alimentos:
+                    if ingrediente_principal not in alimento.ingredientes:
+                        alimento.ingredientes.append(ingrediente_principal)
+                        print(f'      ✓ Alimento "{alimento.nombre}" -> Principal')
+
+                # Registrar consolidación
+                consolidaciones.append({
+                    'principal_id': ingrediente_principal.id,
+                    'principal_nombre': ingrediente_principal.nombre,
+                    'duplicado_id': dup.id,
+                    'duplicado_nombre': dup.nombre,
+                    'alimentos_transferidos': len(dup.alimentos)
+                })
+
+                # Eliminar el duplicado
+                ingredientes_eliminados.append(dup.nombre)
+                db.session.delete(dup)
+
+        db.session.commit()
+
+        return jsonify({
+            'mensaje': f'Se consolidaron {len(consolidaciones)} grupos de ingredientes duplicados',
+            'consolidaciones': consolidaciones,
+            'ingredientes_eliminados': ingredientes_eliminados,
+            'total_eliminados': len(ingredientes_eliminados)
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @ingredientes_bp.route('/diagnostico/stats', methods=['GET'])
 def obtener_estadisticas_ingredientes():
     """
@@ -231,6 +309,23 @@ def obtener_estadisticas_ingredientes():
         no_verificados = Ingrediente.query.filter_by(verificado=False).count()
         aditivos = Ingrediente.query.filter_by(es_aditivo=True).count()
 
+        # Detectar posibles duplicados (mismo nombre case-insensitive)
+        posibles_duplicados = []
+        nombres_vistos = {}
+        for ing in Ingrediente.query.all():
+            nombre_norm = ing.nombre.lower().strip()
+            if nombre_norm not in nombres_vistos:
+                nombres_vistos[nombre_norm] = []
+            nombres_vistos[nombre_norm].append(ing.id)
+
+        for nombre_norm, ids in nombres_vistos.items():
+            if len(ids) > 1:
+                posibles_duplicados.append({
+                    'nombre_normalizado': nombre_norm,
+                    'ids': ids,
+                    'cantidad': len(ids)
+                })
+
         return jsonify({
             'total_ingredientes': total_ingredientes,
             'total_alimentos': total_alimentos,
@@ -239,6 +334,8 @@ def obtener_estadisticas_ingredientes():
             'ingredientes_verificados': verificados,
             'ingredientes_no_verificados': no_verificados,
             'aditivos': aditivos,
+            'posibles_duplicados_count': len(posibles_duplicados),
+            'posibles_duplicados': posibles_duplicados,
             'ratio_ingredientes_por_alimento': total_ingredientes / max(total_alimentos, 1)
         }), 200
 
