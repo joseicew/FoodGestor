@@ -1030,13 +1030,13 @@ export class Alimentos implements OnInit {
   }
 
   abrirModalVerificarIngredientes() {
-    console.log('🔷 Abriendo modal verificación de ingredientes...');
+    console.log('Abriendo modal verificacion de ingredientes...');
     this.ingredientesAVerificar = this.obtenerIngredientesSinVerificar();
-    console.log(`📦 Ingredientes sin verificar: ${this.ingredientesAVerificar.length}`);
+    console.log(`Ingredientes sin verificar: ${this.ingredientesAVerificar.length}`);
 
     if (this.ingredientesAVerificar.length > 0) {
       const ingrediente = { ...this.ingredientesAVerificar[0] };
-      console.log('✅ Primer ingrediente:', ingrediente);
+      console.log('Primer ingrediente:', ingrediente);
 
       // Parsear alergenos_categorias si es un string JSON
       if (typeof ingrediente.alergenos_categorias === 'string') {
@@ -1048,13 +1048,14 @@ export class Alimentos implements OnInit {
       }
 
       this.ingredienteActualVerificacion = ingrediente;
-      console.log('⚙️ Cargando categorías...');
-      this.cargarCategoriasAlimentos();
+      this.alimentoSeleccionadoAlergenos = { ...ingrediente };
+      console.log('Cargando categorias de alergenos...');
+      this.cargarCategoriasAlergenos();
       this.mostrarModalVerificarIngredientes = true;
-      console.log('🎯 Modal abierto, mostrarModalVerificarIngredientes:', this.mostrarModalVerificarIngredientes);
+      console.log('Modal abierto');
       this.cdr.markForCheck();
     } else {
-      console.warn('❌ No hay ingredientes para verificar');
+      console.warn('No hay ingredientes para verificar');
       this.mostrarMensaje('No hay ingredientes para verificar', 'exito');
     }
   }
