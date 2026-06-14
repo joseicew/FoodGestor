@@ -102,6 +102,7 @@ export class Alimentos implements OnInit {
   mostrarModalVerificarIngredientes = false;
   ingredienteActualVerificacion: any = null;
   ingredientesAVerificar: any[] = [];
+  totalIngredientesVerificar: number = 0;
   mostrarAlergenosPopup = false;
   ingredienteMostrandoAlergenos: any = null;
   popoverStyle: any = {};
@@ -1035,6 +1036,7 @@ export class Alimentos implements OnInit {
   abrirModalVerificarIngredientes() {
     console.log('Abriendo modal verificacion de ingredientes...');
     this.ingredientesAVerificar = this.obtenerIngredientesSinVerificar();
+    this.totalIngredientesVerificar = this.ingredientesAVerificar.length;
     console.log(`Ingredientes sin verificar: ${this.ingredientesAVerificar.length}`);
 
     if (this.ingredientesAVerificar.length > 0) {
