@@ -7,6 +7,7 @@ import { AlimentosService } from '../../services/alimentos';
 import { AiVisionService } from '../../services/ai-vision';
 import { OcrAsyncService } from '../../services/ocr-async';
 import { AuthService } from '../../services/auth';
+import { AllergensService } from '../../services/allergens';
 
 type OcrEstado = 'idle' | 'preparando' | 'analizando' | 'listo' | 'error';
 
@@ -167,7 +168,8 @@ export class Alimentos implements OnInit {
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private allergensService: AllergensService
   ) {}
 
   private getHeaders() {
@@ -1049,9 +1051,19 @@ export class Alimentos implements OnInit {
       }
 
       this.ingredienteActualVerificacion = ingrediente;
-      this.alimentoSeleccionadoAlergenos = { ...ingrediente };
-      console.log('Cargando categorias de alergenos...');
-      this.cargarCategoriasAlergenos();
+
+      // Cargar alérgenos del caché inmediatamente
+      const alergenosEnCache = this.allergensService.obtenerAlergenosSync();
+      this.alimentoSeleccionadoAlergenos = {
+        ...ingrediente,
+        categorias_alergenos: alergenosEnCache.length > 0 ? alergenosEnCache : []
+      };
+
+      // Si no hay alérgenos en caché, cargar de forma asincrónica
+      if (alergenosEnCache.length === 0) {
+        this.cargarCategoriasAlergenos();
+      }
+
       this.mostrarModalVerificarIngredientes = true;
       console.log('Modal abierto');
       this.cdr.markForCheck();

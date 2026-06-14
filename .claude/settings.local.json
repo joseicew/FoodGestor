@@ -314,7 +314,8 @@
       "Bash(python -c \"from app.routes.calendario import calendario_bp; print\\('Calendario blueprint imported successfully'\\)\")",
       "Bash(python -c \"from app import create_app; app = create_app\\(\\); print\\('Registered blueprints:'\\); [print\\(f'  {bp}'\\) for bp in app.blueprints]\")",
       "Bash(curl -s -H \"Authorization: Bearer test\" http://localhost:5000/api/calendario)",
-      "Bash(python -c \"import sys, json; data=json.load\\(sys.stdin\\); print\\('Total:', len\\(data['categorias']\\)\\); print\\('Frutos secos presente:', 'Frutos secos' in data['categorias']\\); print\\('Categorías:'\\); [print\\(f'  - {c}'\\) for c in data['categorias']]\")"
+      "Bash(python -c \"import sys, json; data=json.load\\(sys.stdin\\); print\\('Total:', len\\(data['categorias']\\)\\); print\\('Frutos secos presente:', 'Frutos secos' in data['categorias']\\); print\\('Categorías:'\\); [print\\(f'  - {c}'\\) for c in data['categorias']]\")",
+      "Bash(python -c \"import sys, json; data=json.load\\(sys.stdin\\); print\\('Alergenos:', len\\(data['categorias']\\)\\); [print\\(f'  - {c}'\\) for c in data['categorias']]\")"
     ]
   }
 }

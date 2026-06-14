@@ -56,9 +56,9 @@ export class AllergensService {
   }
 
   /**
-   * Obtiene alergenos en caché o vacío
+   * Obtiene alergenos en caché de forma síncrona
    */
-  obtenerAlergeonosSync(): string[] {
+  obtenerAlergenosSync(): string[] {
     return this.allergensCached || [];
   }
 
