@@ -105,7 +105,7 @@ export class Alimentos implements OnInit {
   mostrarAlergenosPopup = false;
   ingredienteMostrandoAlergenos: any = null;
   popoverStyle: any = {};
-  alergenoSeleccionado: string = '';
+  alergenoDelIngrediente: string = '';
   categoriasAlimentos: string[] = [
     'Cereales y derivados',
     'Legumbres',
@@ -1052,6 +1052,11 @@ export class Alimentos implements OnInit {
 
       this.ingredienteActualVerificacion = ingrediente;
 
+      // Inicializar alérgeno del ingrediente (si tiene uno)
+      this.alergenoDelIngrediente = ingrediente.alergenos_categorias && ingrediente.alergenos_categorias.length > 0
+        ? ingrediente.alergenos_categorias[0]
+        : '';
+
       // Cargar alérgenos del caché inmediatamente
       const alergenosEnCache = this.allergensService.obtenerAlergenosSync();
       this.alimentoSeleccionadoAlergenos = {
@@ -1170,26 +1175,13 @@ export class Alimentos implements OnInit {
     }
   }
 
-  agregarAlergeno() {
-    if (!this.alergenoSeleccionado || !this.ingredienteActualVerificacion) return;
+  asignarAlergeno() {
+    if (!this.ingredienteActualVerificacion) return;
 
-    if (!this.ingredienteActualVerificacion.alergenos_categorias) {
+    if (this.alergenoDelIngrediente) {
+      this.ingredienteActualVerificacion.alergenos_categorias = [this.alergenoDelIngrediente];
+    } else {
       this.ingredienteActualVerificacion.alergenos_categorias = [];
-    }
-
-    if (!this.ingredienteActualVerificacion.alergenos_categorias.includes(this.alergenoSeleccionado)) {
-      this.ingredienteActualVerificacion.alergenos_categorias.push(this.alergenoSeleccionado);
-    }
-
-    this.alergenoSeleccionado = '';
-  }
-
-  quitarAlergeno(alergeno: string) {
-    if (!this.ingredienteActualVerificacion || !this.ingredienteActualVerificacion.alergenos_categorias) return;
-
-    const index = this.ingredienteActualVerificacion.alergenos_categorias.indexOf(alergeno);
-    if (index > -1) {
-      this.ingredienteActualVerificacion.alergenos_categorias.splice(index, 1);
     }
   }
 

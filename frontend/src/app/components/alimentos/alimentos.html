@@ -1102,31 +1102,18 @@
                    placeholder="Nombre del ingrediente" />
           </div>
 
-          <!-- Alérgenos (dropdown) -->
+          <!-- Alérgenos (dropdown - solo uno) -->
           <div>
             <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Alérgenos/Intolerancias</label>
             @if (alimentoSeleccionadoAlergenos?.categorias_alergenos && alimentoSeleccionadoAlergenos.categorias_alergenos.length > 0) {
-              <select [(ngModel)]="alergenoSeleccionado"
-                      (change)="agregarAlergeno()"
+              <select [(ngModel)]="alergenoDelIngrediente"
+                      (change)="asignarAlergeno()"
                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: white; cursor: pointer;">
-                <option value="">-- Seleccionar alérgeno --</option>
+                <option value="">-- Sin alérgeno --</option>
                 @for (alergeno of alimentoSeleccionadoAlergenos.categorias_alergenos; track alergeno) {
                   <option [value]="alergeno">{{ alergeno }}</option>
                 }
               </select>
-              @if (ingredienteActualVerificacion.alergenos_categorias && ingredienteActualVerificacion.alergenos_categorias.length > 0) {
-                <div style="margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap;">
-                  @for (alergia of ingredienteActualVerificacion.alergenos_categorias; track alergia) {
-                    <div style="background: #ffebee; color: #c62828; padding: 6px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px;">
-                      {{ alergia }}
-                      <button type="button" (click)="quitarAlergeno(alergia)"
-                              style="background: none; border: none; color: #c62828; cursor: pointer; font-weight: bold; font-size: 14px; padding: 0; line-height: 1;">
-                        ×
-                      </button>
-                    </div>
-                  }
-                </div>
-              }
             } @else {
               <p style="color: #999; font-size: 12px;">Cargando alérgenos...</p>
             }
