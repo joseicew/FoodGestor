@@ -29,18 +29,35 @@ def _guardar_foto(file, prefijo):
 
 
 def _vincular_ingredientes(alimento, nombres):
+    """
+    Vincula ingredientes a un alimento, deduplicando automáticamente.
+    Si un ingrediente ya existe en la BD con el mismo nombre (case-insensitive),
+    lo reutiliza. De lo contrario, lo crea nuevo.
+    """
+    # Limpiar ingredientes existentes para actualizar la lista
+    alimento.ingredientes.clear()
+
     for nombre in nombres:
         nombre = nombre.strip()
         if not nombre:
             continue
+
+        # Buscar ingrediente existente (case-insensitive)
         ingrediente = Ingrediente.query.filter(
             db.func.lower(Ingrediente.nombre) == nombre.lower()
         ).first()
+
         if not ingrediente:
-            ingrediente = Ingrediente(nombre=nombre)
+            # Crear nuevo ingrediente con el nombre normalizado
+            ingrediente = Ingrediente(nombre=nombre.capitalize())
             db.session.add(ingrediente)
+            db.session.flush()  # Asegurar que se guarde antes de vincularlo
+            print(f'✨ Nuevo ingrediente creado: {nombre}')
+
+        # Vincular al alimento (evita duplicados automáticamente)
         if ingrediente not in alimento.ingredientes:
             alimento.ingredientes.append(ingrediente)
+            print(f'✓ Ingrediente vinculado: {ingrediente.nombre}')
 
 
 def _calcular_similitud_macros(macros1: dict, macros2: dict, tolerancia: float = 0.1) -> bool:
@@ -269,7 +286,7 @@ def crear_alimento():
 @jwt_required()
 def actualizar_alimento(id):
     try:
-        alimento = Alimento.query.first()
+        alimento = Alimento.query.get(id)
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
@@ -305,6 +322,16 @@ def actualizar_alimento(id):
         if ruta_mac:
             alimento.foto_macros = ruta_mac
 
+        # Actualizar ingredientes si se proporcionan
+        ingredientes_json = data.get('ingredientes', '[]')
+        if ingredientes_json:
+            try:
+                nombres_ingredientes = json.loads(ingredientes_json)
+                if nombres_ingredientes:
+                    _vincular_ingredientes(alimento, nombres_ingredientes)
+            except json.JSONDecodeError:
+                pass
+
         db.session.commit()
         return jsonify({'mensaje': 'Alimento actualizado exitosamente', 'alimento': alimento.to_dict()}), 200
 
@@ -317,7 +344,7 @@ def actualizar_alimento(id):
 @jwt_required()
 def eliminar_alimento(id):
     try:
-        alimento = Alimento.query.first()
+        alimento = Alimento.query.get(id)
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
         db.session.delete(alimento)
@@ -333,7 +360,7 @@ def eliminar_alimento(id):
 def toggle_favorito(id):
     """Marca/desmarca un alimento como favorito"""
     try:
-        alimento = Alimento.query.first()
+        alimento = Alimento.query.get(id)
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
@@ -365,7 +392,7 @@ def obtener_favoritos():
 def actualizar_codigo_barras(id):
     """Actualiza solo el código de barras de un alimento"""
     try:
-        alimento = Alimento.query.first()
+        alimento = Alimento.query.get(id)
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
@@ -376,7 +403,7 @@ def actualizar_codigo_barras(id):
             return jsonify({'error': 'Código de barras es requerido'}), 400
 
         # Verificar que no existe otro producto con este código
-        existente = Alimento.query.first()
+        existente = Alimento.query.filter(Alimento.codigo_barras == codigo_barras).first()
         if existente and existente.id != id:
             return jsonify({
                 'error': f'Ya existe un producto con este código',
@@ -401,7 +428,7 @@ def actualizar_codigo_barras(id):
 def actualizar_alergenos(id):
     """Actualiza los alergenos y categorías asociados a los ingredientes de un alimento"""
     try:
-        alimento = Alimento.query.first()
+        alimento = Alimento.query.get(id)
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
