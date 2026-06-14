@@ -8,6 +8,8 @@ ALERGENO_CATEGORIAS = [
     'Lácteos',
     'Gluten',
     'Frutos secos',
+    'Fruta',
+    'Verdura',
     'Marisco',
     'Huevo',
     'Soja',
