@@ -40,8 +40,9 @@ export class AllergensService {
       return of(this.allergensCached);
     }
 
-    return this.http.get<string[]>(this.apiUrl, this.getHeaders()).pipe(
-      tap((alergenos) => {
+    return this.http.get<{categorias: string[]}>(this.apiUrl, this.getHeaders()).pipe(
+      tap((response) => {
+        const alergenos = response.categorias || [];
         this.allergensCached = alergenos;
         this.allergensSubject.next(alergenos);
         console.log('✅ Alergenos cargados:', alergenos.length);
