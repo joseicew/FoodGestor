@@ -1142,9 +1142,13 @@
                     style="flex: 1; background: #f0f0f0; color: #333; border: 1px solid #ddd; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">
               Cancelar
             </button>
+            <button (click)="eliminarIngredienteIncorrecto(ingredienteActualVerificacion)"
+                    style="flex: 1; background: #ff6b6b; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">
+              Eliminar
+            </button>
             <button (click)="guardarIngredienteVerificado(ingredienteActualVerificacion)"
                     style="flex: 1; background: #4CAF50; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">
-              ✓ Guardar y Siguiente
+              Guardar y Siguiente
             </button>
           </div>
         </div>

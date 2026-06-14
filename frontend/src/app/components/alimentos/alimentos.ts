@@ -1108,45 +1108,67 @@ export class Alimentos implements OnInit {
       alergenos_categorias: ingrediente.alergenos_categorias || []
     }).subscribe({
       next: (response: any) => {
-        this.mostrarMensaje('✓ Ingrediente verificado correctamente', 'exito');
-
-        // Actualizar el ingrediente en la lista local
-        const indexEnAlimentos = this.ingredientesAVerificar.findIndex(ing => ing.id === ingrediente.id);
-        if (indexEnAlimentos >= 0) {
-          this.ingredientesAVerificar.splice(indexEnAlimentos, 1);
-        }
-
-        // Mostrar el siguiente ingrediente o cerrar
-        if (this.ingredientesAVerificar.length > 0) {
-          const siguienteIngrediente = { ...this.ingredientesAVerificar[0] };
-
-          // Parsear alergenos_categorias si es un string JSON
-          if (typeof siguienteIngrediente.alergenos_categorias === 'string') {
-            try {
-              siguienteIngrediente.alergenos_categorias = JSON.parse(siguienteIngrediente.alergenos_categorias);
-            } catch (e) {
-              siguienteIngrediente.alergenos_categorias = [];
-            }
-          }
-
-          this.ingredienteActualVerificacion = siguienteIngrediente;
-
-          // Inicializar alérgeno del siguiente ingrediente (si tiene uno)
-          this.alergenoDelIngrediente = siguienteIngrediente.alergenos_categorias && siguienteIngrediente.alergenos_categorias.length > 0
-            ? siguienteIngrediente.alergenos_categorias[0]
-            : '';
-        } else {
-          this.mostrarMensaje('¡Todos los ingredientes han sido verificados!', 'exito');
-          this.cerrarModalVerificarIngredientes();
-        }
-
-        this.cdr.markForCheck();
+        this.mostrarMensaje('Ingrediente verificado correctamente', 'exito');
+        this.pasarAlSiguienteIngrediente(ingrediente.id);
       },
       error: (error: any) => {
         this.mostrarMensaje('Error al guardar el ingrediente', 'error');
         console.error('Error:', error);
       }
     });
+  }
+
+  eliminarIngredienteIncorrecto(ingrediente: any) {
+    if (!ingrediente || !ingrediente.id) {
+      this.mostrarMensaje('Error: Ingrediente inválido', 'error');
+      return;
+    }
+
+    // Eliminar el ingrediente en el backend
+    this.alimentosService.eliminarIngrediente(ingrediente.id).subscribe({
+      next: (response: any) => {
+        this.mostrarMensaje('Ingrediente eliminado correctamente', 'exito');
+        this.pasarAlSiguienteIngrediente(ingrediente.id);
+      },
+      error: (error: any) => {
+        this.mostrarMensaje('Error al eliminar el ingrediente', 'error');
+        console.error('Error:', error);
+      }
+    });
+  }
+
+  private pasarAlSiguienteIngrediente(ingredienteId: number) {
+    // Actualizar el ingrediente en la lista local
+    const indexEnAlimentos = this.ingredientesAVerificar.findIndex(ing => ing.id === ingredienteId);
+    if (indexEnAlimentos >= 0) {
+      this.ingredientesAVerificar.splice(indexEnAlimentos, 1);
+    }
+
+    // Mostrar el siguiente ingrediente o cerrar
+    if (this.ingredientesAVerificar.length > 0) {
+      const siguienteIngrediente = { ...this.ingredientesAVerificar[0] };
+
+      // Parsear alergenos_categorias si es un string JSON
+      if (typeof siguienteIngrediente.alergenos_categorias === 'string') {
+        try {
+          siguienteIngrediente.alergenos_categorias = JSON.parse(siguienteIngrediente.alergenos_categorias);
+        } catch (e) {
+          siguienteIngrediente.alergenos_categorias = [];
+        }
+      }
+
+      this.ingredienteActualVerificacion = siguienteIngrediente;
+
+      // Inicializar alérgeno del siguiente ingrediente (si tiene uno)
+      this.alergenoDelIngrediente = siguienteIngrediente.alergenos_categorias && siguienteIngrediente.alergenos_categorias.length > 0
+        ? siguienteIngrediente.alergenos_categorias[0]
+        : '';
+    } else {
+      this.mostrarMensaje('¡Todos los ingredientes han sido procesados!', 'exito');
+      this.cerrarModalVerificarIngredientes();
+    }
+
+    this.cdr.markForCheck();
   }
 
   cargarCategoriasAlergenos() {
