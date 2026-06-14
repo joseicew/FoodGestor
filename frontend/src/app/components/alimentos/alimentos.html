@@ -250,9 +250,8 @@
                       style="background: #4CAF50; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; opacity: 1;">
                 @if (cargandoIngrediente) {
                   <div class="spinner" style="width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-                  Agregando...
                 } @else {
-                  + Añadir
+                  +
                 }
               </button>
             </div>
@@ -272,7 +271,7 @@
         </div>
 
         <div class="popup-footer">
-          <button class="btn-primary" (click)="cerrarEditorIngredientes()">Listo</button>
+          <button class="btn-primary" (click)="cerrarEditorIngredientes()" style="width: 100%;">Listo</button>
         </div>
       </div>
     </div>
