@@ -1,6 +1,13 @@
 import os
 import sys
+import io
+import locale
 from pathlib import Path
+
+# Configurar UTF-8 para salida en Windows
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # Cargar .env antes de importar app
 basedir = os.path.abspath(os.path.dirname(__file__))
