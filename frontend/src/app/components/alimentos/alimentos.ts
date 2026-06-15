@@ -144,7 +144,7 @@ export class Alimentos implements OnInit {
   nombreDuplicado: string | null = null;
   marcaFaltante = false;
 
-  secciones = { macros: true, minerales: true, clasificacion: true };
+  secciones = { macros: true, minerales: true, clasificacion: true, peso: true };
 
   // OCR Carga Completa
   cargandoOCR = false;

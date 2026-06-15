@@ -487,12 +487,11 @@
         </div>
       }
 
-      <!-- ── Sección Macronutrientes (acordeón) ── -->
-      <button class="seccion-header" (click)="toggleSeccion('macros')">
-        <span>Macronutrientes <small>(por 100g)</small></span>
-        <span class="seccion-arrow" [class.abierto]="secciones.macros">▼</span>
-      </button>
-      <div class="seccion-contenido" [class.abierta]="secciones.macros">
+      <!-- ── Sección Macronutrientes (siempre visible) ── -->
+      <div style="border-top: 1px solid #e0e0e0; margin-top: 14px; padding-top: 14px; margin-bottom: 16px;">
+        <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #555;">📊 Tabla de Macronutrientes</h4>
+      </div>
+      <div>
         <!-- Foto macros -->
         <div class="foto-col">
           <div class="foto-upload">
