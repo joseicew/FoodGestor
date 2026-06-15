@@ -1888,10 +1888,20 @@ export class Alimentos implements OnInit {
         if (datos.macros.hidratos_carbono) this.nuevoAlimento.hidratos_carbono = datos.macros.hidratos_carbono;
         if (datos.macros.azucares) this.nuevoAlimento.azucares = datos.macros.azucares;
         if (datos.macros.grasas) this.nuevoAlimento.grasas = datos.macros.grasas;
+        // Expandir sección de macros si se detectaron valores
+        if (this.nuevoAlimento.calorias > 0 || this.nuevoAlimento.proteinas > 0) {
+          this.secciones.macros = true;
+        }
       }
       this.cdr.detectChanges();
-      this.mostrarMensaje('✓ Datos cargados correctamente', 'exito');
+      setTimeout(() => this.cdr.detectChanges(), 100);
+      this.mostrarMensaje('[OK] Datos cargados correctamente', 'exito');
       this.ocrCompletaEstado = 'listo';
+      // Scroll al inicio del formulario para ver los datos
+      setTimeout(() => {
+        const panel = document.querySelector('.panel');
+        if (panel) panel.scrollTop = 0;
+      }, 100);
       await this.esperar(1500);
       this.ocrCompletaEstado = 'idle';
     } catch (error) {
