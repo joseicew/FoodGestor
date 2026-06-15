@@ -488,8 +488,9 @@
       }
 
       <!-- ── Sección Macronutrientes (siempre visible) ── -->
-      <div style="border-top: 1px solid #e0e0e0; margin-top: 14px; padding-top: 14px; margin-bottom: 16px;">
-        <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #555;">📊 Tabla de Macronutrientes</h4>
+      <div style="border-top: 1px solid #e0e0e0; margin-top: 14px; padding-top: 14px; margin-bottom: 16px; text-align: center;">
+        <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #555;">📊 Macronutrientes</h4>
+        <p style="margin: 0 0 12px 0; font-size: 12px; color: #999;">(por 100g)</p>
       </div>
       <div>
         <!-- Foto macros -->
@@ -509,10 +510,6 @@
                    (change)="onFotoMacros($event)"
                    [disabled]="ocrMacrosEstado === 'preparando' || ocrMacrosEstado === 'analizando'" />
           </label>
-        </div>
-
-        <div style="margin-bottom: 12px; margin-top: 14px;">
-          <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 600; color: #555;">📊 Macronutrientes (por 100g)</h4>
         </div>
 
         <div class="macros-inline seccion-inner">
@@ -557,8 +554,9 @@
       </div>
 
       <!-- ── Sección Minerales (siempre visible) ── -->
-      <div style="border-top: 1px solid #e0e0e0; margin-top: 14px; padding-top: 14px; margin-bottom: 16px;">
-        <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #555;">🧪 Minerales (Opcional)</h4>
+      <div style="border-top: 1px solid #e0e0e0; margin-top: 14px; padding-top: 14px; margin-bottom: 16px; text-align: center;">
+        <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #555;">🧪 Minerales</h4>
+        <p style="margin: 0 0 12px 0; font-size: 12px; color: #999;">(Opcional)</p>
       </div>
       <div>
         <div class="macros-inline seccion-inner">
