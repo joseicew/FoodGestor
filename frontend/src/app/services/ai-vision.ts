@@ -63,7 +63,18 @@ export interface MacrosExtraidos {
 export interface DatosProductoExtraidos {
   nombre?: string;
   marca?: string;
+  categoria?: string;
   codigo_barras?: string;
   ingredientes?: string[];
   macros?: MacrosExtraidos;
+  minerales?: MineralesExtraidos;
+  peso_unidad?: number;
+  nombre_unidad?: string;
+}
+
+export interface MineralesExtraidos {
+  sodio?: number;
+  potasio?: number;
+  calcio?: number;
+  hierro?: number;
 }
