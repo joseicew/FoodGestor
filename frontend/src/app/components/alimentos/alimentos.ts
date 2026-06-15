@@ -1881,13 +1881,15 @@ export class Alimentos implements OnInit {
 
       console.log('OCR datos recibidos:', datos);
 
-      // Validar que al menos hay datos básicos
+      // Validar que al menos hay ALGO de datos
       const tieneNombre = datos.nombre && datos.nombre.trim();
       const tieneMarca = datos.marca && datos.marca.trim();
       const tieneCategoria = datos.categoria && datos.categoria.trim();
-      const tieneIngredientes = datos.ingredientes && datos.ingredientes.length > 0;
+      const tieneIngredientes = datos.ingredientes && Array.isArray(datos.ingredientes) && datos.ingredientes.length > 0;
+      const tieneMacros = datos.macros && (datos.macros.calorias || datos.macros.proteinas || datos.macros.hidratos_carbono || datos.macros.grasas);
+      const tieneCodigoBarras = datos.codigo_barras;
 
-      if (!tieneNombre && !tieneMarca && !tieneCategoria && !tieneIngredientes) {
+      if (!tieneNombre && !tieneMarca && !tieneCategoria && !tieneIngredientes && !tieneMacros && !tieneCodigoBarras) {
         this.mostrarMensaje('Error: No se detectó información del producto', 'error');
         this.ocrCompletaEstado = 'error';
         return;

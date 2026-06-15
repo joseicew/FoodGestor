@@ -17,7 +17,14 @@
       "Bash(python -c \"print\\('\\\\\\\\u2713'\\)\")",
       "Bash(python -c ' *)",
       "Bash(python3)",
-      "Bash(cd 'C:\\\\Users\\\\Joza\\\\Documents\\\\Proyectos\\\\FoodGestor\\\\backend' && mkdir -p auxiliary_tools && mv debug_insert.py migrate_*.py remove_*.py test_*.py auxiliary_tools/ && ls -la auxiliary_tools/)"
+      "Bash(cd 'C:\\\\Users\\\\Joza\\\\Documents\\\\Proyectos\\\\FoodGestor\\\\backend' && mkdir -p auxiliary_tools && mv debug_insert.py migrate_*.py remove_*.py test_*.py auxiliary_tools/ && ls -la auxiliary_tools/)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(curl -s http://localhost:5000/api/alimentos/ -H \"Authorization: Bearer test\")",
+      "Bash(npm start *)",
+      "Bash(curl -s http://localhost:4200/)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(git commit -m 'feat: Enhance OCR complete data extraction with parallel processing *)"
     ]
   },
   "hooks": {

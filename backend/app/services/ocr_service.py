@@ -262,54 +262,101 @@ def procesar_macros(image_data: bytes, content_type: str) -> dict:
 
 def procesar_datos_completos(image_data: bytes, content_type: str) -> dict:
     """
-    Procesa una imagen de producto y extrae SOLO las macronutrientes.
-    El resto de datos (nombre, marca, ingredientes) deben venir de la API.
+    Procesa una imagen de producto y extrae TODOS los datos usando:
+    - procesar_codigo_barras() para el código EAN
+    - procesar_ingredientes() para la lista de ingredientes
+    - procesar_macros() para los macronutrientes
+    - Claude API para nombre, marca, categoría
     """
-    client = _cliente()
-    image_b64 = base64.standard_b64encode(image_data).decode('utf-8')
+    import concurrent.futures
 
-    message = client.messages.create(
-        model='claude-haiku-4-5-20251001',
-        max_tokens=512,
-        messages=[{
-            'role': 'user',
-            'content': [
-                {
-                    'type': 'image',
-                    'source': {
-                        'type': 'base64',
-                        'media_type': content_type,
-                        'data': image_b64
-                    }
-                },
-                {
-                    'type': 'text',
-                    'text': (
-                        'BUSCA LA TABLA DE INFORMACIÓN NUTRICIONAL en esta imagen.\n'
-                        'Extrae LOS VALORES POR 100g (o 100ml si es bebida):\n'
-                        '{\n'
-                        '  "calorias": número,\n'
-                        '  "proteinas": número,\n'
-                        '  "hidratos_carbono": número,\n'
-                        '  "grasas": número,\n'
-                        '  "azucares": número,\n'
-                        '  "grasas_saturadas": número,\n'
-                        '  "fibra": número,\n'
-                        '  "sal": número\n'
-                        '}\n\n'
-                        'REGLAS:\n'
-                        '- Lee valores EXACTOS de la tabla visible\n'
-                        '- Para energía: si está en kJ, convierte a kcal (kJ / 4.184)\n'
-                        '- Si no ves un valor en la tabla, usa null\n'
-                        '- SOLO JSON, sin texto adicional\n'
-                    )
-                }
-            ]
-        }]
-    )
+    resultado = {
+        'nombre': None,
+        'marca': None,
+        'categoria': None,
+        'codigo_barras': None,
+        'ingredientes': None,
+        'macros': None
+    }
 
-    try:
-        macros = _extraer_json(message.content[0].text.strip(), 'object')
-        return {'macros': macros}
-    except Exception as e:
-        raise ValueError(f'Error al extraer macros: {str(e)}')
+    # Función para extraer datos generales (nombre, marca, categoria)
+    def _extraer_datos_generales():
+        try:
+            client = _cliente()
+            image_b64 = base64.standard_b64encode(image_data).decode('utf-8')
+
+            message = client.messages.create(
+                model='claude-haiku-4-5-20251001',
+                max_tokens=256,
+                messages=[{
+                    'role': 'user',
+                    'content': [
+                        {
+                            'type': 'image',
+                            'source': {
+                                'type': 'base64',
+                                'media_type': content_type,
+                                'data': image_b64
+                            }
+                        },
+                        {
+                            'type': 'text',
+                            'text': (
+                                'Extrae estos datos del producto:\n'
+                                '{\n'
+                                '  "nombre": "nombre exacto del producto o null",\n'
+                                '  "marca": "marca del producto o null",\n'
+                                '  "categoria": "categoría (ej: Arroz, Bebidas, Lácteos) o null"\n'
+                                '}\n'
+                                'SOLO JSON, sin explicaciones.'
+                            )
+                        }
+                    ]
+                }]
+            )
+
+            datos = _extraer_json(message.content[0].text.strip(), 'object')
+            return datos
+        except Exception:
+            return {}
+
+    # Usar ThreadPoolExecutor para ejecutar en paralelo
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        # Lanzar todas las tareas en paralelo
+        future_generales = executor.submit(_extraer_datos_generales)
+        future_codigo = executor.submit(procesar_codigo_barras, image_data, content_type)
+        future_ingredientes = executor.submit(procesar_ingredientes, image_data, content_type)
+        future_macros = executor.submit(procesar_macros, image_data, content_type)
+
+        # Recopilar resultados
+        try:
+            datos_generales = future_generales.result()
+            if datos_generales:
+                resultado['nombre'] = datos_generales.get('nombre')
+                resultado['marca'] = datos_generales.get('marca')
+                resultado['categoria'] = datos_generales.get('categoria')
+        except Exception:
+            pass
+
+        try:
+            codigo = future_codigo.result()
+            if codigo:
+                resultado['codigo_barras'] = codigo
+        except Exception:
+            pass
+
+        try:
+            ingredientes = future_ingredientes.result()
+            if ingredientes:
+                resultado['ingredientes'] = ingredientes
+        except Exception:
+            pass
+
+        try:
+            macros = future_macros.result()
+            if macros:
+                resultado['macros'] = macros
+        except Exception:
+            pass
+
+    return resultado
