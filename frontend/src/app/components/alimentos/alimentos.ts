@@ -1878,11 +1878,35 @@ export class Alimentos implements OnInit {
 
     try {
       const datos = await this.aiVision.procesarImagenCompleta(file);
-      if (datos.nombre) this.nuevoAlimento.nombre = datos.nombre;
-      if (datos.marca) this.nuevoAlimento.marca = datos.marca;
-      if (datos.categoria) this.nuevoAlimento.categoria = datos.categoria;
+
+      // Validar datos esenciales
+      if (!datos.nombre || !datos.nombre.trim()) {
+        this.mostrarMensaje('Error: No se detectó nombre del producto', 'error');
+        this.ocrCompletaEstado = 'error';
+        return;
+      }
+      if (!datos.marca || !datos.marca.trim()) {
+        this.mostrarMensaje('Error: No se detectó marca del producto', 'error');
+        this.ocrCompletaEstado = 'error';
+        return;
+      }
+      if (!datos.categoria || !datos.categoria.trim()) {
+        this.mostrarMensaje('Error: No se detectó categoría del producto', 'error');
+        this.ocrCompletaEstado = 'error';
+        return;
+      }
+      if (!datos.ingredientes || datos.ingredientes.length === 0) {
+        this.mostrarMensaje('Error: No se detectaron ingredientes', 'error');
+        this.ocrCompletaEstado = 'error';
+        return;
+      }
+
+      // Asignar datos validados
+      this.nuevoAlimento.nombre = datos.nombre;
+      this.nuevoAlimento.marca = datos.marca;
+      this.nuevoAlimento.categoria = datos.categoria;
       if (datos.codigo_barras) this.nuevoAlimento.codigo_barras = datos.codigo_barras;
-      if (datos.ingredientes) this.ingredientesExtraidos = datos.ingredientes;
+      this.ingredientesExtraidos = datos.ingredientes;
       if (datos.macros) {
         if (datos.macros.calorias) this.nuevoAlimento.calorias = datos.macros.calorias;
         if (datos.macros.proteinas) this.nuevoAlimento.proteinas = datos.macros.proteinas;
