@@ -1868,13 +1868,8 @@ export class Alimentos implements OnInit {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    this.ocrCompletaEstado = 'idle';
+    this.cargandoOCR = true;
     this.cdr.detectChanges();
-    await this.esperar(100);
-    this.ocrCompletaEstado = 'preparando';
-
-    await this.esperar(300);
-    this.ocrCompletaEstado = 'analizando';
 
     try {
       const datos = await this.aiVision.procesarImagenCompleta(file);
@@ -1891,7 +1886,6 @@ export class Alimentos implements OnInit {
 
       if (!tieneNombre && !tieneMarca && !tieneCategoria && !tieneIngredientes && !tieneMacros && !tieneCodigoBarras) {
         this.mostrarMensaje('Error: No se detectó información del producto', 'error');
-        this.ocrCompletaEstado = 'error';
         return;
       }
 
@@ -1938,21 +1932,16 @@ export class Alimentos implements OnInit {
       if (datos.nombre_unidad) this.nuevoAlimento.nombre_unidad = datos.nombre_unidad;
       this.cdr.detectChanges();
       setTimeout(() => this.cdr.detectChanges(), 100);
-      this.mostrarMensaje('[OK] Datos cargados correctamente', 'exito');
-      this.ocrCompletaEstado = 'listo';
       // Scroll al inicio del formulario para ver los datos
       setTimeout(() => {
         const panel = document.querySelector('.panel');
         if (panel) panel.scrollTop = 0;
       }, 100);
-      await this.esperar(1500);
-      this.ocrCompletaEstado = 'idle';
     } catch (error) {
       this.mostrarMensaje('Error al procesar imagen: ' + this.mensajeOcr(error), 'error');
-      this.ocrCompletaEstado = 'error';
-      await this.esperar(1500);
-      this.ocrCompletaEstado = 'idle';
     } finally {
+      this.cargandoOCR = false;
+      this.cdr.detectChanges();
       this.resetearInputsFichero();
     }
   }
