@@ -212,7 +212,31 @@ def procesar_codigo_barras(image_data: bytes, content_type: str) -> str:
             f'Se esperaba 8-15 dígitos, se obtuvo: {len(solo_digitos)} dígitos'
         )
 
+    # Validar checksum para EAN-13 (13 dígitos)
+    if len(solo_digitos) == 13:
+        if not _validar_checksum_ean13(solo_digitos):
+            raise ValueError(
+                f'Código EAN-13 inválido (checksum incorrecto): {solo_digitos}'
+            )
+
     return solo_digitos
+
+
+def _validar_checksum_ean13(codigo: str) -> bool:
+    """Valida el dígito de control (checksum) de un código EAN-13"""
+    if len(codigo) != 13:
+        return False
+
+    try:
+        # Calcular suma ponderada de los primeros 12 dígitos
+        suma = sum(int(codigo[i]) * (1 if i % 2 == 0 else 3) for i in range(12))
+        # Dígito de control es (10 - (suma % 10)) % 10
+        digito_control_esperado = (10 - (suma % 10)) % 10
+        digito_control_real = int(codigo[12])
+
+        return digito_control_esperado == digito_control_real
+    except (ValueError, IndexError):
+        return False
 
 
 def procesar_macros(image_data: bytes, content_type: str) -> dict:
