@@ -1894,11 +1894,11 @@ export class Alimentos implements OnInit {
       }
 
       // Asignar datos disponibles (cargar lo que se detectó)
-      if (tieneNombre) this.nuevoAlimento.nombre = datos.nombre;
-      if (tieneMarca) this.nuevoAlimento.marca = datos.marca;
-      if (tieneCategoria) this.nuevoAlimento.categoria = datos.categoria;
+      if (tieneNombre) this.nuevoAlimento.nombre = datos.nombre!;
+      if (tieneMarca) this.nuevoAlimento.marca = datos.marca!;
+      if (tieneCategoria) this.nuevoAlimento.categoria = datos.categoria!;
       if (datos.codigo_barras) this.nuevoAlimento.codigo_barras = datos.codigo_barras;
-      if (tieneIngredientes) this.ingredientesExtraidos = datos.ingredientes;
+      if (tieneIngredientes) this.ingredientesExtraidos = datos.ingredientes!;
 
       // Avisar si falta algún dato importante
       const faltantes = [];
