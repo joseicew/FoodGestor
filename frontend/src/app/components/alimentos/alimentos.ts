@@ -1842,6 +1842,7 @@ export class Alimentos implements OnInit {
       next: () => {
         this.mostrarMensaje('Alimento eliminado ✅', 'exito');
         this.cerrarConfirmacionEliminar();
+        this.cerrarDetallesAlimento();
         this.cargarAlimentos();
         this.alimentoSeleccionado = null;
         this.cdr.detectChanges();
