@@ -480,7 +480,7 @@
   transition: max-height 0.35s ease;
 }
 
-.seccion-contenido.abierta { max-height: 600px; margin-top: 15px; }
+.seccion-contenido.abierta { max-height: 1000px; margin-top: 15px; }
 
 .seccion-inner { padding: 6px 0 2px; }
 
