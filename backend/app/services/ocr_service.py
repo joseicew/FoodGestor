@@ -189,10 +189,10 @@ def procesar_codigo_barras(image_data: bytes, content_type: str) -> str:
                 {
                     'type': 'text',
                     'text': (
-                        'Lee el código de barras de esta imagen. '
-                        'Devuelve SOLO los dígitos numéricos del código (EAN-13, UPC-A u otro), '
-                        'sin espacios, sin guiones, sin texto adicional. '
-                        'Solo el número. Si no hay código de barras visible, responde: ""'
+                        'Lee SOLO el código de barras visible en la imagen. '
+                        'El código de barras es una secuencia larga de números (típicamente 12-15 dígitos). '
+                        'Devuelve SOLO esos dígitos, sin espacios, sin guiones, sin texto. '
+                        'Si no hay un código de barras claro y legible, responde: ""'
                     )
                 }
             ]
@@ -202,8 +202,15 @@ def procesar_codigo_barras(image_data: bytes, content_type: str) -> str:
     texto = message.content[0].text.strip()
     # Extrae solo dígitos si Claude añade texto extra
     solo_digitos = re.sub(r'[^\d]', '', texto)
-    if not solo_digitos:
-        raise ValueError('No se pudo detectar el código de barras en la imagen.')
+
+    # Validar que sea una longitud válida de código de barras
+    # EAN-13: 13 dígitos, EAN-12: 12 dígitos, UPC-A: 12 dígitos, etc.
+    if not solo_digitos or len(solo_digitos) < 8 or len(solo_digitos) > 15:
+        raise ValueError(
+            f'Código de barras inválido o no detectado. '
+            f'Se esperaba 8-15 dígitos, se obtuvo: {len(solo_digitos)} dígitos'
+        )
+
     return solo_digitos
 
 

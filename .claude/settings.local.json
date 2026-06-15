@@ -25,7 +25,8 @@
       "Bash(curl -s http://localhost:4200/)",
       "mcp__Claude_Preview__preview_start",
       "Bash(git commit -m 'feat: Enhance OCR complete data extraction with parallel processing *)",
-      "Bash(git commit -m 'refactor: Simplify OCR loading state with visual spinner feedback *)"
+      "Bash(git commit -m 'refactor: Simplify OCR loading state with visual spinner feedback *)",
+      "Bash(git commit -m 'fix: Improve barcode detection validation to prevent false positives *)"
     ]
   },
   "hooks": {
