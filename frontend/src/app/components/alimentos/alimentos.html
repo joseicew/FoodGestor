@@ -1126,7 +1126,9 @@
             <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Ingrediente</label>
             <input type="text"
                    [(ngModel)]="ingredienteActualVerificacion.nombre"
-                   style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; font-weight: 600; background: white;"
+                   [style.background]="ingredienteActualVerificacion.es_aditivo ? '#FFF9E6' : 'white'"
+                   [style.border]="ingredienteActualVerificacion.es_aditivo ? '2px solid #FFC107' : '1px solid #ddd'"
+                   style="width: 100%; padding: 10px 12px; border-radius: 4px; font-size: 13px; box-sizing: border-box; font-weight: 600;"
                    placeholder="Nombre del ingrediente" />
           </div>
 

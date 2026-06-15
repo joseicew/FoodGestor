@@ -756,7 +756,10 @@ export class Alimentos implements OnInit {
           this.resetearInputsFichero();
 
           // Recargar alimentos para sincronizar
-          setTimeout(() => this.cargarAlimentos(), 1000);
+          setTimeout(() => {
+            this.cargarAlimentos();
+            this.actualizarIngredientesPendientes();
+          }, 1000);
         } finally {
           this.cargando = false;
           this.cdr.detectChanges();
@@ -1073,10 +1076,15 @@ export class Alimentos implements OnInit {
     this.cargarAlimentos();
   }
 
-  abrirModalVerificarIngredientes() {
-    console.log('Abriendo modal verificacion de ingredientes...');
+  actualizarIngredientesPendientes() {
     this.ingredientesAVerificar = this.obtenerIngredientesSinVerificar();
     this.totalIngredientesVerificar = this.ingredientesAVerificar.length;
+    this.cdr.detectChanges();
+  }
+
+  abrirModalVerificarIngredientes() {
+    console.log('Abriendo modal verificacion de ingredientes...');
+    this.actualizarIngredientesPendientes();
     console.log(`Ingredientes sin verificar: ${this.ingredientesAVerificar.length}`);
 
     if (this.ingredientesAVerificar.length > 0) {
