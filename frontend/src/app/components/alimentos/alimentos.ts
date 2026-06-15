@@ -50,6 +50,14 @@ export const UNIDADES_COMUNES = [
 })
 export class Alimentos implements OnInit {
   activePanel: 'anadir' | 'buscar' | 'actualizar' | 'favoritos' = 'anadir';
+
+  ngOnInit() {
+    // Limpiar todos los mensajes de duplicado al cargar
+    this.codigoDuplicado = null;
+    this.nombreDuplicado = null;
+    this.cargarAlimentos();
+    this.cargarAlergenosUsuario();
+  }
   readonly categorias = CATEGORIAS;
   readonly unidadesComunes = UNIDADES_COMUNES;
 
