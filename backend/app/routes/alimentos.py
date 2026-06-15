@@ -229,7 +229,7 @@ def crear_alimento():
 
         codigo_barras = data.get('codigo_barras', '').strip() or None
         if codigo_barras:
-            existente = Alimento.query.first()
+            existente = Alimento.query.filter(Alimento.codigo_barras == codigo_barras).first()
             if existente:
                 return jsonify({
                     'error': f'Ya existe un producto con el código "{codigo_barras}"',
