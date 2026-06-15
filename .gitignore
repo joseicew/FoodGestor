@@ -61,3 +61,4 @@ debug_*.py
 
 # Local Netlify folder
 .netlify
+.claude/settings.local.json
