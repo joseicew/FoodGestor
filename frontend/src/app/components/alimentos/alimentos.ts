@@ -1841,7 +1841,7 @@ export class Alimentos implements OnInit {
     return { nombre: '', marca: '', codigo_barras: '', calorias: 0, proteinas: 0, grasas: 0,
       grasas_saturadas: 0, hidratos_carbono: 0, azucares: 0, fibra: 0,
       sal: 0, sodio: 0, potasio: 0, calcio: 0, hierro: 0, categoria: '',
-      peso_unidad: null, nombre_unidad: '' };
+      peso_unidad: 0, nombre_unidad: '' };
   }
 
   private esperar(ms: number): Promise<void> {
