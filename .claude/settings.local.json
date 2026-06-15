@@ -31,7 +31,8 @@
       "Bash(git commit -m 'fix: Correct barcode duplicate detection logic *)",
       "Bash(git commit -m 'enhance: Add EAN-13 checksum validation for barcode detection *)",
       "Bash(git commit -m 'fix: Check barcode duplicates against database, not local memory *)",
-      "Bash(git commit -m 'fix: Clear duplicate messages on component initialization *)"
+      "Bash(git commit -m 'fix: Clear duplicate messages on component initialization *)",
+      "Bash(git commit -m 'fix: Correct critical GET endpoints that always returned first record *)"
     ]
   },
   "hooks": {

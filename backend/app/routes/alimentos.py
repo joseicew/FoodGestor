@@ -185,8 +185,15 @@ def buscar_similares():
 @jwt_required()
 def obtener_alimentos():
     try:
-        alimentos = Alimento.query.all()
-        return jsonify([a.to_dict() for a in alimentos]), 200
+        # Permitir filtrado por código de barras
+        codigo_barras = request.args.get('codigo_barras', '').strip()
+
+        if codigo_barras:
+            alimentos = Alimento.query.filter(Alimento.codigo_barras == codigo_barras).all()
+        else:
+            alimentos = Alimento.query.all()
+
+        return jsonify({'alimentos': [a.to_dict() for a in alimentos]}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -195,7 +202,7 @@ def obtener_alimentos():
 @jwt_required()
 def obtener_alimento(id):
     try:
-        alimento = Alimento.query.first()
+        alimento = Alimento.query.get(id)
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
         return jsonify(alimento.to_dict()), 200
