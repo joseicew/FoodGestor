@@ -386,7 +386,16 @@ export class Alimentos implements OnInit {
       this.nuevoAlimento.fibra           = macros.fibra           ?? this.nuevoAlimento.fibra;
       this.nuevoAlimento.sal             = macros.sal             ?? this.nuevoAlimento.sal;
       this.nuevoAlimento.sodio           = macros.sodio           ?? this.nuevoAlimento.sodio;
-      if (this.nuevoAlimento.sodio > 0) this.secciones.minerales = true;
+
+      // Expandir secciones automáticamente si se detectaron valores
+      if (this.nuevoAlimento.calorias > 0 || this.nuevoAlimento.proteinas > 0 ||
+          this.nuevoAlimento.grasas > 0 || this.nuevoAlimento.hidratos_carbono > 0) {
+        this.secciones.macros = true;
+      }
+      if (this.nuevoAlimento.sodio > 0) {
+        this.secciones.minerales = true;
+      }
+
       this.ocrMacrosEstado = 'listo';
       this.macrosRellenados = true;
       setTimeout(() => { this.macrosRellenados = false; this.cdr.detectChanges(); }, 3000);
