@@ -1880,6 +1880,7 @@ export class Alimentos implements OnInit {
       const datos = await this.aiVision.procesarImagenCompleta(file);
       if (datos.nombre) this.nuevoAlimento.nombre = datos.nombre;
       if (datos.marca) this.nuevoAlimento.marca = datos.marca;
+      if (datos.categoria) this.nuevoAlimento.categoria = datos.categoria;
       if (datos.codigo_barras) this.nuevoAlimento.codigo_barras = datos.codigo_barras;
       if (datos.ingredientes) this.ingredientesExtraidos = datos.ingredientes;
       if (datos.macros) {
@@ -1888,11 +1889,24 @@ export class Alimentos implements OnInit {
         if (datos.macros.hidratos_carbono) this.nuevoAlimento.hidratos_carbono = datos.macros.hidratos_carbono;
         if (datos.macros.azucares) this.nuevoAlimento.azucares = datos.macros.azucares;
         if (datos.macros.grasas) this.nuevoAlimento.grasas = datos.macros.grasas;
+        if (datos.macros.grasas_saturadas) this.nuevoAlimento.grasas_saturadas = datos.macros.grasas_saturadas;
+        if (datos.macros.fibra) this.nuevoAlimento.fibra = datos.macros.fibra;
+        if (datos.macros.sal) this.nuevoAlimento.sal = datos.macros.sal;
         // Expandir sección de macros si se detectaron valores
         if (this.nuevoAlimento.calorias > 0 || this.nuevoAlimento.proteinas > 0) {
           this.secciones.macros = true;
         }
       }
+      // Procesar minerales opcionales
+      if (datos.minerales) {
+        if (datos.minerales.sodio) this.nuevoAlimento.sodio = datos.minerales.sodio;
+        if (datos.minerales.potasio) this.nuevoAlimento.potasio = datos.minerales.potasio;
+        if (datos.minerales.calcio) this.nuevoAlimento.calcio = datos.minerales.calcio;
+        if (datos.minerales.hierro) this.nuevoAlimento.hierro = datos.minerales.hierro;
+      }
+      // Procesar peso por unidad
+      if (datos.peso_unidad) this.nuevoAlimento.peso_unidad = datos.peso_unidad;
+      if (datos.nombre_unidad) this.nuevoAlimento.nombre_unidad = datos.nombre_unidad;
       this.cdr.detectChanges();
       setTimeout(() => this.cdr.detectChanges(), 100);
       this.mostrarMensaje('[OK] Datos cargados correctamente', 'exito');
