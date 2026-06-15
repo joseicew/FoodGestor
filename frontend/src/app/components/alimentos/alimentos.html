@@ -1203,11 +1203,16 @@
         </div>
 
         <div class="modal-actions">
-          <button class="btn-secondary" (click)="cerrarConfirmacionEliminar()">
+          <button class="btn-secondary" (click)="cerrarConfirmacionEliminar()" [disabled]="cargandoEliminar">
             Cancelar
           </button>
-          <button class="btn-danger" (click)="confirmarEliminar()">
-            🗑️ Sí, eliminar
+          <button class="btn-danger" (click)="confirmarEliminar()" [disabled]="cargandoEliminar">
+            @if (cargandoEliminar) {
+              <span class="spinner" style="width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 6px;"></span>
+              Eliminando...
+            } @else {
+              🗑️ Sí, eliminar
+            }
           </button>
         </div>
       </div>

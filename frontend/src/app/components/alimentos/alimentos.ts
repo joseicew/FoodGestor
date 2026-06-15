@@ -64,6 +64,7 @@ export class Alimentos implements OnInit {
   mensajeTipo: 'exito' | 'error' = 'exito';
   cargando = false;
   cargandoDetalles = false;
+  cargandoEliminar = false;
   intentoGuardar = false;
 
   mostrarModal = false;
@@ -1837,6 +1838,7 @@ export class Alimentos implements OnInit {
   confirmarEliminar() {
     if (!this.alimentoAEliminar) return;
 
+    this.cargandoEliminar = true;
     const id = this.alimentoAEliminar.id;
     this.alimentosService.eliminarAlimento(id).subscribe({
       next: () => {
@@ -1845,9 +1847,14 @@ export class Alimentos implements OnInit {
         this.cerrarDetallesAlimento();
         this.cargarAlimentos();
         this.alimentoSeleccionado = null;
+        this.cargandoEliminar = false;
         this.cdr.detectChanges();
       },
-      error: () => this.mostrarMensaje('Error al eliminar', 'error')
+      error: () => {
+        this.mostrarMensaje('Error al eliminar', 'error');
+        this.cargandoEliminar = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
