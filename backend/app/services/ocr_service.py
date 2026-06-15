@@ -189,10 +189,11 @@ def procesar_codigo_barras(image_data: bytes, content_type: str) -> str:
                 {
                     'type': 'text',
                     'text': (
-                        'Lee SOLO el código de barras visible en la imagen. '
-                        'El código de barras es una secuencia larga de números (típicamente 12-15 dígitos). '
-                        'Devuelve SOLO esos dígitos, sin espacios, sin guiones, sin texto. '
-                        'Si no hay un código de barras claro y legible, responde: ""'
+                        'Busca un código de barras en esta imagen (barras verticales negras y blancas). '
+                        'Lee los números que aparecen DEBAJO o JUNTO a las barras verticales. '
+                        'Los números del código de barras siempre están asociados a las barras visuales. '
+                        'Devuelve SOLO esos dígitos (típicamente 12-15 dígitos), sin espacios, sin guiones, sin texto. '
+                        'Si no hay barras de código visible con números asociados, responde: ""'
                     )
                 }
             ]
