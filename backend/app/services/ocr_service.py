@@ -147,10 +147,13 @@ def procesar_ingredientes(image_data: bytes, content_type: str) -> list[str]:
                 {
                     'type': 'text',
                     'text': (
-                        'Esta imagen contiene la lista de ingredientes de un producto alimenticio. '
-                        'Si hay múltiples idiomas, extrae SOLO los ingredientes de la sección en ESPAÑOL (marcada con "ES" o "INGREDIENTES"). '
-                        'Ignora completamente cualquier sección en otros idiomas. '
-                        'Devuelve SOLO un array JSON con los nombres en español. '
+                        'Esta imagen contiene la lista de ingredientes de un producto alimenticio.\n'
+                        'INSTRUCCIONES CRÍTICAS:\n'
+                        '1. Si hay múltiples idiomas/secciones, BUSCA LA SECCIÓN QUE EMPIEZA CON "ES:" o "ES " (Español).\n'
+                        '2. Extrae SOLO los ingredientes de la sección ES (Español). Ignora COMPLETAMENTE todas las demás secciones (FR, DE, PT, IT, EN, etc.).\n'
+                        '3. Si NO encuentras "ES:", busca una sección marcada con "INGREDIENTES" en español.\n'
+                        '4. Limpia cada ingrediente: elimina números de referencia, símbolos, paréntesis innecesarios.\n'
+                        '5. Devuelve SOLO un array JSON con los nombres en español, en minúsculas, sin números ni símbolos.\n'
                         'Sin explicaciones, solo el JSON. Ejemplo: ["harina de trigo", "azúcar", "sal"]'
                     )
                 }
@@ -334,11 +337,11 @@ def procesar_datos_completos(image_data: bytes, content_type: str) -> dict:
                         {
                             'type': 'text',
                             'text': (
-                                'Extrae estos datos del producto:\n'
+                                'Extrae estos datos del producto EN ESPAÑOL (si hay múltiples idiomas, lee la sección en español):\n'
                                 '{\n'
-                                '  "nombre": "nombre exacto del producto o null",\n'
-                                '  "marca": "marca del producto o null",\n'
-                                '  "categoria": "categoría (ej: Arroz, Bebidas, Lácteos) o null"\n'
+                                '  "nombre": "nombre exacto del producto en español o null",\n'
+                                '  "marca": "marca del producto en español o null",\n'
+                                '  "categoria": "categoría en español (ej: Arroz, Bebidas, Lácteos) o null"\n'
                                 '}\n'
                                 'SOLO JSON, sin explicaciones.'
                             )
