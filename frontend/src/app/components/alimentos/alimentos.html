@@ -166,11 +166,11 @@
                 <span class="ingredientes-titulo">🥘 Ingredientes</span>
               </div>
               <div class="ingredientes-wrapper">
-                @for (ing of alimentoSeleccionadoDetalle.ingredientes; track ing.id) {
+                @for (ing of alimentoSeleccionadoDetalle.ingredientes; track $index) {
                   <button class="ingrediente-item"
                           [class.con-alergenos]="tieneAlergeniaIngrediente(ing) || (ing.alergenos_categorias && ing.alergenos_categorias.length > 0)"
                           (click)="ing.alergenos_categorias && ing.alergenos_categorias.length > 0 ? mostrarAlergenosIngrediente(ing, $event) : abrirDetallesIngrediente(ing)">
-                    {{ ing.nombre }}
+                    {{ typeof ing === 'string' ? ing : ing.nombre }}
                   </button>
                 }
               </div>
@@ -220,9 +220,9 @@
             <div style="margin-bottom: 16px;">
               <span style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">Ingredientes actuales</span>
               <div class="ingredientes-wrapper" style="margin-top: 8px;">
-                @for (ing of alimentoSeleccionadoDetalle.ingredientes; track ing.id || ing; let i = $index) {
+                @for (ing of alimentoSeleccionadoDetalle.ingredientes; track $index; let i = $index) {
                   <div style="display: flex; align-items: center; gap: 6px;">
-                    <span class="ingrediente-item" style="flex: 1;">{{ ing.nombre || ing }}</span>
+                    <span class="ingrediente-item" style="flex: 1;">{{ typeof ing === 'string' ? ing : ing.nombre }}</span>
                     <button (click)="eliminarIngrediente(i)"
                             style="background: #ffebee; color: #c62828; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">
                       ✕
@@ -1065,13 +1065,13 @@
 
           <!-- Lista de ingredientes -->
           <div class="ingredientes-alergenos-lista">
-            @for (ing of alimentoSeleccionadoAlergenos.ingredientes; track ing.id) {
+            @for (ing of alimentoSeleccionadoAlergenos.ingredientes; track $index) {
               <div class="ingrediente-alergeno-item">
                 <div class="ingrediente-info">
-                  <input type="text" [(ngModel)]="ing.nombre" placeholder="Nombre del ingrediente"
-                         class="ingrediente-input" />
-                  <input type="text" [(ngModel)]="ing.categoria" placeholder="Categoría (cereal, legumbre, etc.)"
-                         class="ingrediente-input small" />
+                  <input type="text" [value]="typeof ing === 'string' ? ing : ing.nombre" placeholder="Nombre del ingrediente"
+                         class="ingrediente-input" readonly />
+                  <input type="text" [value]="typeof ing === 'object' ? ing.categoria : ''" placeholder="Categoría (cereal, legumbre, etc.)"
+                         class="ingrediente-input small" readonly />
                 </div>
 
                 <div class="alergenos-selector">

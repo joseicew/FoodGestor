@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AuthService } from './auth';
 import { environment } from '../../environments/environment';
 
@@ -25,7 +26,9 @@ export class AlimentosService {
   }
 
   obtenerAlimentos(): Observable<any[]> {
-    return this.http.get<any[]>(`${API}/`, this.getHeaders());
+    return this.http.get<{alimentos: any[]}>(`${API}/`, this.getHeaders()).pipe(
+      map(response => response.alimentos || [])
+    );
   }
 
   obtenerAlimento(id: number): Observable<any> {

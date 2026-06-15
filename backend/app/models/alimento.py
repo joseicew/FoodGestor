@@ -70,7 +70,7 @@ class Alimento(db.Model):
             'peso_unidad': self.peso_unidad,
             'nombre_unidad': self.nombre_unidad,
             'favorito': self.favorito,
-            'ingredientes': [i.to_dict() for i in self.ingredientes],
+            'ingredientes': [i.nombre for i in self.ingredientes],
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }

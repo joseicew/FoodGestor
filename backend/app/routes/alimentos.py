@@ -222,6 +222,9 @@ def crear_alimento():
         if not data.get('marca'):
             return jsonify({'error': 'La marca es obligatoria'}), 400
 
+        if not data.get('categoria'):
+            return jsonify({'error': 'La categoría es obligatoria'}), 400
+
         nombre = data.get('nombre', '').strip()
         marca = data.get('marca', '').strip()
         existente_nombre = Alimento.query.filter(
