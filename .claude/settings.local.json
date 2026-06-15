@@ -29,7 +29,8 @@
       "Bash(git commit -m 'fix: Improve barcode detection validation to prevent false positives *)",
       "Bash(git commit -m 'improve: Enhance barcode detection prompt with visual context *)",
       "Bash(git commit -m 'fix: Correct barcode duplicate detection logic *)",
-      "Bash(git commit -m 'enhance: Add EAN-13 checksum validation for barcode detection *)"
+      "Bash(git commit -m 'enhance: Add EAN-13 checksum validation for barcode detection *)",
+      "Bash(git commit -m 'fix: Check barcode duplicates against database, not local memory *)"
     ]
   },
   "hooks": {

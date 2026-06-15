@@ -443,16 +443,34 @@ export class Alimentos implements OnInit {
 
   }
 
-  onCodigoBlur() {
+  async onCodigoBlur() {
     const cod = this.nuevoAlimento.codigo_barras?.trim();
     if (!cod) { this.codigoDuplicado = null; return; }
-    const existe = this.alimentos.find(a => a.codigo_barras === cod);
 
-    if (existe) {
-      this.codigoDuplicado = existe.nombre;
-      // Mostrar el popup del producto encontrado
-      this.mostrarProductoEncontradoPorCodigoBarras(existe);
-    } else {
+    try {
+      // Verificar en el backend (BD), no solo en memoria
+      const response = await fetch(`http://192.168.1.17:5000/api/alimentos?codigo_barras=${encodeURIComponent(cod)}`, {
+        headers: {
+          'Authorization': `Bearer ${this.authService.obtenerToken()}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const alimentos = data.alimentos || [];
+        const existe = alimentos.find((a: any) => a.codigo_barras === cod);
+
+        if (existe) {
+          this.codigoDuplicado = existe.nombre;
+          this.mostrarProductoEncontradoPorCodigoBarras(existe);
+        } else {
+          this.codigoDuplicado = null;
+        }
+      } else {
+        this.codigoDuplicado = null;
+      }
+    } catch (error) {
+      console.error('Error verificando código de barras:', error);
       this.codigoDuplicado = null;
     }
   }
