@@ -144,7 +144,7 @@ export class Alimentos implements OnInit {
   nombreDuplicado: string | null = null;
   marcaFaltante = false;
 
-  secciones = { macros: true, minerales: true, clasificacion: true };
+  secciones = { macros: true, minerales: false, clasificacion: true };
 
   // OCR Carga Completa
   cargandoOCR = false;
@@ -387,13 +387,10 @@ export class Alimentos implements OnInit {
       this.nuevoAlimento.sal             = macros.sal             ?? this.nuevoAlimento.sal;
       this.nuevoAlimento.sodio           = macros.sodio           ?? this.nuevoAlimento.sodio;
 
-      // Expandir secciones automáticamente si se detectaron valores
+      // Expandir sección de macros automáticamente si se detectaron valores
       if (this.nuevoAlimento.calorias > 0 || this.nuevoAlimento.proteinas > 0 ||
           this.nuevoAlimento.grasas > 0 || this.nuevoAlimento.hidratos_carbono > 0) {
         this.secciones.macros = true;
-      }
-      if (this.nuevoAlimento.sodio > 0) {
-        this.secciones.minerales = true;
       }
 
       this.ocrMacrosEstado = 'listo';
