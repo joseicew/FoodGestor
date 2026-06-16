@@ -466,15 +466,15 @@
 }
 
 .ingrediente-amarillo {
-  background: #fff9e6 !important;
-  color: #f57f17 !important;
+  background: #fffde7 !important;
+  color: #f9a825 !important;
   border-left-color: #fbc02d !important;
   font-weight: 500 !important;
 }
 
 .ingrediente-amarillo:hover {
-  background: #fff59d !important;
-  box-shadow: 0 2px 6px rgba(251, 192, 45, 0.2) !important;
+  background: #ffeb3b !important;
+  box-shadow: 0 2px 6px rgba(251, 192, 45, 0.3) !important;
 }
 
 /* ── Secciones acordeón ── */
