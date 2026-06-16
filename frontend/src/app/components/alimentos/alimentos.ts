@@ -908,7 +908,65 @@ export class Alimentos implements OnInit {
     this.unidadOriginal = alimento.nombre_unidad || null;
     this.mostrarDetallesAlimento = true;
     this.mostrarBotonesEdicion = desdeActualizar;
+
+    // Cargar ingredientes completos con sus propiedades (es_aditivo, alergenos_categorias)
+    this.enriquecerIngredientes();
     this.cdr.markForCheck();
+  }
+
+  enriquecerIngredientes() {
+    if (!this.alimentoSeleccionadoDetalle.ingredientes || this.alimentoSeleccionadoDetalle.ingredientes.length === 0) {
+      return;
+    }
+
+    const ingredientes = this.alimentoSeleccionadoDetalle.ingredientes;
+    const ingredientesEnriquecidos: any[] = [];
+    let procesados = 0;
+
+    ingredientes.forEach((ing: any) => {
+      const nombre = typeof ing === 'string' ? ing : ing.nombre;
+
+      // Si ya es un objeto con propiedades, lo usamos directamente
+      if (typeof ing === 'object' && ing.es_aditivo !== undefined && ing.alergenos_categorias !== undefined) {
+        ingredientesEnriquecidos.push(ing);
+        procesados++;
+        return;
+      }
+
+      // Si es un string, cargamos desde el API
+      this.alimentosService.obtenerIngrediente(nombre).subscribe({
+        next: (ingrediente) => {
+          if (ingrediente) {
+            ingredientesEnriquecidos.push(ingrediente);
+          } else {
+            // Si no existe en BD, crear objeto con solo el nombre
+            ingredientesEnriquecidos.push({
+              nombre: nombre,
+              es_aditivo: false,
+              alergenos_categorias: []
+            });
+          }
+          procesados++;
+          if (procesados === ingredientes.length) {
+            this.alimentoSeleccionadoDetalle.ingredientes = ingredientesEnriquecidos;
+            this.cdr.detectChanges();
+          }
+        },
+        error: () => {
+          // En caso de error, crear objeto con solo el nombre
+          ingredientesEnriquecidos.push({
+            nombre: nombre,
+            es_aditivo: false,
+            alergenos_categorias: []
+          });
+          procesados++;
+          if (procesados === ingredientes.length) {
+            this.alimentoSeleccionadoDetalle.ingredientes = ingredientesEnriquecidos;
+            this.cdr.detectChanges();
+          }
+        }
+      });
+    });
   }
 
   cerrarDetallesAlimento() {

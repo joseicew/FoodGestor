@@ -1274,22 +1274,16 @@
   }
 
   <!-- Popover: Alergenos del Ingrediente -->
-  @if (mostrarAlergenosPopup && ingredienteMostrandoAlergenos) {
+  @if (mostrarAlergenosPopup && ingredienteMostrandoAlergenos && ingredienteMostrandoAlergenos.alergenos_categorias && ingredienteMostrandoAlergenos.alergenos_categorias.length > 0) {
     <div class="popover-backdrop" (click)="cerrarAlergenosPopup()">
       <div class="allergen-popover" (click)="$event.stopPropagation()" [ngStyle]="popoverStyle">
-        @if (ingredienteMostrandoAlergenos.alergenos_categorias && ingredienteMostrandoAlergenos.alergenos_categorias.length > 0) {
-          <div style="display: flex; flex-direction: column; gap: 0;">
-            @for (alergia of ingredienteMostrandoAlergenos.alergenos_categorias; track alergia) {
-              <div style="padding: 0; margin: 0; border-radius: 0; font-size: 16px;">
-                <span style="color: #856404; font-weight: 500;">{{ alergia }}</span>
-              </div>
-            }
-          </div>
-        } @else {
-          <div style="padding: 0; margin: 0; border-radius: 0; font-size: 16px;">
-            <span style="color: #155724; font-weight: 500;">✓ Sin alergenos</span>
-          </div>
-        }
+        <div style="display: flex; flex-direction: column; gap: 0;">
+          @for (alergia of ingredienteMostrandoAlergenos.alergenos_categorias; track alergia) {
+            <div style="padding: 0; margin: 0; border-radius: 0; font-size: 16px;">
+              <span style="color: #856404; font-weight: 500;">{{ alergia }}</span>
+            </div>
+          }
+        </div>
       </div>
     </div>
   }

@@ -94,4 +94,11 @@ export class AlimentosService {
       map(response => response.ingredientes || [])
     );
   }
+
+  obtenerIngrediente(nombre: string): Observable<any> {
+    const ingredientesAPI = `${environment.apiUrl}/api/ingredientes`;
+    return this.http.get<{ingredientes: any[]}>(`${ingredientesAPI}/?nombre=${encodeURIComponent(nombre)}`, this.getHeaders()).pipe(
+      map(response => response.ingredientes && response.ingredientes.length > 0 ? response.ingredientes[0] : null)
+    );
+  }
 }
