@@ -1154,6 +1154,9 @@ export class Alimentos implements OnInit {
     this.mostrarModalVerificarIngredientes = false;
     this.ingredienteActualVerificacion = null;
     this.ingredientesAVerificar = [];
+    // Actualizar datos después de cerrar modal
+    this.actualizarIngredientesPendientes();
+    this.cargarAlimentos();
   }
 
   cargarCategoriasAlimentos() {
