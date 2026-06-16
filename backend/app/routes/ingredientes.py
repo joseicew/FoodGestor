@@ -26,8 +26,13 @@ def obtener_ingredientes():
         if verificado is not None:
             verificado_bool = verificado.lower() == 'true'
             query = query.filter(Ingrediente.verificado == verificado_bool)
+            print(f"DEBUG: Filtrando por verificado={verificado_bool}")
 
         ingredientes = query.order_by(Ingrediente.nombre).all()
+        print(f"DEBUG: Total ingredientes encontrados: {len(ingredientes)}")
+        if verificado is not None:
+            for ing in ingredientes[:3]:
+                print(f"DEBUG: {ing.nombre} - verificado: {ing.verificado}")
 
         return jsonify({
             'ingredientes': [ing.to_dict() for ing in ingredientes],

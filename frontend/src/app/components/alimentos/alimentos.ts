@@ -215,6 +215,7 @@ export class Alimentos implements OnInit {
 
     console.log('✓ [Alimentos.ngOnInit] Autenticado, cargando alimentos...');
     this.cargarAlimentos();
+    this.actualizarIngredientesPendientes();
     this.cargarAlergenosUsuario();
 
     // Suscribirse a cambios del perfil para recargar alergenos cuando cambien
