@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { SessionService } from './session';
+import { IngredientesService } from './ingredientes';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -16,7 +18,8 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private ingredientesService: IngredientesService
   ) {
     // No cargar usuario en el constructor
     // El PerfilComponent lo hará en ngOnInit
@@ -38,6 +41,15 @@ export class AuthService {
           this.guardarToken(response.token);
           this.usuarioSubject.next(response.usuario);
           console.log('✓ Token guardado, estaAutenticado():', this.estaAutenticado());
+
+          // Cargar todos los ingredientes después del registro
+          console.log('📦 Iniciando carga de ingredientes en caché...');
+          this.ingredientesService.cargarTodosLosIngredientes().pipe(
+            catchError(err => {
+              console.error('⚠️ Error cargando ingredientes:', err);
+              return of([]);
+            })
+          ).subscribe();
         })
       );
   }
@@ -53,6 +65,15 @@ export class AuthService {
           this.guardarToken(response.token);
           this.usuarioSubject.next(response.usuario);
           console.log('✓ Token guardado, estaAutenticado():', this.estaAutenticado());
+
+          // Cargar todos los ingredientes después del login
+          console.log('📦 Iniciando carga de ingredientes en caché...');
+          this.ingredientesService.cargarTodosLosIngredientes().pipe(
+            catchError(err => {
+              console.error('⚠️ Error cargando ingredientes:', err);
+              return of([]);
+            })
+          ).subscribe();
         })
       );
   }
@@ -133,6 +154,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     this.sessionService.limpiar();
+    this.ingredientesService.limpiar();
     this.usuarioSubject.next(null);
   }
 

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AlimentosService } from '../../services/alimentos';
+import { IngredientesService } from '../../services/ingredientes';
 import { AiVisionService } from '../../services/ai-vision';
 import { OcrAsyncService } from '../../services/ocr-async';
 import { AuthService } from '../../services/auth';
@@ -169,6 +170,7 @@ export class Alimentos implements OnInit {
 
   constructor(
     private alimentosService: AlimentosService,
+    private ingredientesService: IngredientesService,
     private aiVision: AiVisionService,
     private ocrAsync: OcrAsyncService,
     private cdr: ChangeDetectorRef,
@@ -921,44 +923,32 @@ export class Alimentos implements OnInit {
 
     const ingredientes = this.alimentoSeleccionadoDetalle.ingredientes;
 
-    // Crear promises para cada ingrediente
-    const promesas = ingredientes.map((ing: any) => {
+    // Enriquecer ingredientes usando el caché
+    const ingredientesEnriquecidos = ingredientes.map((ing: any) => {
       const nombre = typeof ing === 'string' ? ing : ing.nombre;
 
       // Si ya es un objeto con propiedades, retornar directamente
       if (typeof ing === 'object' && ing.es_aditivo !== undefined && ing.alergenos_categorias !== undefined) {
-        return Promise.resolve(ing);
+        return ing;
       }
 
-      // Si es un string, cargar desde el API
-      return this.alimentosService.obtenerIngrediente(nombre).toPromise().then(
-        (ingrediente) => {
-          if (ingrediente) {
-            return ingrediente;
-          }
-          // Si no existe en BD, crear objeto con solo el nombre
-          return {
-            nombre: nombre,
-            es_aditivo: false,
-            alergenos_categorias: []
-          };
-        },
-        () => {
-          // En caso de error, crear objeto con solo el nombre
-          return {
-            nombre: nombre,
-            es_aditivo: false,
-            alergenos_categorias: []
-          };
-        }
-      );
+      // Buscar en el caché del IngredientesService
+      const ingredienteEnCache = this.ingredientesService.obtenerIngredientePorNombre(nombre);
+      if (ingredienteEnCache) {
+        return ingredienteEnCache;
+      }
+
+      // Si no existe en caché, crear objeto con solo el nombre
+      return {
+        nombre: nombre,
+        es_aditivo: false,
+        alergenos_categorias: []
+      };
     });
 
-    // Esperar a que todos se carguen
-    Promise.all(promesas).then((ingredientesEnriquecidos) => {
-      this.alimentoSeleccionadoDetalle.ingredientes = ingredientesEnriquecidos;
-      this.cdr.detectChanges();
-    });
+    // Actualizar ingredientes enriquecidos
+    this.alimentoSeleccionadoDetalle.ingredientes = ingredientesEnriquecidos;
+    this.cdr.detectChanges();
   }
 
   cerrarDetallesAlimento() {
