@@ -11,6 +11,7 @@ def obtener_ingredientes():
     try:
         es_aditivo = request.args.get('es_aditivo', None)
         nombre = request.args.get('nombre', None)
+        verificado = request.args.get('verificado', None)
 
         query = Ingrediente.query
 
@@ -21,6 +22,10 @@ def obtener_ingredientes():
         if nombre is not None:
             nombre_lower = nombre.lower().strip()
             query = query.filter(db.func.lower(Ingrediente.nombre) == nombre_lower)
+
+        if verificado is not None:
+            verificado_bool = verificado.lower() == 'true'
+            query = query.filter_by(verificado=verificado_bool)
 
         ingredientes = query.order_by(Ingrediente.nombre).all()
 

@@ -87,4 +87,11 @@ export class AlimentosService {
   actualizarAlergenos(alimentoId: number, ingredientes: any[]): Observable<any> {
     return this.http.post<any>(`${API}/${alimentoId}/actualizar-alergenos`, { ingredientes }, this.getHeaders());
   }
+
+  obtenerIngredientesSinVerificar(): Observable<any[]> {
+    const ingredientesAPI = `${environment.apiUrl}/api/ingredientes`;
+    return this.http.get<{ingredientes: any[], total: number}>(`${ingredientesAPI}/?verificado=false`, this.getHeaders()).pipe(
+      map(response => response.ingredientes || [])
+    );
+  }
 }

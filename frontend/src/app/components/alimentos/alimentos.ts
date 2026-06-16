@@ -937,8 +937,8 @@ export class Alimentos implements OnInit {
         next: () => {
           console.log('✅ Cambios guardados');
           // Actualizar en la lista LOCAL
-          const index = this.alimentos.findIndex(a => a.id === alimentoId);
-          if (index !== -1) {
+          const index = this.alimentos.findIndex(a => a && a.id === alimentoId);
+          if (index !== -1 && this.alimentos[index]) {
             if (categoriaChanged) {
               this.alimentos[index].categoria = this.alimentoSeleccionadoDetalle.categoria;
             }
