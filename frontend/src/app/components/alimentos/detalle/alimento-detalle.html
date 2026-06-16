@@ -1,0 +1,328 @@
+<!-- ═══════════════ POPUP DETALLES ALIMENTO ═══════════════ -->
+@if (detalle) {
+  <div class="popup-overlay" (click)="cerrar_()">
+    <div class="popup-box" (click)="$event.stopPropagation()">
+      <div class="popup-header">
+        <h2>{{ detalle.nombre }}</h2>
+        <button class="popup-close" (click)="cerrar_()">✕</button>
+      </div>
+
+      <div class="popup-content" (click)="cerrarDropdowns()">
+        <!-- Información básica -->
+        <div class="info-seccion">
+          <h3>ℹ️ Información</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Marca</span>
+              <span class="info-valor">{{ detalle.marca }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Categoría</span>
+              @if (!editable) {
+                <span class="info-valor">{{ detalle.categoria }}</span>
+              } @else {
+                <select [(ngModel)]="detalle.categoria"
+                        style="border: 1px solid #ddd; background: white; font-size: 13px; color: #333; cursor: pointer; padding: 6px 10px; border-radius: 4px;">
+                  <option value="">-- Seleccionar --</option>
+                  @for (cat of categorias; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                  }
+                </select>
+              }
+            </div>
+            @if (detalle.codigo_barras) {
+              <div class="info-item">
+                <span class="info-label">Código</span>
+                <span class="info-valor">{{ detalle.codigo_barras }}</span>
+              </div>
+            }
+            <div class="info-item">
+              <span class="info-label">Peso/Unidad</span>
+              @if (!editable) {
+                <span class="info-valor">
+                  @if (detalle.peso_unidad && detalle.nombre_unidad) {
+                    {{ detalle.peso_unidad }}g / {{ detalle.nombre_unidad }}
+                  } @else {
+                    No especificado
+                  }
+                </span>
+              } @else {
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="number" [(ngModel)]="detalle.peso_unidad" placeholder="g" min="0" step="0.1"
+                         style="width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
+                  <select [(ngModel)]="detalle.nombre_unidad"
+                          style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                    <option value="">Seleccionar</option>
+                    @for (unidad of unidadesComunes; track unidad) {
+                      <option [value]="unidad">{{ unidad }}</option>
+                    }
+                  </select>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Macronutrientes -->
+        <div class="info-seccion">
+          <div style="display: flex; align-items: center; margin-bottom: 8px;">
+            @if (editable) {
+              <div class="dropdown-macros" (click)="$event.stopPropagation()">
+                <button class="btn-dropdown-toggle" (click)="toggleDropdownMacros()">+</button>
+                @if (mostrarDropdownMacros) {
+                  <div class="dropdown-menu">
+                    <button class="dropdown-item" (click)="abrirEditorMacros(); $event.stopPropagation()">✏️ Editar</button>
+                    <button class="dropdown-item" (click)="abrirCamaraMacrosDesdeDetalles(); $event.stopPropagation()">📷 Foto</button>
+                  </div>
+                }
+              </div>
+            }
+            <h3 style="margin: 0; display: inline;">📊 Macronutrientes (por 100g)</h3>
+          </div>
+          <div class="macros-grid">
+            @if (detalle.calorias != null && detalle.calorias !== '') {
+              <div class="macro-item"><span class="macro-icon">🔥</span><span class="macro-label">Calorías</span><span class="macro-valor">{{ detalle.calorias }} kcal</span></div>
+            }
+            @if (detalle.proteinas != null && detalle.proteinas !== '') {
+              <div class="macro-item"><span class="macro-icon">💪</span><span class="macro-label">Proteínas</span><span class="macro-valor">{{ detalle.proteinas }}g</span></div>
+            }
+            @if (detalle.hidratos_carbono != null && detalle.hidratos_carbono !== '') {
+              <div class="macro-item"><span class="macro-icon">🌾</span><span class="macro-label">Carbohidratos</span><span class="macro-valor">{{ detalle.hidratos_carbono }}g</span></div>
+            }
+            @if (detalle.grasas != null && detalle.grasas !== '') {
+              <div class="macro-item"><span class="macro-icon">🧈</span><span class="macro-label">Grasas</span><span class="macro-valor">{{ detalle.grasas }}g</span></div>
+            }
+            @if (detalle.grasas_saturadas != null && detalle.grasas_saturadas !== '') {
+              <div class="macro-item"><span class="macro-icon">🔗</span><span class="macro-label">Grasas Sat.</span><span class="macro-valor">{{ detalle.grasas_saturadas }}g</span></div>
+            }
+            @if (detalle.azucares != null && detalle.azucares !== '') {
+              <div class="macro-item"><span class="macro-icon">🍬</span><span class="macro-label">Azúcares</span><span class="macro-valor">{{ detalle.azucares }}g</span></div>
+            }
+            @if (detalle.fibra != null && detalle.fibra !== '') {
+              <div class="macro-item"><span class="macro-icon">🌿</span><span class="macro-label">Fibra</span><span class="macro-valor">{{ detalle.fibra }}g</span></div>
+            }
+            @if (detalle.sal != null && detalle.sal !== '') {
+              <div class="macro-item"><span class="macro-icon">🧂</span><span class="macro-label">Sal</span><span class="macro-valor">{{ detalle.sal }}g</span></div>
+            }
+          </div>
+        </div>
+
+        <!-- Ingredientes -->
+        @if (detalle.ingredientes && detalle.ingredientes.length > 0) {
+          <div class="ingredientes-bloque">
+            <div class="ingredientes-cabecera">
+              @if (editable) {
+                <div class="dropdown-edicion" (click)="$event.stopPropagation()">
+                  <button class="btn-dropdown-toggle" (click)="toggleDropdownEdicion()">+</button>
+                  @if (mostrarDropdownEdicion) {
+                    <div class="dropdown-menu">
+                      <button class="dropdown-item" (click)="abrirEditorIngredientes(); $event.stopPropagation()">✏️ Editar</button>
+                      <button class="dropdown-item" (click)="abrirCamaraDesdeDetalles(); $event.stopPropagation()">📷 Foto</button>
+                    </div>
+                  }
+                </div>
+              }
+              <span class="ingredientes-titulo">🥘 Ingredientes</span>
+            </div>
+            <div class="ingredientes-wrapper">
+              @for (ing of detalle.ingredientes; track $index) {
+                <button class="ingrediente-item"
+                        [ngClass]="{
+                          'ingrediente-rojo': getColorIngrediente(ing) === 'rojo',
+                          'ingrediente-naranja': getColorIngrediente(ing) === 'naranja',
+                          'ingrediente-amarillo': getColorIngrediente(ing) === 'amarillo'
+                        }"
+                        (click)="mostrarAlergenosIngrediente(ing, $event)">
+                  {{ typeof ing === 'string' ? ing : ing.nombre }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Eliminar Producto -->
+        @if (editable) {
+          <div style="margin-top: 16px;">
+            <button class="btn-danger" (click)="abrirConfirmacionEliminar()" style="width: 100%; padding: 10px;">
+              🗑️ Eliminar producto
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div style="display: flex; gap: 8px; padding: 16px; border-top: 1px solid #eee; align-items: center;">
+        @if (cargandoDetalles) {
+          <div style="display: flex; align-items: center; justify-content: center; flex: 1; gap: 8px;">
+            <div class="spinner"></div>
+            <span style="color: #666; font-size: 14px;">Guardando...</span>
+          </div>
+        } @else {
+          <button class="btn-secondary" (click)="cerrar_()" style="flex: 1;">Cerrar</button>
+          @if (editable) {
+            <button class="btn-primary" (click)="guardarDetallesAlimento()" style="flex: 1;">💾 Guardar cambios</button>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Editor de Ingredientes -->
+@if (mostrarEditorIngredientes && detalle) {
+  <div class="popup-overlay" (click)="cerrarEditorIngredientes()">
+    <div class="popup-box" (click)="$event.stopPropagation()" style="max-width: 400px;">
+      <div class="popup-header">
+        <h2>Editar Ingredientes</h2>
+        <button class="popup-close" (click)="cerrarEditorIngredientes()">✕</button>
+      </div>
+
+      <div class="popup-content">
+        @if (detalle.ingredientes && detalle.ingredientes.length > 0) {
+          <div style="margin-bottom: 16px;">
+            <span style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">Ingredientes actuales</span>
+            <div class="ingredientes-wrapper" style="margin-top: 8px;">
+              @for (ing of detalle.ingredientes; track $index; let i = $index) {
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span class="ingrediente-item" style="flex: 1;">{{ typeof ing === 'string' ? ing : ing.nombre }}</span>
+                  <button (click)="eliminarIngrediente(i)"
+                          style="background: #ffebee; color: #c62828; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">✕</button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <div style="position: relative;">
+          <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; display: block; margin-bottom: 8px;">Añadir ingrediente</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" [(ngModel)]="nuevoIngrediente"
+                   (keyup)="filtrarIngredientes()"
+                   (keyup.enter)="!cargandoIngrediente && agregarIngrediente()"
+                   placeholder="Nuevo ingrediente..."
+                   [disabled]="cargandoIngrediente"
+                   style="flex: 1; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 13px;">
+            <button (click)="agregarIngrediente()" [disabled]="cargandoIngrediente"
+                    style="background: #4CAF50; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+              @if (cargandoIngrediente) {
+                <div class="spinner" style="width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+              } @else { + }
+            </button>
+          </div>
+
+          @if (ingredientesFiltrados.length > 0) {
+            <div style="position: absolute; top: 100%; left: 0; right: 56px; background: white; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 10;">
+              @for (sugerencia of ingredientesFiltrados; track sugerencia) {
+                <button (click)="seleccionarSugerencia(sugerencia); $event.stopPropagation()" class="sugerencia-item">{{ sugerencia }}</button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="popup-footer">
+        <button class="btn-primary" (click)="cerrarEditorIngredientes()" style="width: 100%;">Listo</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Editor de Macronutrientes -->
+@if (mostrarEditorMacros && detalle) {
+  <div class="popup-overlay" (click)="cerrarEditorMacros()">
+    <div class="popup-box" (click)="$event.stopPropagation()" style="max-width: 450px;">
+      <div class="popup-header">
+        <h2>Editar Macronutrientes</h2>
+        <button class="popup-close" (click)="cerrarEditorMacros()">✕</button>
+      </div>
+
+      <div class="popup-content">
+        <form style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🔥 Calorías (kcal)</label>
+            <input type="number" [(ngModel)]="detalle.calorias" name="calorias" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">💪 Proteínas (g)</label>
+            <input type="number" [(ngModel)]="detalle.proteinas" name="proteinas" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🌾 Carbohidratos (g)</label>
+            <input type="number" [(ngModel)]="detalle.hidratos_carbono" name="hidratos_carbono" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🧈 Grasas (g)</label>
+            <input type="number" [(ngModel)]="detalle.grasas" name="grasas" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🔗 Grasas Saturadas (g)</label>
+            <input type="number" [(ngModel)]="detalle.grasas_saturadas" name="grasas_saturadas" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🍬 Azúcares (g)</label>
+            <input type="number" [(ngModel)]="detalle.azucares" name="azucares" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🌿 Fibra (g)</label>
+            <input type="number" [(ngModel)]="detalle.fibra" name="fibra" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🧂 Sal (g)</label>
+            <input type="number" [(ngModel)]="detalle.sal" name="sal" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          </div>
+        </form>
+      </div>
+
+      <div class="popup-footer">
+        <button class="btn-secondary" (click)="cerrarEditorMacros()" style="flex: 1;">Cancelar</button>
+        <button class="btn-primary" (click)="guardarMacrosEditados()" style="flex: 1;">Guardar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Confirmación de Eliminar -->
+@if (mostrarModalConfirmacionEliminar && detalle) {
+  <div class="modal-overlay" (click)="cerrarConfirmacionEliminar()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>⚠️ Eliminar Producto</h2>
+        <button class="btn-close" (click)="cerrarConfirmacionEliminar()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size: 14px; color: #666; margin-bottom: 12px;">¿Estás seguro de que deseas eliminar este producto?</p>
+        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+          <p style="margin: 0; font-weight: 600; color: #856404;">{{ detalle.nombre }}</p>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: #856404;">Marca: {{ detalle.marca }}</p>
+        </div>
+        <p style="font-size: 12px; color: #999; margin-top: 16px;">Esta acción no se puede deshacer.</p>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="cerrarConfirmacionEliminar()" [disabled]="cargandoEliminar">Cancelar</button>
+        <button class="btn-danger" (click)="confirmarEliminar()" [disabled]="cargandoEliminar">
+          @if (cargandoEliminar) {
+            <span class="spinner" style="width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 6px;"></span>
+            Eliminando...
+          } @else { 🗑️ Sí, eliminar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Popover: Alergenos del Ingrediente -->
+@if (mostrarAlergenosPopup && ingredienteMostrandoAlergenos && ingredienteMostrandoAlergenos.alergenos_categorias && ingredienteMostrandoAlergenos.alergenos_categorias.length > 0) {
+  <div class="popover-backdrop" (click)="cerrarAlergenosPopup()">
+    <div class="allergen-popover" (click)="$event.stopPropagation()" [ngStyle]="popoverStyle">
+      <div style="display: flex; flex-direction: column; gap: 0;">
+        @for (alergia of ingredienteMostrandoAlergenos.alergenos_categorias; track alergia) {
+          <div style="padding: 0; margin: 0; border-radius: 0; font-size: 16px;">
+            <span style="color: #856404; font-weight: 500;">{{ alergia }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

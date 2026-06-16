@@ -3,357 +3,9 @@
     <h1>🥗 Alimentos</h1>
   </div>
 
-  <!-- ═══════════════ POPUP DETALLES ALIMENTO ═══════════════ -->
-  @if (mostrarDetallesAlimento && alimentoSeleccionadoDetalle) {
-    <div class="popup-overlay" (click)="cerrarDetallesAlimento()">
-      <div class="popup-box" (click)="$event.stopPropagation()">
-        <div class="popup-header">
-          <h2>{{ alimentoSeleccionadoDetalle.nombre }}</h2>
-          <button class="popup-close" (click)="cerrarDetallesAlimento()">✕</button>
-        </div>
-
-        <div class="popup-content" (click)="cerrarDropdowns()">
-          <!-- Información básica -->
-          <div class="info-seccion">
-            <h3>ℹ️ Información</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Marca</span>
-                <span class="info-valor">{{ alimentoSeleccionadoDetalle.marca }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Categoría</span>
-                @if (!mostrarBotonesEdicion) {
-                  <span class="info-valor">{{ alimentoSeleccionadoDetalle.categoria }}</span>
-                } @else {
-                  <select [(ngModel)]="alimentoSeleccionadoDetalle.categoria"
-                          style="border: 1px solid #ddd; background: white; font-size: 13px; color: #333; cursor: pointer; padding: 6px 10px; border-radius: 4px;">
-                    <option value="">-- Seleccionar --</option>
-                    @for (cat of categorias; track cat) {
-                      <option [value]="cat">{{ cat }}</option>
-                    }
-                  </select>
-                }
-              </div>
-              @if (alimentoSeleccionadoDetalle.codigo_barras) {
-                <div class="info-item">
-                  <span class="info-label">Código</span>
-                  <span class="info-valor">{{ alimentoSeleccionadoDetalle.codigo_barras }}</span>
-                </div>
-              }
-              <div class="info-item">
-                <span class="info-label">Peso/Unidad</span>
-                @if (!mostrarBotonesEdicion) {
-                  <span class="info-valor">
-                    @if (alimentoSeleccionadoDetalle.peso_unidad && alimentoSeleccionadoDetalle.nombre_unidad) {
-                      {{ alimentoSeleccionadoDetalle.peso_unidad }}g / {{ alimentoSeleccionadoDetalle.nombre_unidad }}
-                    } @else {
-                      No especificado
-                    }
-                  </span>
-                } @else {
-                  <div style="display: flex; gap: 8px; align-items: center;">
-                    <input type="number"
-                           [(ngModel)]="alimentoSeleccionadoDetalle.peso_unidad"
-                           placeholder="g"
-                           min="0"
-                           step="0.1"
-                           style="width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
-                    <select [(ngModel)]="alimentoSeleccionadoDetalle.nombre_unidad"
-                            style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
-                      <option value="">Seleccionar</option>
-                      @for (unidad of unidadesComunes; track unidad) {
-                        <option [value]="unidad">{{ unidad }}</option>
-                      }
-                    </select>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-
-          <!-- Macronutrientes -->
-          <div class="info-seccion">
-            <div style="display: flex; align-items: center; margin-bottom: 8px;">
-              @if (mostrarBotonesEdicion) {
-                <div class="dropdown-macros" (click)="$event.stopPropagation()">
-                  <button class="btn-dropdown-toggle" (click)="toggleDropdownMacros()">+</button>
-                  @if (mostrarDropdownMacros) {
-                    <div class="dropdown-menu">
-                      <button class="dropdown-item" (click)="abrirEditorMacros(); $event.stopPropagation()">✏️ Editar</button>
-                      <button class="dropdown-item" (click)="abrirCamaraMacrosDesdeDetalles(); $event.stopPropagation()">📷 Foto</button>
-                    </div>
-                  }
-                </div>
-              }
-              <h3 style="margin: 0; display: inline;">📊 Macronutrientes (por 100g)</h3>
-            </div>
-            <div class="macros-grid">
-              @if (alimentoSeleccionadoDetalle.calorias != null && alimentoSeleccionadoDetalle.calorias !== '') {
-                <div class="macro-item">
-                  <span class="macro-icon">🔥</span>
-                  <span class="macro-label">Calorías</span>
-                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.calorias }} kcal</span>
-                </div>
-              }
-              @if (alimentoSeleccionadoDetalle.proteinas != null && alimentoSeleccionadoDetalle.proteinas !== '') {
-                <div class="macro-item">
-                  <span class="macro-icon">💪</span>
-                  <span class="macro-label">Proteínas</span>
-                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.proteinas }}g</span>
-                </div>
-              }
-              @if (alimentoSeleccionadoDetalle.hidratos_carbono != null && alimentoSeleccionadoDetalle.hidratos_carbono !== '') {
-                <div class="macro-item">
-                  <span class="macro-icon">🌾</span>
-                  <span class="macro-label">Carbohidratos</span>
-                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.hidratos_carbono }}g</span>
-                </div>
-              }
-              @if (alimentoSeleccionadoDetalle.grasas != null && alimentoSeleccionadoDetalle.grasas !== '') {
-                <div class="macro-item">
-                  <span class="macro-icon">🧈</span>
-                  <span class="macro-label">Grasas</span>
-                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.grasas }}g</span>
-                </div>
-              }
-              @if (alimentoSeleccionadoDetalle.grasas_saturadas != null && alimentoSeleccionadoDetalle.grasas_saturadas !== '') {
-                <div class="macro-item">
-                  <span class="macro-icon">🔗</span>
-                  <span class="macro-label">Grasas Sat.</span>
-                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.grasas_saturadas }}g</span>
-                </div>
-              }
-              @if (alimentoSeleccionadoDetalle.azucares != null && alimentoSeleccionadoDetalle.azucares !== '') {
-                <div class="macro-item">
-                  <span class="macro-icon">🍬</span>
-                  <span class="macro-label">Azúcares</span>
-                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.azucares }}g</span>
-                </div>
-              }
-              @if (alimentoSeleccionadoDetalle.fibra != null && alimentoSeleccionadoDetalle.fibra !== '') {
-                <div class="macro-item">
-                  <span class="macro-icon">🌿</span>
-                  <span class="macro-label">Fibra</span>
-                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.fibra }}g</span>
-                </div>
-              }
-              @if (alimentoSeleccionadoDetalle.sal != null && alimentoSeleccionadoDetalle.sal !== '') {
-                <div class="macro-item">
-                  <span class="macro-icon">🧂</span>
-                  <span class="macro-label">Sal</span>
-                  <span class="macro-valor">{{ alimentoSeleccionadoDetalle.sal }}g</span>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- Ingredientes -->
-          @if (alimentoSeleccionadoDetalle.ingredientes && alimentoSeleccionadoDetalle.ingredientes.length > 0) {
-            <div class="ingredientes-bloque">
-              <div class="ingredientes-cabecera">
-                @if (mostrarBotonesEdicion) {
-                  <div class="dropdown-edicion" (click)="$event.stopPropagation()">
-                    <button class="btn-dropdown-toggle" (click)="toggleDropdownEdicion()">+</button>
-                    @if (mostrarDropdownEdicion) {
-                      <div class="dropdown-menu">
-                        <button class="dropdown-item" (click)="abrirEditorIngredientes(); $event.stopPropagation()">✏️ Editar</button>
-                        <button class="dropdown-item" (click)="abrirCamaraDesdeDetalles(); $event.stopPropagation()">📷 Foto</button>
-                      </div>
-                    }
-                  </div>
-                }
-                <span class="ingredientes-titulo">🥘 Ingredientes</span>
-              </div>
-              <div class="ingredientes-wrapper">
-                @for (ing of alimentoSeleccionadoDetalle.ingredientes; track $index) {
-                  <button class="ingrediente-item"
-                          [ngClass]="{
-                            'ingrediente-rojo': getColorIngrediente(ing) === 'rojo',
-                            'ingrediente-naranja': getColorIngrediente(ing) === 'naranja',
-                            'ingrediente-amarillo': getColorIngrediente(ing) === 'amarillo'
-                          }"
-                          (click)="mostrarAlergenosIngrediente(ing, $event)">
-                    {{ typeof ing === 'string' ? ing : ing.nombre }}
-                  </button>
-                }
-              </div>
-            </div>
-          }
-
-          <!-- Eliminar Producto -->
-          @if (mostrarBotonesEdicion) {
-            <div style="margin-top: 16px;">
-              <button class="btn-danger" (click)="abrirConfirmacionEliminar(alimentoSeleccionadoDetalle)" style="width: 100%; padding: 10px;">
-                🗑️ Eliminar producto
-              </button>
-            </div>
-          }
-        </div>
-
-        <!-- Footer con botones de guardar -->
-        <div style="display: flex; gap: 8px; padding: 16px; border-top: 1px solid #eee; align-items: center;">
-          @if (cargandoDetalles) {
-            <div style="display: flex; align-items: center; justify-content: center; flex: 1; gap: 8px;">
-              <div class="spinner"></div>
-              <span style="color: #666; font-size: 14px;">Guardando...</span>
-            </div>
-          } @else {
-            <button class="btn-secondary" (click)="cerrarDetallesAlimento()" style="flex: 1;">Cerrar</button>
-            @if (mostrarBotonesEdicion) {
-              <button class="btn-primary" (click)="guardarDetallesAlimento()" style="flex: 1;">💾 Guardar cambios</button>
-            }
-          }
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Editor de Ingredientes Modal -->
-  @if (mostrarEditorIngredientes && alimentoSeleccionadoDetalle) {
-    <div class="popup-overlay" (click)="cerrarEditorIngredientes()">
-      <div class="popup-box" (click)="$event.stopPropagation()" style="max-width: 400px;">
-        <div class="popup-header">
-          <h2>Editar Ingredientes</h2>
-          <button class="popup-close" (click)="cerrarEditorIngredientes()">✕</button>
-        </div>
-
-        <div class="popup-content">
-          <!-- Ingredientes actuales -->
-          @if (alimentoSeleccionadoDetalle.ingredientes && alimentoSeleccionadoDetalle.ingredientes.length > 0) {
-            <div style="margin-bottom: 16px;">
-              <span style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">Ingredientes actuales</span>
-              <div class="ingredientes-wrapper" style="margin-top: 8px;">
-                @for (ing of alimentoSeleccionadoDetalle.ingredientes; track $index; let i = $index) {
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <span class="ingrediente-item" style="flex: 1;">{{ typeof ing === 'string' ? ing : ing.nombre }}</span>
-                    <button (click)="eliminarIngrediente(i)"
-                            style="background: #ffebee; color: #c62828; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">
-                      ✕
-                    </button>
-                  </div>
-                }
-              </div>
-            </div>
-          }
-
-          <!-- Agregar nuevo ingrediente -->
-          <div style="position: relative;">
-            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; display: block; margin-bottom: 8px;">
-              Añadir ingrediente
-            </label>
-            <div style="display: flex; gap: 8px;">
-              <input type="text" [(ngModel)]="nuevoIngrediente"
-                     (keyup)="filtrarIngredientes()"
-                     (keyup.enter)="!cargandoIngrediente && agregarIngrediente()"
-                     placeholder="Nuevo ingrediente..."
-                     [disabled]="cargandoIngrediente"
-                     style="flex: 1; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 13px;">
-              <button (click)="agregarIngrediente()"
-                      [disabled]="cargandoIngrediente"
-                      style="background: #4CAF50; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; opacity: 1;">
-                @if (cargandoIngrediente) {
-                  <div class="spinner" style="width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-                } @else {
-                  +
-                }
-              </button>
-            </div>
-
-            <!-- Sugerencias -->
-            @if (ingredientesFiltrados.length > 0) {
-              <div style="position: absolute; top: 100%; left: 0; right: 56px; background: white; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 10;">
-                @for (sugerencia of ingredientesFiltrados; track sugerencia) {
-                  <button (click)="seleccionarSugerencia(sugerencia); $event.stopPropagation()"
-                          class="sugerencia-item">
-                    {{ sugerencia }}
-                  </button>
-                }
-              </div>
-            }
-          </div>
-        </div>
-
-        <div class="popup-footer">
-          <button class="btn-primary" (click)="cerrarEditorIngredientes()" style="width: 100%;">Listo</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Editor de Macronutrientes Modal -->
-  @if (mostrarEditorMacros && alimentoSeleccionadoDetalle) {
-    <div class="popup-overlay" (click)="cerrarEditorMacros()">
-      <div class="popup-box" (click)="$event.stopPropagation()" style="max-width: 450px;">
-        <div class="popup-header">
-          <h2>Editar Macronutrientes</h2>
-          <button class="popup-close" (click)="cerrarEditorMacros()">✕</button>
-        </div>
-
-        <div class="popup-content">
-          <form style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-            <!-- Calorías -->
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🔥 Calorías (kcal)</label>
-              <input type="number" [(ngModel)]="alimentoSeleccionadoDetalle.calorias" name="calorias" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <!-- Proteínas -->
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">💪 Proteínas (g)</label>
-              <input type="number" [(ngModel)]="alimentoSeleccionadoDetalle.proteinas" name="proteinas" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <!-- Carbohidratos -->
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🌾 Carbohidratos (g)</label>
-              <input type="number" [(ngModel)]="alimentoSeleccionadoDetalle.hidratos_carbono" name="hidratos_carbono" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <!-- Grasas -->
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🧈 Grasas (g)</label>
-              <input type="number" [(ngModel)]="alimentoSeleccionadoDetalle.grasas" name="grasas" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <!-- Grasas Saturadas -->
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🔗 Grasas Saturadas (g)</label>
-              <input type="number" [(ngModel)]="alimentoSeleccionadoDetalle.grasas_saturadas" name="grasas_saturadas" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <!-- Azúcares -->
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🍬 Azúcares (g)</label>
-              <input type="number" [(ngModel)]="alimentoSeleccionadoDetalle.azucares" name="azucares" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <!-- Fibra -->
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🌿 Fibra (g)</label>
-              <input type="number" [(ngModel)]="alimentoSeleccionadoDetalle.fibra" name="fibra" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-
-            <!-- Sal -->
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🧂 Sal (g)</label>
-              <input type="number" [(ngModel)]="alimentoSeleccionadoDetalle.sal" name="sal" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
-            </div>
-          </form>
-        </div>
-
-        <div class="popup-footer">
-          <button class="btn-secondary" (click)="cerrarEditorMacros()" style="flex: 1;">Cancelar</button>
-          <button class="btn-primary" (click)="guardarMacrosEditados()" style="flex: 1;">Guardar</button>
-        </div>
-      </div>
-    </div>
-  }
-
   <div class="tabs">
-    <button class="tab" [class.active]="activePanel === 'anadir'" (click)="cambiarPanel('anadir')">➕ Añadir</button>
     <button class="tab" [class.active]="activePanel === 'buscar'" (click)="cambiarPanel('buscar')">🔍 Buscar</button>
-    <button class="tab" [class.active]="activePanel === 'favoritos'" (click)="irAFavoritos()">⭐ Favoritos</button>
+    <button class="tab" [class.active]="activePanel === 'favoritos'" (click)="cambiarPanel('favoritos')">⭐ Favoritos</button>
     <button class="tab" [class.active]="activePanel === 'actualizar'" (click)="cambiarPanel('actualizar')">🔄 Actualizar</button>
   </div>
 
@@ -361,639 +13,43 @@
     <div class="mensaje" [class.error]="mensajeTipo === 'error'">{{ mensaje }}</div>
   }
 
-  <!-- ═══════════════ PANEL AÑADIR ═══════════════ -->
-  @if (activePanel === 'anadir') {
-    <div class="panel">
-
-      <div class="ocr-top-section">
-        <label class="ocr-top-button"
-               [class.scanning]="cargandoOCR"
-               title="Añadir foto con todos los datos">
-          @if (cargandoOCR) {
-            <span class="spinner spinner-sm"></span>
-            <span>Procesando...</span>
-          } @else {
-            📷 <span>Añadir foto con todos los datos</span>
-          }
-          <input type="file" accept="image/*" hidden
-                 (change)="procesarImagenOCR($event)"
-                 [disabled]="cargandoOCR" />
-        </label>
-      </div>
-
-      <div class="form-group">
-        <label>Nombre <span class="obligatorio">*</span></label>
-        <input type="text" [(ngModel)]="nuevoAlimento.nombre"
-               placeholder="Ej: Pechuga de pollo"
-               (blur)="onNombreBlur()"
-               [class.campo-error]="(intentoGuardar && !nuevoAlimento.nombre.trim()) || !!nombreDuplicado" />
-        @if (intentoGuardar && !nuevoAlimento.nombre.trim()) {
-          <span class="error-hint">El nombre es obligatorio</span>
-        }
-        @if (nombreDuplicado) {
-          <span class="error-hint">⚠️ Ya existe: "{{ nombreDuplicado }}"</span>
-        }
-      </div>
-
-      <div class="form-group">
-        <label>Marca <span class="obligatorio">*</span></label>
-        <input type="text" [(ngModel)]="nuevoAlimento.marca"               placeholder="Ej: Marca X, Sin marca"
-               [class.campo-error]="intentoGuardar && !nuevoAlimento.marca.trim()" />
-        @if (intentoGuardar && !nuevoAlimento.marca.trim()) {
-          <span class="error-hint">La marca es obligatoria</span>
-        }
-      </div>
-
-      <div class="form-group">
-        <label>Categoría <span class="obligatorio">*</span></label>
-        <select [(ngModel)]="nuevoAlimento.categoria"                [class.campo-error]="intentoGuardar && !nuevoAlimento.categoria">
-          <option value="">✨ Seleccionar categoría</option>
-          @for (cat of categorias; track cat) {
-            <option [value]="cat">{{ cat }}</option>
-          }
-        </select>
-        @if (intentoGuardar && !nuevoAlimento.categoria) {
-          <span class="error-hint">Selecciona una categoría</span>
-        }
-      </div>
-
-      <div class="form-group">
-        <label>Código de barras / EAN</label>
-        <div class="codigo-row">
-          <input type="text" [(ngModel)]="nuevoAlimento.codigo_barras"
-                 placeholder="Ej: 8410000123456"
-                 (blur)="onCodigoBlur()"
-                 [class.campo-error]="!!codigoDuplicado"
-                 [class.ocr-filled]="codigoRellenado" />
-          <label class="btn-scan"
-                 [class.scanning]="ocrCodigoEstado === 'preparando' || ocrCodigoEstado === 'analizando'"
-                 title="Escanear código desde foto">
-            @if (ocrCodigoEstado === 'preparando' || ocrCodigoEstado === 'analizando') {
-              <span class="spinner spinner-sm"></span>
-            } @else {
-              <span>📷</span>
-            }
-            <input type="file" accept="image/*" hidden
-                   (change)="onFotoCodigo($event)"
-                   [disabled]="ocrCodigoEstado === 'preparando' || ocrCodigoEstado === 'analizando'" />
-          </label>
-        </div>
-        @if (codigoDuplicado) {
-          <span class="error-hint">⚠️ Ya existe: "{{ codigoDuplicado }}"</span>
-        }
-        @if (ocrCodigoEstado === 'listo') {
-          <span class="ocr-hint exito">✅ Código leído correctamente</span>
-        }
-        @if (ocrCodigoEstado === 'error') {
-          <span class="ocr-hint error-ocr">❌ No se detectó el código</span>
-        }
-      </div>
-
-      <!-- Separador EAN / Imágenes -->
-      <div class="seccion-separador"></div>
-
-      <!-- ── Fotos + OCR ── -->
-      <div class="fotos-section">
-        <div class="fotos-row">
-          <!-- Foto ingredientes -->
-          <div class="foto-col">
-            <div class="foto-upload">
-              <span class="foto-label">📸 Lista ingredientes</span>
-            </div>
-            <label class="btn-scan-side"
-                   [class.scanning]="ocrIngredientesEstado === 'preparando' || ocrIngredientesEstado === 'analizando'"
-                   title="Capturar foto de ingredientes">
-              @if (ocrIngredientesEstado === 'preparando' || ocrIngredientesEstado === 'analizando') {
-                <span class="spinner spinner-sm"></span>
-              } @else {
-                <span>📷</span>
-              }
-              <input type="file" accept="image/*" hidden
-                     (change)="onFotoIngredientes($event)"
-                     [disabled]="ocrIngredientesEstado === 'preparando' || ocrIngredientesEstado === 'analizando'" />
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lista de ingredientes extraídos -->
-      @if (ingredientesExtraidos.length > 0) {
-        <div class="ingredientes-bloque">
-          <div class="ingredientes-cabecera">
-            <span class="ingredientes-titulo">Ingredientes detectados</span>
-            <span class="ingredientes-count">{{ ingredientesExtraidos.length }}</span>
-          </div>
-          <ul class="ingredientes-lista">
-            @for (ing of ingredientesExtraidos; track ing) {
-              <li class="ingrediente-item">{{ ing }}</li>
-            }
-          </ul>
-        </div>
-      }
-
-      <!-- ── Sección Macronutrientes (siempre visible) ── -->
-      <div style="border-top: 1px solid #e0e0e0; margin-top: 14px; padding-top: 14px; text-align: center;">
-        <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #555;">📊 Macronutrientes <span style="font-size: 12px; color: #999; font-weight: 400;">(por 100g/ml)</span></h4>
-      </div>
-      <div>
-        <!-- Foto macros -->
-        <div class="foto-col">
-          <div class="foto-upload">
-            <span class="foto-label">📊 Tabla macros</span>
-          </div>
-          <label class="btn-scan-side"
-                 [class.scanning]="ocrMacrosEstado === 'preparando' || ocrMacrosEstado === 'analizando'"
-                 title="Capturar foto de macronutrientes">
-            @if (ocrMacrosEstado === 'preparando' || ocrMacrosEstado === 'analizando') {
-              <span class="spinner spinner-sm"></span>
-            } @else {
-              <span>📷</span>
-            }
-            <input type="file" accept="image/*" hidden
-                   (change)="onFotoMacros($event)"
-                   [disabled]="ocrMacrosEstado === 'preparando' || ocrMacrosEstado === 'analizando'" />
-          </label>
-        </div>
-
-        <div class="macros-inline seccion-inner">
-          <div class="macro-inline-group">
-            <label>🔥 Calorías <span class="obligatorio">*</span></label>
-            <input type="number" [(ngModel)]="nuevoAlimento.calorias" min="0"
-                   [class.ocr-filled]="macrosRellenados"
-                   [class.campo-error]="intentoGuardar && nuevoAlimento.calorias <= 0" />
-            @if (intentoGuardar && nuevoAlimento.calorias <= 0) {
-              <span class="error-hint">Requerido</span>
-            }
-          </div>
-          <div class="macro-inline-group">
-            <label>💪 Proteínas</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.proteinas" min="0" step="0.1" [class.ocr-filled]="macrosRellenados" />
-          </div>
-          <div class="macro-inline-group">
-            <label>🌾 Carbohidratos</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.hidratos_carbono" min="0" step="0.1" [class.ocr-filled]="macrosRellenados" />
-          </div>
-          <div class="macro-inline-group">
-            <label>🧈 Grasas</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.grasas" min="0" step="0.1" [class.ocr-filled]="macrosRellenados" />
-          </div>
-          <div class="macro-inline-group">
-            <label>🔗 Grasas Sat.</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.grasas_saturadas" min="0" step="0.1" [class.ocr-filled]="macrosRellenados" />
-          </div>
-          <div class="macro-inline-group">
-            <label>🍬 Azúcares</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.azucares" min="0" step="0.1" [class.ocr-filled]="macrosRellenados" />
-          </div>
-          <div class="macro-inline-group">
-            <label>🌿 Fibra</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.fibra" min="0" step="0.1" [class.ocr-filled]="macrosRellenados" />
-          </div>
-          <div class="macro-inline-group">
-            <label>🧂 Sal</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.sal" min="0" step="0.01" [class.ocr-filled]="macrosRellenados" />
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Sección Minerales (siempre visible) ── -->
-      <div style="border-top: 1px solid #e0e0e0; margin-top: 14px; padding-top: 14px; text-align: center;">
-        <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #555;">🧪 Minerales</h4>
-      </div>
-      <div>
-        <div class="macros-inline seccion-inner">
-          <div class="macro-inline-group">
-            <label>🧂 Sodio (mg)</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.sodio" min="0"
-                   [class.ocr-filled]="macrosRellenados" />
-          </div>
-          <div class="macro-inline-group">
-            <label>🍌 Potasio (mg)</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.potasio" min="0" />
-          </div>
-          <div class="macro-inline-group">
-            <label>🥛 Calcio (mg)</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.calcio" min="0" />
-          </div>
-          <div class="macro-inline-group">
-            <label>🩸 Hierro (mg)</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.hierro" min="0" step="0.1" />
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Sección Peso por Unidad ── -->
-      <div style="border-top: 1px solid #e0e0e0; margin-top: 14px; padding-top: 14px; text-align: center;">
-        <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #555;">📦 Peso por Unidad</h4>
-      </div>
-      <div>
-        <div class="macros-inline">
-          <div class="form-group">
-            <label>Tipo de unidad</label>
-            <select [(ngModel)]="nuevoAlimento.nombre_unidad">
-              <option value="">📦 Seleccionar unidad</option>
-              @for (unidad of unidadesComunes; track unidad) {
-                <option [value]="unidad">{{ unidad }}</option>
-              }
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Peso (gramos)</label>
-            <input type="number" [(ngModel)]="nuevoAlimento.peso_unidad" min="0" step="0.1"
-                   placeholder="Ej: 150" />
-          </div>
-        </div>
-      </div>
-
-      <button class="btn-primary" (click)="crearAlimento()" [disabled]="cargando">
-        {{ cargando ? 'Guardando...' : '✅ Guardar Alimento' }}
-      </button>
-    </div>
-  }
-
-  <!-- ═══════════════ OVERLAY OCR ═══════════════ -->
-  @if (ocrEnProceso) {
-    <div class="ocr-overlay">
-      <div class="ocr-overlay-box">
-        <div class="spinner spinner-lg"></div>
-        <p class="ocr-overlay-texto">
-          @if (usarOcrAsincrono) {
-            Procesando imagen con IA...
-          } @else {
-            Analizando imagen con IA...
-          }
-        </p>
-        <div class="ocr-progress-bar">
-          <div class="ocr-progress-fill"></div>
-        </div>
-        <p class="ocr-overlay-subtexto">Esto puede tomar unos segundos</p>
-      </div>
-    </div>
-  }
-
-  <!-- ═══════════════ MODAL PRODUCTO DUPLICADO ═══════════════ -->
-  @if (mostrarModalDuplicado && alimentoDuplicado) {
-    <div class="modal-overlay" (click)="cerrarModalDuplicado()">
-      <div class="modal-box" (click)="$event.stopPropagation()">
-
-        <div class="modal-scroll">
-          <div class="modal-header">
-            <span class="modal-icono">ℹ️</span>
-            <div>
-              <p class="modal-subtitulo" style="color: #1976d2;">Este producto ya existe</p>
-              <h3 class="modal-nombre">¿Qué deseas hacer?</h3>
-            </div>
-            <button class="modal-close" (click)="cerrarModalDuplicado()" title="Cerrar">✕</button>
-          </div>
-
-          <div class="duplicado-item">
-            <div class="duplicado-header">
-              <span class="similar-marca">{{ alimentoDuplicado.marca }}</span>
-              <span class="similar-nombre">{{ alimentoDuplicado.nombre }}</span>
-            </div>
-
-            <div class="duplicado-macros">
-              <span>{{ alimentoDuplicado.calorias }} kcal</span>
-              <span>P: {{ alimentoDuplicado.proteinas }}g</span>
-              <span>C: {{ alimentoDuplicado.hidratos_carbono }}g</span>
-              <span>G: {{ alimentoDuplicado.grasas }}g</span>
-            </div>
-
-            <div class="duplicado-categoria">
-              {{ alimentoDuplicado.categoria }}
-            </div>
-
-            @if (alimentoDuplicado.ingredientes?.length > 0) {
-              <div class="duplicado-ingredientes">
-                <p class="duplicado-ings-titulo">Ingredientes:</p>
-                <p class="duplicado-ings-texto">{{ alimentoDuplicado.ingredientes.join(', ') }}</p>
-              </div>
-            }
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          @if (esDuplicadoSoloEAN) {
-            <!-- Caso: Solo cambia el EAN, datos iguales -->
-            <button class="btn-primary modal-btn"
-                    (click)="actualizarCodigoDelDuplicado()"
-                    [disabled]="cargando">
-              {{ cargando ? '⏳ Actualizando...' : '📱 Actualizar EAN' }}
-            </button>
-            <button class="btn-secondary modal-btn" (click)="cerrarModalDuplicado()" [disabled]="cargando">
-              Cancelar
-            </button>
-          } @else {
-            <!-- Caso: Duplicado normal - ofrecer opciones -->
-            <button class="btn-primary modal-btn"
-                    (click)="agregarAFavoritoDelDuplicado()"
-                    [disabled]="cargando"
-                    [style.background]="alimentoDuplicado.favorito ? '#FFC107' : '#4CAF50'">
-              {{ cargando ? '⏳ Procesando...' : (alimentoDuplicado.favorito ? '⭐ Es favorito' : '☆ Agregar a favoritos') }}
-            </button>
-            <button class="btn-success modal-btn" (click)="crearDuplicado()" [disabled]="cargando">
-              {{ cargando ? '⏳ Guardando...' : '➕ Crear de todas formas' }}
-            </button>
-          }
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ═══════════════ MODAL PRODUCTOS SIMILARES ═══════════════ -->
-  @if (mostrarSimilarModal && esperandoConfirmacionSimilar) {
-    <div class="modal-overlay" (click)="cancelarGuardado()">
-      <div class="modal-box" (click)="$event.stopPropagation()">
-
-        <div class="modal-scroll">
-          <div class="modal-header">
-            <span class="modal-icono">
-              @if (nuevoAlimento.codigo_barras && alimentos.find(a => a.codigo_barras === nuevoAlimento.codigo_barras)) {
-                ⚠️
-              } @else {
-                ℹ️
-              }
-            </span>
-            <div>
-              @if (nuevoAlimento.codigo_barras && alimentos.find(a => a.codigo_barras === nuevoAlimento.codigo_barras)) {
-                <p class="modal-subtitulo" style="color: #e53935;">Producto ya existe</p>
-                <h3 class="modal-nombre">¿Deseas continuar de todas formas?</h3>
-              } @else {
-                <p class="modal-subtitulo">Productos relacionados encontrados</p>
-                <h3 class="modal-nombre">¿Deseas continuar?</h3>
-              }
-            </div>
-          </div>
-
-          <p style="padding: 0 16px; color: #666; font-size: 14px;">
-            @if (nuevoAlimento.codigo_barras && alimentos.find(a => a.codigo_barras === nuevoAlimento.codigo_barras)) {
-              Este código de barras ya existe en la base de datos. Si continúas, se creará una entrada duplicada:
-            } @else {
-              Encontramos {{ alimentosSimilares.length }} producto(s) con características similares:
-            }
-          </p>
-
-          <div class="similares-lista">
-            @for (sim of alimentosSimilares; track sim.id) {
-              <div class="similar-item">
-                <div class="similar-header">
-                  <span class="similar-marca">{{ sim.marca }}</span>
-                  <span class="similar-nombre">{{ sim.nombre }}</span>
-                </div>
-                <div class="similar-info">
-                  <span class="similar-categoria">{{ sim.categoria }}</span>
-                  <span class="similar-calorias">{{ sim.calorias }} kcal</span>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn-danger modal-btn" (click)="cancelarGuardado()">Cancelar</button>
-          <button class="btn-primary modal-btn" (click)="continuarConGuardado()">Continuar</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ═══════════════ MODAL VERIFICACIÓN ═══════════════ -->
-  @if (mostrarModal && alimentoCreado) {
-    <div class="modal-overlay" (click)="cerrarModal()">
-      <div class="modal-box" (click)="$event.stopPropagation()">
-
-        <div class="modal-scroll">
-          <div class="modal-header">
-            <span class="modal-icono">✅</span>
-            <div>
-              <p class="modal-subtitulo">Alimento guardado</p>
-              <p style="color: #999; font-size: 12px;">{{ alimentoCreado.marca }}</p>
-              <h2 class="modal-nombre">{{ alimentoCreado.nombre }}</h2>
-              @if (alimentoCreado.categoria) {
-                <span class="modal-categoria">{{ alimentoCreado.categoria }}</span>
-              }
-            </div>
-          </div>
-
-          <table class="modal-tabla">
-            <tbody>
-              @for (m of getMacrosVisibles(alimentoCreado); track m.label) {
-                <tr>
-                  <td class="modal-label">{{ m.label }}</td>
-                  <td class="modal-valor">{{ m.valor }}<span class="modal-unidad"> {{ m.unidad }}</span></td>
-                </tr>
-              }
-            </tbody>
-          </table>
-
-          @if (alimentoCreado.ingredientes?.length > 0) {
-            <div class="modal-ingredientes">
-              <p class="modal-ings-titulo">{{ alimentoCreado.ingredientes.length }} ingredientes guardados</p>
-              <p class="modal-ings-texto">{{ alimentoCreado.ingredientes.join(', ') }}</p>
-            </div>
-          }
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn-primary modal-btn" (click)="cerrarModal()">Aceptar</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ═══════════════ MODAL ACTUALIZACIÓN ═══════════════ -->
-  @if (mostrarModalActualizacion && alimentoActualizado) {
-    <div class="modal-overlay" (click)="cerrarModalActualizacion()">
-      <div class="modal-box" (click)="$event.stopPropagation()">
-        <button class="modal-close" (click)="cerrarModalActualizacion()" title="Cerrar">✕</button>
-
-        <div class="modal-scroll">
-          <div class="modal-header">
-            <span class="modal-icono">🔄</span>
-            <div>
-              <p class="modal-subtitulo">Producto actualizado</p>
-              <p style="color: #999; font-size: 12px;">{{ alimentoActualizado.marca }}</p>
-              <h2 class="modal-nombre">{{ alimentoActualizado.nombre }}</h2>
-              @if (alimentoActualizado.categoria) {
-                <span class="modal-categoria">{{ alimentoActualizado.categoria }}</span>
-              }
-            </div>
-          </div>
-
-          <table class="modal-tabla">
-            <tbody>
-              @for (m of getMacrosVisibles(alimentoActualizado); track m.label) {
-                <tr>
-                  <td class="modal-label">{{ m.label }}</td>
-                  <td class="modal-valor">{{ m.valor }}<span class="modal-unidad"> {{ m.unidad }}</span></td>
-                </tr>
-              }
-            </tbody>
-          </table>
-
-          @if (alimentoActualizado.ingredientes?.length > 0) {
-            <div class="modal-ingredientes">
-              <p class="modal-ings-titulo">{{ alimentoActualizado.ingredientes.length }} ingredientes guardados</p>
-              <p class="modal-ings-texto">{{ alimentoActualizado.ingredientes.join(', ') }}</p>
-            </div>
-          }
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn-primary modal-btn" (click)="cerrarModalActualizacion()">Aceptar</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ═══════════════ MODAL CONFIRMACIÓN EDICIÓN ═══════════════ -->
-  @if (mostrarModalConfirmacionEdicion && alimentoEditandoConfirmacion && diferenciasDetectadas.length > 0) {
-    <div class="modal-overlay" (click)="cancelarActualizacion()">
-      <div class="modal-box" (click)="$event.stopPropagation()">
-        <button class="modal-close" (click)="cancelarActualizacion()" title="Cancelar">✕</button>
-
-        <div class="modal-scroll">
-          <div class="modal-header">
-            <span class="modal-icono">⚠️</span>
-            <div>
-              <p class="modal-subtitulo" style="color: #f57c00;">Cambios detectados</p>
-            </div>
-          </div>
-
-          <!-- Información del Alimento -->
-          <div style="padding: 16px; background: #fafafa; margin-bottom: 16px; border-radius: 4px;">
-            <h2 class="modal-nombre" style="margin: 0 0 4px 0;">
-              {{ alimentoEditandoConfirmacion.nombre }}
-              <span style="font-size: 14px; color: #666; font-weight: normal;">
-                ({{ alimentoEditandoConfirmacion.marca }})
-              </span>
-            </h2>
-            @if (alimentoEditandoConfirmacion.codigo_barras) {
-              <p style="margin: 4px 0; color: #666; font-size: 13px;">
-                📱 EAN: {{ alimentoEditandoConfirmacion.codigo_barras }}
-              </p>
-            }
-          </div>
-
-          <p style="padding: 0 16px 8px 16px; color: #666; font-size: 14px;">
-            Se han detectado los siguientes cambios. ¿Deseas guardarlos?
-          </p>
-
-          <div style="padding: 0 16px; margin-bottom: 16px;">
-            @for (diff of diferenciasDetectadas; track diff.label) {
-              <div style="margin-bottom: 12px; padding: 8px; background: #f5f5f5; border-radius: 4px;">
-                <p style="margin: 0 0 4px 0; font-weight: 600; color: #333;">{{ diff.label }}</p>
-                <p style="margin: 0; color: #999; font-size: 12px;">
-                  De: <span style="color: #d32f2f;">{{ diff.anterior }}</span>
-                </p>
-                <p style="margin: 0; color: #999; font-size: 12px;">
-                  A: <span style="color: #388e3c;">{{ diff.nuevo }}</span>
-                </p>
-              </div>
-            }
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn-secondary modal-btn" (click)="cancelarActualizacion()" [disabled]="cargando">
-            Cancelar
-          </button>
-          <button class="btn-primary modal-btn" (click)="confirmarActualizacion()" [disabled]="cargando">
-            @if (cargando) {
-              <span class="spinner spinner-sm"></span> Guardando...
-            } @else {
-              Confirmar cambios
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
   <!-- ═══════════════ PANEL BUSCAR ═══════════════ -->
   @if (activePanel === 'buscar') {
     <div class="panel">
-      <div class="search-bar">
-        <input type="text" [(ngModel)]="terminoBusqueda" placeholder="🔍 Buscar por nombre, marca..."
-               (ngModelChange)="buscarAlimento()" />
-      </div>
+      <app-alimento-filtros
+        [categorias]="categorias"
+        [termino]="terminoBusqueda"
+        [categoria]="categoriaFiltro"
+        (terminoChange)="onTermino($event)"
+        (categoriaChange)="onCategoria($event)">
+      </app-alimento-filtros>
 
-      <div class="filtro-categoria">
-        <select [(ngModel)]="categoriaFiltro" (ngModelChange)="buscarAlimento()">
-          <option value="">🔍 Todas las categorías</option>
-          @for (cat of categorias; track cat) {
-            <option [value]="cat">{{ cat }}</option>
-          }
-        </select>
-      </div>
-
-      @if (alimentosFiltrados.length === 0) {
-        <p class="empty-state">Sin resultados</p>
-      }
-      <div class="alimentos-list">
-        @for (alimento of alimentosFiltrados; track alimento.id) {
-          <div class="alimento-card clickable"
-               [class.con-alergias]="tieneAlergiaUsuario(alimento)"
-               (click)="abrirDetallesAlimento(alimento)">
-            <div style="flex: 1;">
-              <div style="margin-bottom: 4px;">
-                <span class="alimento-nombre">{{ alimento.nombre }} - {{ alimento.marca }}</span>
-              </div>
-              @if (alimento.codigo_barras) {
-                <span class="alimento-barcode" style="display: block; font-size: 12px;">📱 {{ alimento.codigo_barras }}</span>
-              }
-              <span class="alimento-categoria" style="font-size: 11px; color: #999; opacity: 0.7;">
-                {{ alimento.categoria }}
-              </span>
-            </div>
-            <button class="btn-favorito" (click)="toggleFavorito(alimento, $event)"
-                    [class.favorito]="alimento.favorito"
-                    title="Agregar a favoritos"
-                    style="margin-left: 8px; flex-shrink: 0;">
-              {{ alimento.favorito ? '⭐' : '☆' }}
-            </button>
-          </div>
-        }
-      </div>
+      <app-alimento-lista
+        [alimentos]="alimentosFiltrados"
+        [resaltarAlergias]="true"
+        [tieneAlergia]="tieneAlergiaUsuario"
+        (seleccionar)="abrirDetalle($event, false)"
+        (toggleFavorito)="toggleFavorito($event.alimento)">
+      </app-alimento-lista>
     </div>
   }
 
   <!-- ═══════════════ PANEL FAVORITOS ═══════════════ -->
   @if (activePanel === 'favoritos') {
     <div class="panel">
-      @if (obtenerFavoritos().length === 0) {
-        <p class="empty-state">No hay favoritos aún. ⭐ Marca productos para acceso rápido</p>
-      }
-      <div class="alimentos-list">
-        @for (alimento of obtenerFavoritos(); track alimento.id) {
-          <div class="alimento-card clickable" (click)="abrirDetallesAlimento(alimento)">
-            <div style="flex: 1;">
-              <div style="margin-bottom: 4px;">
-                <span class="alimento-nombre">{{ alimento.nombre }} - {{ alimento.marca }}</span>
-              </div>
-              @if (alimento.codigo_barras) {
-                <span class="alimento-barcode" style="display: block; font-size: 12px;">📱 {{ alimento.codigo_barras }}</span>
-              }
-              <span class="alimento-categoria" style="font-size: 11px; color: #999; opacity: 0.7;">
-                {{ alimento.categoria }}
-              </span>
-            </div>
-            <button class="btn-favorito favorito" (click)="toggleFavorito(alimento, $event)"
-                    title="Remover de favoritos"
-                    style="margin-left: 8px; flex-shrink: 0;">
-              ⭐
-            </button>
-          </div>
-        }
-      </div>
+      <app-alimento-lista
+        [alimentos]="obtenerFavoritos()"
+        [favoritosFijos]="true"
+        textoVacio="No hay favoritos aún. ⭐ Marca productos para acceso rápido"
+        (seleccionar)="abrirDetalle($event, false)"
+        (toggleFavorito)="toggleFavorito($event.alimento)">
+      </app-alimento-lista>
     </div>
   }
 
-
-  <!-- ═══════════════ PANEL EDITAR ═══════════════ -->
+  <!-- ═══════════════ PANEL ACTUALIZAR ═══════════════ -->
   @if (activePanel === 'actualizar') {
     <div class="panel">
-      <!-- Botón de Verificar Ingredientes -->
       @if (totalIngredientesVerificar > 0) {
         <button class="btn-verificar-ingredientes" (click)="abrirModalVerificarIngredientes()" title="Verificar ingredientes sin revisar">
           <span class="fab-icon">✓</span>
@@ -1001,123 +57,49 @@
         </button>
       }
 
-      <!-- Filtros pegados -->
-      <div class="panel-filtros">
-        <!-- Search bar -->
-        <div class="search-bar">
-          <input type="text" [(ngModel)]="terminoBusqueda" placeholder="🔍 Buscar alimento..."
-                 (ngModelChange)="buscarAlimento()" />
-        </div>
+      <app-alimento-filtros
+        [categorias]="categorias"
+        [termino]="terminoBusqueda"
+        [categoria]="categoriaFiltro"
+        placeholder="🔍 Buscar alimento..."
+        (terminoChange)="onTermino($event)"
+        (categoriaChange)="onCategoria($event)">
+      </app-alimento-filtros>
 
-        @if (!alimentoSeleccionado) {
-          <div class="filtro-categoria">
-            <select [(ngModel)]="categoriaFiltro" (ngModelChange)="buscarAlimento()">
-              <option value="">🔍 Todas las categorías</option>
-              @for (cat of categorias; track cat) {
-                <option [value]="cat">{{ cat }}</option>
-              }
-            </select>
-          </div>
-        }
-      </div>
-
-      <!-- Contenedor con scroll para alimentos -->
-      @if (!alimentoSeleccionado) {
-        <div class="panel-alimentos-container">
-          @if (alimentosFiltrados.length === 0) {
-            <p class="empty-state">Sin resultados</p>
-          }
-          <div class="alimentos-list">
-            @for (alimento of alimentosFiltrados; track alimento.id) {
-              <div class="alimento-card clickable" (click)="abrirDetallesAlimento(alimento, true)">
-                <div style="flex: 1;">
-                  <div style="margin-bottom: 4px;">
-                    <span class="alimento-nombre">{{ alimento.nombre }} - {{ alimento.marca }}</span>
-                  </div>
-                  @if (alimento.codigo_barras) {
-                    <span class="alimento-barcode" style="display: block; font-size: 12px;">📱 {{ alimento.codigo_barras }}</span>
-                  }
-                  <span class="alimento-categoria" style="font-size: 11px; color: #999; opacity: 0.7;">
-                    {{ alimento.categoria }}
-                  </span>
-                </div>
-                <div class="alimento-acciones">
-                  <button class="btn-favorito" [class.favorito]="alimento.favorito"
-                          (click)="toggleFavorito(alimento, $event)" title="Favorito">
-                    {{ alimento.favorito ? '⭐' : '☆' }}
-                  </button>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-      }
+      <app-alimento-lista
+        [alimentos]="alimentosFiltrados"
+        (seleccionar)="abrirDetalle($event, true)"
+        (toggleFavorito)="toggleFavorito($event.alimento)">
+      </app-alimento-lista>
     </div>
   }
 
-  <!-- Modal: Formulario de Verificación de Ingredientes -->
-  @if (mostrarFormularioAlergenos && alimentoSeleccionadoAlergenos) {
-    <div class="modal-overlay" (click)="cerrarFormularioAlergenos()">
-      <div class="modal-box" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Verificar Ingredientes</h2>
-          <button class="modal-close" (click)="cerrarFormularioAlergenos()">✕</button>
-        </div>
+  <!-- FAB Añadir -->
+  <button class="fab-button" (click)="navegarAnadir()" title="Añadir nuevo alimento">
+    <span class="fab-icon">➕</span>
+    <span class="fab-texto">Añadir alimento</span>
+  </button>
 
-        <div class="modal-content">
-          <p style="color: #666; margin-bottom: 16px;">Verifica las categorías de alergenos/intolerancias para cada ingrediente</p>
-
-          <!-- Lista de ingredientes -->
-          <div class="ingredientes-alergenos-lista">
-            @for (ing of alimentoSeleccionadoAlergenos.ingredientes; track $index) {
-              <div class="ingrediente-alergeno-item">
-                <div class="ingrediente-info">
-                  <input type="text" [value]="typeof ing === 'string' ? ing : ing.nombre" placeholder="Nombre del ingrediente"
-                         class="ingrediente-input" readonly />
-                  <input type="text" [value]="typeof ing === 'object' ? ing.categoria : ''" placeholder="Categoría (cereal, legumbre, etc.)"
-                         class="ingrediente-input small" readonly />
-                </div>
-
-                <div class="alergenos-selector">
-                  <label style="font-size: 12px; font-weight: 600; color: #666; margin-bottom: 6px; display: block;">
-                    Contiene (puede causar alergias/intolerancias):
-                  </label>
-                  <div class="alergenos-checkboxes">
-                    @for (categoria of alimentoSeleccionadoAlergenos.categorias_alergenos; track categoria) {
-                      <label class="alergeno-checkbox">
-                        <input type="checkbox"
-                               [checked]="estaSeleccionadoAlergeno(ing, categoria)"
-                               (change)="toggleAlergeno(ing, categoria)" />
-                        {{ categoria }}
-                      </label>
-                    }
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-
-        <div class="modal-actions">
-          <button class="btn-secondary" (click)="cerrarFormularioAlergenos()">
-            Cancelar
-          </button>
-          <button class="btn-primary" (click)="guardarAlergenos()">
-            ✓ Verificar y Guardar
-          </button>
-        </div>
-      </div>
-    </div>
+  <!-- Popup de detalle compartido -->
+  @if (alimentoDetalle) {
+    <app-alimento-detalle
+      [alimento]="alimentoDetalle"
+      [editable]="detalleEditable"
+      [alergenosUsuario]="alergenosDelUsuario"
+      (cerrar)="onDetalleCerrar()"
+      (guardado)="onDetalleGuardado()"
+      (eliminado)="onDetalleEliminado()"
+      (mensaje)="onMensajeDetalle($event)">
+    </app-alimento-detalle>
   }
 
-  <!-- Modal: Verificar Ingredientes sin Revisar -->
+  <!-- Modal: Verificación de ingredientes pendientes -->
   @if (mostrarModalVerificarIngredientes && ingredienteActualVerificacion) {
     <div class="modal-overlay" (click)="cerrarModalVerificarIngredientes()">
       <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 600px; max-height: 95vh;">
         <button class="modal-close" (click)="cerrarModalVerificarIngredientes()" style="position: absolute; top: 12px; right: 12px; z-index: 10;">✕</button>
 
         <div class="modal-content" style="padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; max-height: calc(95vh - 40px);">
-          <!-- Indicador de progreso -->
           <div style="display: flex; gap: 8px; align-items: center; font-size: 12px; color: #666;">
             <div style="flex: 1; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;">
               <div style="height: 100%; background: #4CAF50; width: {{ totalIngredientesVerificar > 0 ? (((totalIngredientesVerificar - ingredientesAVerificar.length) / totalIngredientesVerificar) * 100) : 0 }}%; transition: width 0.3s;"></div>
@@ -1125,23 +107,19 @@
             <span>{{ ingredientesAVerificar.length }} ingredient{{ ingredientesAVerificar.length !== 1 ? 'es' : '' }} pendiente{{ ingredientesAVerificar.length !== 1 ? 's' : '' }}</span>
           </div>
 
-          <!-- Nombre del ingrediente (editable) -->
           <div>
             <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Ingrediente</label>
-            <input type="text"
-                   [(ngModel)]="ingredienteActualVerificacion.nombre"
+            <input type="text" [(ngModel)]="ingredienteActualVerificacion.nombre"
                    [style.background]="ingredienteActualVerificacion.es_aditivo ? '#FFF9E6' : 'white'"
                    [style.border]="ingredienteActualVerificacion.es_aditivo ? '2px solid #FFC107' : '1px solid #ddd'"
                    style="width: 100%; padding: 10px 12px; border-radius: 4px; font-size: 13px; box-sizing: border-box; font-weight: 600;"
                    placeholder="Nombre del ingrediente" />
           </div>
 
-          <!-- Alérgenos (dropdown - solo uno) -->
           <div>
             <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Alérgenos/Intolerancias</label>
             @if (alimentoSeleccionadoAlergenos?.categorias_alergenos && alimentoSeleccionadoAlergenos.categorias_alergenos.length > 0) {
-              <select [(ngModel)]="alergenoDelIngrediente"
-                      (change)="asignarAlergeno()"
+              <select [(ngModel)]="alergenoDelIngrediente" (change)="asignarAlergeno()"
                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: white; cursor: pointer;">
                 <option value="">-- Sin alérgeno --</option>
                 @for (alergeno of alimentoSeleccionadoAlergenos.categorias_alergenos; track alergeno) {
@@ -1153,7 +131,6 @@
             }
           </div>
 
-          <!-- Es Aditivo (checkbox) -->
           <div>
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
               <input type="checkbox" [(ngModel)]="ingredienteActualVerificacion.es_aditivo"
@@ -1162,7 +139,6 @@
             </label>
           </div>
 
-          <!-- Notas (editable) -->
           <div>
             <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Notas</label>
             <textarea [(ngModel)]="ingredienteActualVerificacion.notas"
@@ -1170,126 +146,16 @@
                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; min-height: 80px; resize: vertical; font-family: inherit;"></textarea>
           </div>
 
-          <!-- Botones de acción -->
           <div style="display: flex; gap: 10px; margin-top: 8px;">
             <button (click)="cerrarModalVerificarIngredientes()"
-                    style="flex: 1; background: #f0f0f0; color: #333; border: 1px solid #ddd; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">
-              Cancelar
-            </button>
+                    style="flex: 1; background: #f0f0f0; color: #333; border: 1px solid #ddd; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Cancelar</button>
             <button (click)="eliminarIngredienteIncorrecto(ingredienteActualVerificacion)"
-                    style="flex: 1; background: #ff6b6b; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">
-              Eliminar
-            </button>
+                    style="flex: 1; background: #ff6b6b; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Eliminar</button>
             <button (click)="guardarIngredienteVerificado(ingredienteActualVerificacion)"
-                    style="flex: 1; background: #4CAF50; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">
-              Guardar y Siguiente
-            </button>
+                    style="flex: 1; background: #4CAF50; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Guardar y Siguiente</button>
           </div>
         </div>
       </div>
     </div>
   }
-
-  <!-- Modal: Confirmación de Eliminar -->
-  @if (mostrarModalConfirmacionEliminar && alimentoAEliminar) {
-    <div class="modal-overlay" (click)="cerrarConfirmacionEliminar()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>⚠️ Eliminar Producto</h2>
-          <button class="btn-close" (click)="cerrarConfirmacionEliminar()">✕</button>
-        </div>
-
-        <div class="modal-body">
-          <p style="font-size: 14px; color: #666; margin-bottom: 12px;">¿Estás seguro de que deseas eliminar este producto?</p>
-          <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
-            <p style="margin: 0; font-weight: 600; color: #856404;">{{ alimentoAEliminar.nombre }}</p>
-            <p style="margin: 4px 0 0 0; font-size: 12px; color: #856404;">Marca: {{ alimentoAEliminar.marca }}</p>
-          </div>
-          <p style="font-size: 12px; color: #999; margin-top: 16px;">Esta acción no se puede deshacer.</p>
-        </div>
-
-        <div class="modal-actions">
-          <button class="btn-secondary" (click)="cerrarConfirmacionEliminar()" [disabled]="cargandoEliminar">
-            Cancelar
-          </button>
-          <button class="btn-danger" (click)="confirmarEliminar()" [disabled]="cargandoEliminar">
-            @if (cargandoEliminar) {
-              <span class="spinner" style="width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 6px;"></span>
-              Eliminando...
-            } @else {
-              🗑️ Sí, eliminar
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Globo de Información del Ingrediente -->
-  @if (mostrarDetallesIngrediente && ingredienteSeleccionado) {
-    <div class="ingrediente-popover" (click)="cerrarDetallesIngrediente()">
-      <div class="popover-content" (click)="$event.stopPropagation()">
-        <!-- Información básica -->
-        @if (ingredienteSeleccionado.tipo || ingredienteSeleccionado.es_aditivo || ingredienteSeleccionado.notas) {
-          <div class="popover-section">
-            @if (ingredienteSeleccionado.tipo) {
-              <div class="popover-item">
-                <span class="label">Tipo:</span>
-                <span class="valor">{{ ingredienteSeleccionado.tipo }}</span>
-              </div>
-            }
-            @if (ingredienteSeleccionado.es_aditivo) {
-              <div class="popover-item">
-                <span class="label">Categoría:</span>
-                <span class="valor warning">⚠️ Aditivo</span>
-              </div>
-            }
-            @if (ingredienteSeleccionado.notas) {
-              <div class="popover-item full">
-                <span class="label">Notas:</span>
-                <span class="valor">{{ ingredienteSeleccionado.notas }}</span>
-              </div>
-            }
-          </div>
-        }
-
-        <!-- Alergenos -->
-        @if (ingredienteSeleccionado.alergenos && ingredienteSeleccionado.alergenos.length > 0) {
-          <div class="popover-alergenos">
-            <span class="alergenos-titulo">⚠️ Alergenos</span>
-            @for (alergeno of ingredienteSeleccionado.alergenos; track alergeno.id) {
-              <div class="alergeno-badge">
-                {{ alergeno.nombre }}
-                @if (alergeno.es_aditivo) {
-                  <span class="aditivo-badge">A</span>
-                }
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="popover-safe">
-            ✓ Sin alergenos
-          </div>
-        }
-      </div>
-      <!-- Flecha del popover -->
-      <div class="popover-arrow"></div>
-    </div>
-  }
-
-  <!-- Popover: Alergenos del Ingrediente -->
-  @if (mostrarAlergenosPopup && ingredienteMostrandoAlergenos && ingredienteMostrandoAlergenos.alergenos_categorias && ingredienteMostrandoAlergenos.alergenos_categorias.length > 0) {
-    <div class="popover-backdrop" (click)="cerrarAlergenosPopup()">
-      <div class="allergen-popover" (click)="$event.stopPropagation()" [ngStyle]="popoverStyle">
-        <div style="display: flex; flex-direction: column; gap: 0;">
-          @for (alergia of ingredienteMostrandoAlergenos.alergenos_categorias; track alergia) {
-            <div style="padding: 0; margin: 0; border-radius: 0; font-size: 16px;">
-              <span style="color: #856404; font-weight: 500;">{{ alergia }}</span>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-  }
-
 </div>

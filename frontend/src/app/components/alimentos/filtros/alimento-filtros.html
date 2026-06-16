@@ -1,0 +1,17 @@
+<div class="panel-filtros">
+  <div class="search-bar">
+    <input type="text" [ngModel]="termino" (ngModelChange)="onTermino($event)"
+           [placeholder]="placeholder" />
+  </div>
+
+  @if (mostrarCategoria) {
+    <div class="filtro-categoria">
+      <select [ngModel]="categoria" (ngModelChange)="onCategoria($event)">
+        <option value="">🔍 Todas las categorías</option>
+        @for (cat of categorias; track cat) {
+          <option [value]="cat">{{ cat }}</option>
+        }
+      </select>
+    </div>
+  }
+</div>
