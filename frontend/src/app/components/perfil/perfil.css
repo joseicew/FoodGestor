@@ -11,21 +11,6 @@
 /* .spinner, @keyframes spin → global styles.css */
 /* .modal-overlay → global styles.css */
 
-.header-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 3px;
-}
-
-.header-icon {
-  font-size: 1.6rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .fecha { font-size: 13px; color: #999; margin-top: 2px; }
 
 /* ── Perfil info header ── */
@@ -148,25 +133,32 @@
 .caloria-valor  { font-size: 16px; font-weight: 700; color: #2d2d2d; }
 .caloria-ahorro { font-size: 10px; color: #f44336; font-weight: 600; margin-left: 4px; }
 
-/* ── Logout ── */
-.logout-section { display: flex; justify-content: center; padding: 24px 0; margin-top: 20px; }
-
-.btn-logout {
-  padding: 12px 24px;
+/* ── Logout (botón flotante arriba a la derecha) ── */
+.btn-logout-float {
+  position: fixed;
+  top: calc(max(env(safe-area-inset-top), 16px) + 6px);
+  right: 14px;
+  z-index: 900;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
   background: #f44336;
   color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 20px;
+  line-height: 1;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.35);
   transition: all 0.2s;
 }
 
-.btn-logout:hover {
+.btn-logout-float:hover {
   background: #d32f2f;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.45);
 }
 
 /* ── Modal confirmación (local — usa .modal-overlay global) ── */
