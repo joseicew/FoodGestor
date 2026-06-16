@@ -442,39 +442,39 @@
 
 /* Colores de ingredientes */
 .ingrediente-rojo {
-  background: #ffebee;
-  color: #c62828;
-  border-left-color: #d32f2f;
-  font-weight: 600;
+  background: #ffebee !important;
+  color: #c62828 !important;
+  border-left-color: #d32f2f !important;
+  font-weight: 600 !important;
 }
 
 .ingrediente-rojo:hover {
-  background: #ffcdd2;
-  box-shadow: 0 2px 6px rgba(211, 47, 47, 0.2);
+  background: #ffcdd2 !important;
+  box-shadow: 0 2px 6px rgba(211, 47, 47, 0.2) !important;
 }
 
 .ingrediente-naranja {
-  background: #fff3e0;
-  color: #e65100;
-  border-left-color: #ff6f00;
-  font-weight: 500;
+  background: #fff3e0 !important;
+  color: #e65100 !important;
+  border-left-color: #ff6f00 !important;
+  font-weight: 500 !important;
 }
 
 .ingrediente-naranja:hover {
-  background: #ffe0b2;
-  box-shadow: 0 2px 6px rgba(255, 111, 0, 0.2);
+  background: #ffe0b2 !important;
+  box-shadow: 0 2px 6px rgba(255, 111, 0, 0.2) !important;
 }
 
 .ingrediente-amarillo {
-  background: #fff9e6;
-  color: #f57f17;
-  border-left-color: #fbc02d;
-  font-weight: 500;
+  background: #fff9e6 !important;
+  color: #f57f17 !important;
+  border-left-color: #fbc02d !important;
+  font-weight: 500 !important;
 }
 
 .ingrediente-amarillo:hover {
-  background: #fff59d;
-  box-shadow: 0 2px 6px rgba(251, 192, 45, 0.2);
+  background: #fff59d !important;
+  box-shadow: 0 2px 6px rgba(251, 192, 45, 0.2) !important;
 }
 
 /* ── Secciones acordeón ── */
