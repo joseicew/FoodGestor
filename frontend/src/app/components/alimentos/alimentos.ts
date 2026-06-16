@@ -915,11 +915,14 @@ export class Alimentos implements OnInit {
   }
 
   enriquecerIngredientes() {
+    console.log('📦 Enriqueciendo ingredientes...');
     if (!this.alimentoSeleccionadoDetalle.ingredientes || this.alimentoSeleccionadoDetalle.ingredientes.length === 0) {
+      console.log('⚠️ No hay ingredientes para enriquecer');
       return;
     }
 
     const ingredientes = this.alimentoSeleccionadoDetalle.ingredientes;
+    console.log(`📦 Total ingredientes a enriquecer: ${ingredientes.length}`);
     const ingredientesEnriquecidos: any[] = [];
     let procesados = 0;
 
