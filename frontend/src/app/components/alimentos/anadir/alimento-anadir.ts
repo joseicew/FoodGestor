@@ -596,7 +596,7 @@ export class AlimentoAnadir implements OnInit {
   }
 
   private resetearInputsFichero() {
-    document.querySelectorAll<HTMLInputElement>('.panel input[type="file"]').forEach(el => { el.value = ''; });
+    document.querySelectorAll<HTMLInputElement>('.tab-panel input[type="file"]').forEach(el => { el.value = ''; });
   }
 
   private mensajeOcr(e: any): string {

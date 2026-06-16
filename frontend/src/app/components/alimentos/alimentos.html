@@ -15,7 +15,7 @@
 
   <!-- ═══════════════ PANEL BUSCAR ═══════════════ -->
   @if (activePanel === 'buscar') {
-    <div class="panel">
+    <div class="tab-panel">
       <app-alimento-filtros
         [categorias]="categorias"
         [termino]="terminoBusqueda"
@@ -36,7 +36,7 @@
 
   <!-- ═══════════════ PANEL FAVORITOS ═══════════════ -->
   @if (activePanel === 'favoritos') {
-    <div class="panel">
+    <div class="tab-panel">
       <app-alimento-lista
         [alimentos]="obtenerFavoritos()"
         [favoritosFijos]="true"
@@ -49,7 +49,7 @@
 
   <!-- ═══════════════ PANEL ACTUALIZAR ═══════════════ -->
   @if (activePanel === 'actualizar') {
-    <div class="panel">
+    <div class="tab-panel">
       @if (totalIngredientesVerificar > 0) {
         <button class="btn-verificar-ingredientes" (click)="abrirModalVerificarIngredientes()" title="Verificar ingredientes sin revisar">
           <span class="fab-icon">✓</span>

@@ -20,12 +20,13 @@
 
 .mensaje { flex-shrink: 0; z-index: 998; }
 
-.panel {
+.tab-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   padding: 3px 8px 3px 3px;
+  min-height: 0;
 }
 
 /* ── OCR superior ── */
