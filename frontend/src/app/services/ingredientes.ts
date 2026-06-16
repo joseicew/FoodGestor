@@ -1,8 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { AuthService } from './auth';
 import { environment } from '../../environments/environment';
 
 const API = `${environment.apiUrl}/api/ingredientes`;
@@ -11,16 +10,18 @@ const API = `${environment.apiUrl}/api/ingredientes`;
   providedIn: 'root',
 })
 export class IngredientesService {
-  private http = inject(HttpClient);
   private ingredientesSubject = new BehaviorSubject<any[]>([]);
   public ingredientes$ = this.ingredientesSubject.asObservable();
   private ingredientesMap: Map<string, any> = new Map();
   private cargando = false;
 
+  constructor(
+    private http: HttpClient
+  ) {}
+
   private getHeaders(): { headers: HttpHeaders } {
-    // Usar inject de forma perezosa para evitar dependencia circular
-    const authService = inject(AuthService);
-    const token = authService.obtenerToken();
+    // Obtener token del localStorage directamente para evitar dependencia circular
+    const token = localStorage.getItem('auth_token');
     let headers = new HttpHeaders();
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
