@@ -915,14 +915,11 @@ export class Alimentos implements OnInit {
   }
 
   enriquecerIngredientes() {
-    console.log('📦 Enriqueciendo ingredientes...');
     if (!this.alimentoSeleccionadoDetalle.ingredientes || this.alimentoSeleccionadoDetalle.ingredientes.length === 0) {
-      console.log('⚠️ No hay ingredientes para enriquecer');
       return;
     }
 
     const ingredientes = this.alimentoSeleccionadoDetalle.ingredientes;
-    console.log(`📦 Total ingredientes a enriquecer: ${ingredientes.length}`);
     const ingredientesEnriquecidos: any[] = [];
     let procesados = 0;
 
@@ -2101,27 +2098,21 @@ export class Alimentos implements OnInit {
   getColorIngrediente(ingrediente: any): string {
     if (!ingrediente) return '';
 
-    const nombre = typeof ingrediente === 'string' ? ingrediente : ingrediente.nombre;
-
     // ROJO: coincide con alergeno del usuario (intolerancia)
     if (this.tieneAlergeniaIngrediente(ingrediente)) {
-      console.log(`🔴 ${nombre} - tiene alergia del usuario`);
       return 'rojo';
     }
 
     // NARANJA: es un aditivo
     if (ingrediente.es_aditivo) {
-      console.log(`🟠 ${nombre} - es aditivo`);
       return 'naranja';
     }
 
     // AMARILLO: es un posible alergeno (tiene alergenos_categorias pero no del usuario)
     if (ingrediente.alergenos_categorias && ingrediente.alergenos_categorias.length > 0) {
-      console.log(`🟡 ${nombre} - posible alergeno`);
       return 'amarillo';
     }
 
-    console.log(`⚪ ${nombre} - sin alergenos`);
     return '';
   }
 }
