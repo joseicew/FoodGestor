@@ -1077,55 +1077,76 @@ export class Alimentos implements OnInit {
   }
 
   actualizarIngredientesPendientes() {
-    this.ingredientesAVerificar = this.obtenerIngredientesSinVerificar();
-    this.totalIngredientesVerificar = this.ingredientesAVerificar.length;
-    this.cdr.detectChanges();
+    // Cargar ingredientes sin verificar desde el API
+    this.alimentosService.obtenerIngredientesSinVerificar().subscribe({
+      next: (ingredientes) => {
+        this.ingredientesAVerificar = ingredientes || [];
+        this.totalIngredientesVerificar = this.ingredientesAVerificar.length;
+        console.log(`Ingredientes sin verificar cargados: ${this.ingredientesAVerificar.length}`);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al obtener ingredientes sin verificar:', err);
+        this.ingredientesAVerificar = [];
+        this.totalIngredientesVerificar = 0;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   abrirModalVerificarIngredientes() {
     console.log('Abriendo modal verificacion de ingredientes...');
-    this.actualizarIngredientesPendientes();
-    console.log(`Ingredientes sin verificar: ${this.ingredientesAVerificar.length}`);
+    this.alimentosService.obtenerIngredientesSinVerificar().subscribe({
+      next: (ingredientes) => {
+        this.ingredientesAVerificar = ingredientes || [];
+        this.totalIngredientesVerificar = this.ingredientesAVerificar.length;
+        console.log(`Ingredientes sin verificar: ${this.ingredientesAVerificar.length}`);
 
-    if (this.ingredientesAVerificar.length > 0) {
-      const ingrediente = { ...this.ingredientesAVerificar[0] };
-      console.log('Primer ingrediente:', ingrediente);
+        if (this.ingredientesAVerificar.length > 0) {
+          const ingrediente = { ...this.ingredientesAVerificar[0] };
+          console.log('Primer ingrediente:', ingrediente);
 
-      // Parsear alergenos_categorias si es un string JSON
-      if (typeof ingrediente.alergenos_categorias === 'string') {
-        try {
-          ingrediente.alergenos_categorias = JSON.parse(ingrediente.alergenos_categorias);
-        } catch (e) {
-          ingrediente.alergenos_categorias = [];
+          // Parsear alergenos_categorias si es un string JSON
+          if (typeof ingrediente.alergenos_categorias === 'string') {
+            try {
+              ingrediente.alergenos_categorias = JSON.parse(ingrediente.alergenos_categorias);
+            } catch (e) {
+              ingrediente.alergenos_categorias = [];
+            }
+          }
+
+          this.ingredienteActualVerificacion = ingrediente;
+
+          // Inicializar alérgeno del ingrediente (si tiene uno)
+          this.alergenoDelIngrediente = ingrediente.alergenos_categorias && ingrediente.alergenos_categorias.length > 0
+            ? ingrediente.alergenos_categorias[0]
+            : '';
+
+          // Cargar alérgenos del caché inmediatamente
+          const alergenosEnCache = this.allergensService.obtenerAlergenosSync();
+          this.alimentoSeleccionadoAlergenos = {
+            ...ingrediente,
+            categorias_alergenos: alergenosEnCache.length > 0 ? alergenosEnCache : []
+          };
+
+          // Si no hay alérgenos en caché, cargar de forma asincrónica
+          if (alergenosEnCache.length === 0) {
+            this.cargarCategoriasAlergenos();
+          }
+
+          this.mostrarModalVerificarIngredientes = true;
+          console.log('Modal abierto');
+          this.cdr.markForCheck();
+        } else {
+          console.warn('No hay ingredientes para verificar');
+          this.mostrarMensaje('No hay ingredientes para verificar', 'exito');
         }
+      },
+      error: (err) => {
+        console.error('Error al cargar ingredientes:', err);
+        this.mostrarMensaje('Error al cargar ingredientes pendientes', 'error');
       }
-
-      this.ingredienteActualVerificacion = ingrediente;
-
-      // Inicializar alérgeno del ingrediente (si tiene uno)
-      this.alergenoDelIngrediente = ingrediente.alergenos_categorias && ingrediente.alergenos_categorias.length > 0
-        ? ingrediente.alergenos_categorias[0]
-        : '';
-
-      // Cargar alérgenos del caché inmediatamente
-      const alergenosEnCache = this.allergensService.obtenerAlergenosSync();
-      this.alimentoSeleccionadoAlergenos = {
-        ...ingrediente,
-        categorias_alergenos: alergenosEnCache.length > 0 ? alergenosEnCache : []
-      };
-
-      // Si no hay alérgenos en caché, cargar de forma asincrónica
-      if (alergenosEnCache.length === 0) {
-        this.cargarCategoriasAlergenos();
-      }
-
-      this.mostrarModalVerificarIngredientes = true;
-      console.log('Modal abierto');
-      this.cdr.markForCheck();
-    } else {
-      console.warn('No hay ingredientes para verificar');
-      this.mostrarMensaje('No hay ingredientes para verificar', 'exito');
-    }
+    });
   }
 
   cerrarModalVerificarIngredientes() {
