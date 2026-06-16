@@ -21,10 +21,10 @@ html, body {
   line-height: 1.5;
 }
 
-/* Safe area for iPhone notch */
-html {
-  padding-top: max(env(safe-area-inset-top), 16px);
-}
+/* Safe area for iPhone notch:
+   se aplica en .app-container (height:100dvh, border-box) para que el
+   padding quede DENTRO del alto del viewport y no provoque scroll de página.
+   Antes estaba en `html`, que al sumarse a height:100%/100dvh desbordaba ~16px. */
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {

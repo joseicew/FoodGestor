@@ -8,6 +8,8 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
+  /* Safe area del notch: dentro de los 100dvh (border-box) para no desbordar. */
+  padding-top: max(env(safe-area-inset-top), 16px);
   max-width: 480px;
   margin: 0 auto;
   background: var(--bg-surface);
