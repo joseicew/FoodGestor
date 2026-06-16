@@ -1,9 +1,6 @@
 .perfil-container {
   padding: 0px;
   padding-bottom: 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
 /* .header h1 → global styles.css */
@@ -53,10 +50,13 @@
   border: 3px solid #e8e8e8;
   border-radius: 16px;
   padding: 10px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+
+.coming-soon-card { margin-bottom: 10px; }
 
 .info-section h2 { margin: 0 0 4px 0; font-size: 1.2rem; color: #2d2d2d; }
 .email { color: #999; font-size: 13px; margin: 0; }
@@ -132,34 +132,6 @@
 .caloria-label  { font-size: 12px; color: #666; font-weight: 500; }
 .caloria-valor  { font-size: 16px; font-weight: 700; color: #2d2d2d; }
 .caloria-ahorro { font-size: 10px; color: #f44336; font-weight: 600; margin-left: 4px; }
-
-/* ── Logout (botón flotante arriba a la derecha) ── */
-.btn-logout-float {
-  position: fixed;
-  top: calc(max(env(safe-area-inset-top), 16px) + 6px);
-  right: 14px;
-  z-index: 900;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: #f44336;
-  color: #fff;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.35);
-  transition: all 0.2s;
-}
-
-.btn-logout-float:hover {
-  background: #d32f2f;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.45);
-}
 
 /* ── Modal confirmación (local — usa .modal-overlay global) ── */
 .modal-content {

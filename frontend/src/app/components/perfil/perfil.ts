@@ -20,7 +20,6 @@ export class Perfil implements OnInit {
   cargando: boolean = false;
   mensaje: string = '';
   mensajeTipo: 'error' | 'exito' = 'error';
-  confirmarLogout: boolean = false;
 
   // Datos en edición
   nombreCompleto: string = '';
@@ -388,20 +387,6 @@ export class Perfil implements OnInit {
         this.mostrarMensaje(mensaje, 'error');
       }
     });
-  }
-
-  logout(): void {
-    this.confirmarLogout = false;
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-
-  abrirConfirmacionLogout(): void {
-    this.confirmarLogout = true;
-  }
-
-  cerrarConfirmacionLogout(): void {
-    this.confirmarLogout = false;
   }
 
   obtenerDiasSemana(nivel_actividad: string): string {

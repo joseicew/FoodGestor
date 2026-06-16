@@ -3,7 +3,6 @@
     <div class="header">
       <h1>👤 {{ usuario.nombre_completo }}</h1>
     </div>
-    <button class="btn-logout-float" (click)="abrirConfirmacionLogout()" title="Cerrar sesión">🚪</button>
   }
 
   @if (mensaje) {
@@ -124,19 +123,6 @@
     <div class="coming-soon-card">
       <p>🚧 Historial y estadísticas próximamente</p>
     </div>
-
-    @if (confirmarLogout) {
-      <div class="modal-overlay" (click)="cerrarConfirmacionLogout()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <h3>¿Cerrar sesión?</h3>
-          <p>¿Estás seguro de que quieres cerrar sesión?</p>
-          <div class="modal-actions">
-            <button class="btn-confirm" (click)="logout()">✓ Sí, cerrar sesión</button>
-            <button class="btn-cancel" (click)="cerrarConfirmacionLogout()">✕ Cancelar</button>
-          </div>
-        </div>
-      </div>
-    }
   } @else {
     <!-- VISTA DE EDICIÓN -->
     <div class="perfil-edicion-card">
