@@ -920,52 +920,44 @@ export class Alimentos implements OnInit {
     }
 
     const ingredientes = this.alimentoSeleccionadoDetalle.ingredientes;
-    const ingredientesEnriquecidos: any[] = [];
-    let procesados = 0;
 
-    ingredientes.forEach((ing: any) => {
+    // Crear promises para cada ingrediente
+    const promesas = ingredientes.map((ing: any) => {
       const nombre = typeof ing === 'string' ? ing : ing.nombre;
 
-      // Si ya es un objeto con propiedades, lo usamos directamente
+      // Si ya es un objeto con propiedades, retornar directamente
       if (typeof ing === 'object' && ing.es_aditivo !== undefined && ing.alergenos_categorias !== undefined) {
-        ingredientesEnriquecidos.push(ing);
-        procesados++;
-        return;
+        return Promise.resolve(ing);
       }
 
-      // Si es un string, cargamos desde el API
-      this.alimentosService.obtenerIngrediente(nombre).subscribe({
-        next: (ingrediente) => {
+      // Si es un string, cargar desde el API
+      return this.alimentosService.obtenerIngrediente(nombre).toPromise().then(
+        (ingrediente) => {
           if (ingrediente) {
-            ingredientesEnriquecidos.push(ingrediente);
-          } else {
-            // Si no existe en BD, crear objeto con solo el nombre
-            ingredientesEnriquecidos.push({
-              nombre: nombre,
-              es_aditivo: false,
-              alergenos_categorias: []
-            });
+            return ingrediente;
           }
-          procesados++;
-          if (procesados === ingredientes.length) {
-            this.alimentoSeleccionadoDetalle.ingredientes = ingredientesEnriquecidos;
-            this.cdr.detectChanges();
-          }
-        },
-        error: () => {
-          // En caso de error, crear objeto con solo el nombre
-          ingredientesEnriquecidos.push({
+          // Si no existe en BD, crear objeto con solo el nombre
+          return {
             nombre: nombre,
             es_aditivo: false,
             alergenos_categorias: []
-          });
-          procesados++;
-          if (procesados === ingredientes.length) {
-            this.alimentoSeleccionadoDetalle.ingredientes = ingredientesEnriquecidos;
-            this.cdr.detectChanges();
-          }
+          };
+        },
+        () => {
+          // En caso de error, crear objeto con solo el nombre
+          return {
+            nombre: nombre,
+            es_aditivo: false,
+            alergenos_categorias: []
+          };
         }
-      });
+      );
+    });
+
+    // Esperar a que todos se carguen
+    Promise.all(promesas).then((ingredientesEnriquecidos) => {
+      this.alimentoSeleccionadoDetalle.ingredientes = ingredientesEnriquecidos;
+      this.cdr.detectChanges();
     });
   }
 
