@@ -2036,4 +2036,25 @@ export class Alimentos implements OnInit {
       this.alergenosDelUsuario.includes(alergeno)
     );
   }
+
+  getColorIngrediente(ingrediente: any): string {
+    if (!ingrediente) return '';
+
+    // ROJO: coincide con alergeno del usuario (intolerancia)
+    if (this.tieneAlergeniaIngrediente(ingrediente)) {
+      return 'rojo';
+    }
+
+    // NARANJA: es un aditivo
+    if (ingrediente.es_aditivo) {
+      return 'naranja';
+    }
+
+    // AMARILLO: es un posible alergeno (tiene alergenos_categorias pero no del usuario)
+    if (ingrediente.alergenos_categorias && ingrediente.alergenos_categorias.length > 0) {
+      return 'amarillo';
+    }
+
+    return '';
+  }
 }

@@ -168,8 +168,8 @@
               <div class="ingredientes-wrapper">
                 @for (ing of alimentoSeleccionadoDetalle.ingredientes; track $index) {
                   <button class="ingrediente-item"
-                          [class.con-alergenos]="tieneAlergeniaIngrediente(ing) || (ing.alergenos_categorias && ing.alergenos_categorias.length > 0)"
-                          (click)="ing.alergenos_categorias && ing.alergenos_categorias.length > 0 ? mostrarAlergenosIngrediente(ing, $event) : abrirDetallesIngrediente(ing)">
+                          [ngClass]="'ingrediente-' + getColorIngrediente(ing)"
+                          (click)="mostrarAlergenosIngrediente(ing, $event)">
                     {{ typeof ing === 'string' ? ing : ing.nombre }}
                   </button>
                 }
