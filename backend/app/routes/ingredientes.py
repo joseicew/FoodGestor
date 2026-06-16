@@ -25,7 +25,7 @@ def obtener_ingredientes():
 
         if verificado is not None:
             verificado_bool = verificado.lower() == 'true'
-            query = query.filter_by(verificado=verificado_bool)
+            query = query.filter(Ingrediente.verificado == verificado_bool)
 
         ingredientes = query.order_by(Ingrediente.nombre).all()
 
