@@ -1,32 +1,11 @@
 <div class="perfil-container">
-  <!-- Botón cerrar sesión (fijo arriba a la derecha, solo visible en Perfil) -->
-  <button class="btn-logout-float" (click)="abrirConfirmacionLogout()" title="Cerrar sesión">🚪</button>
-
   @if (!editando) {
     <div class="header">
       <h1>👤 {{ usuario.nombre_completo }}</h1>
     </div>
   }
 
-  <!-- Modal de confirmación de logout -->
-  @if (confirmarLogout) {
-    <div class="modal-overlay" (click)="cerrarConfirmacionLogout()">
-      <div class="logout-modal" (click)="$event.stopPropagation()">
-        <h3>¿Cerrar sesión?</h3>
-        <p>¿Estás seguro de que quieres cerrar sesión?</p>
-        <div class="logout-modal-actions">
-          <button class="btn-cancel" (click)="cerrarConfirmacionLogout()">Cancelar</button>
-          <button class="btn-confirm" (click)="logout()">🚪 Sí, salir</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  @if (mensaje) {
-    <div class="mensaje" [class.error]="mensajeTipo === 'error'">
-      {{ mensaje }}
-    </div>
-  }
+  <app-mensaje-flash />
 
   @if (!editando) {
     <!-- VISTA NORMAL -->
@@ -238,6 +217,54 @@
                 />
                 <label [for]="'alergeno-' + alergeno">{{ alergeno }}</label>
               </div>
+            }
+          </div>
+        </div>
+
+        <!-- INGREDIENTES NO DESEADOS -->
+        <div class="form-section">
+          <h3>🚫 Ingredientes No Deseados</h3>
+          <p class="form-hint">Busca ingredientes que quieras evitar. Los alimentos que los contengan se marcarán.</p>
+
+          <!-- Tags de ingredientes ya seleccionados -->
+          @if (ingredientes_no_deseados.length > 0) {
+            <div class="ing-tags">
+              @for (id of ingredientes_no_deseados; track id) {
+                <span class="ing-tag">
+                  {{ nombreIngrediente(id) }}
+                  <button type="button" class="ing-tag-remove" (click)="quitarIngNoDeseado(id)" [disabled]="cargando">✕</button>
+                </span>
+              }
+            </div>
+          }
+
+          <!-- Buscador -->
+          <div class="ing-buscador">
+            <input
+              type="text"
+              class="ing-search-input"
+              [(ngModel)]="busquedaIngNoDeseado"
+              name="busquedaIngNoDeseado"
+              placeholder="Buscar ingrediente..."
+              [disabled]="cargando"
+              autocomplete="off"
+            />
+
+            @if (ingredientesFiltrados.length > 0) {
+              <div class="ing-resultados">
+                @for (ing of ingredientesFiltrados; track ing.id) {
+                  <button type="button" class="ing-resultado-item" (click)="agregarIngNoDeseado(ing)">
+                    {{ ing.nombre }}
+                    @if (ing.categoria) {
+                      <span class="ing-categoria">{{ ing.categoria }}</span>
+                    }
+                  </button>
+                }
+              </div>
+            }
+
+            @if (busquedaIngNoDeseado.trim().length >= 2 && ingredientesFiltrados.length === 0) {
+              <p class="ing-sin-resultados">Sin resultados para "{{ busquedaIngNoDeseado }}"</p>
             }
           </div>
         </div>

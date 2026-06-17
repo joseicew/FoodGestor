@@ -3,9 +3,7 @@
     <h1>🍽️ Raciones</h1>
   </div>
 
-  @if (mensaje) {
-    <div class="mensaje" [class.error]="mensajeTipo === 'error'">{{ mensaje }}</div>
-  }
+  <app-mensaje-flash />
 
   <!-- ═══════════════ PANEL LISTA ═══════════════ -->
   @if (activePanel === 'lista') {
@@ -86,9 +84,18 @@
 
       <!-- Sección de Alimentos -->
       <div class="alimentos-section">
-        <h3>Alimentos ({{ racionSeleccionada.alimentos.length }})</h3>
+        <!-- Añadir alimento (arriba) -->
+        <h3>Añadir alimento</h3>
+        <app-busqueda-alimento
+          [alimentos]="alimentos"
+          [excluirIds]="alimentosEnRacionIds"
+          (seleccionar)="seleccionarAlimentoParaAgregar($event)">
+        </app-busqueda-alimento>
 
-        <!-- Lista de alimentos añadidos -->
+        <hr class="seccion-divider" />
+
+        <!-- Lista de alimentos añadidos (abajo) -->
+        <h3>Alimentos ({{ racionSeleccionada.alimentos.length }})</h3>
         @if (racionSeleccionada.alimentos.length > 0) {
           <div class="alimentos-agregados">
             @for (alimento of racionSeleccionada.alimentos; track alimento.id) {
@@ -114,16 +121,6 @@
         } @else {
           <p class="empty-state-small">Añade alimentos para comenzar</p>
         }
-
-        <hr class="seccion-divider" />
-
-        <!-- Añadir alimento -->
-        <h3>Añadir alimento</h3>
-        <app-busqueda-alimento
-          [alimentos]="alimentos"
-          [excluirIds]="alimentosEnRacionIds"
-          (seleccionar)="seleccionarAlimentoParaAgregar($event)">
-        </app-busqueda-alimento>
 
         <hr class="seccion-divider" />
       </div>

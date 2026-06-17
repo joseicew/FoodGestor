@@ -1,7 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MensajeFlash } from '../../shared/mensaje-flash/mensaje-flash';
 import { AlimentosService } from '../../../services/alimentos';
 import { IngredientesService } from '../../../services/ingredientes';
 import { AiVisionService } from '../../../services/ai-vision';
@@ -13,18 +14,17 @@ type OcrEstado = 'idle' | 'preparando' | 'analizando' | 'listo' | 'error';
 @Component({
   selector: 'app-alimento-anadir',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MensajeFlash],
   templateUrl: './alimento-anadir.html',
   styleUrl: './alimento-anadir.css',
 })
 export class AlimentoAnadir implements OnInit {
+  @ViewChild(MensajeFlash) flash!: MensajeFlash;
   readonly categorias = CATEGORIAS;
   readonly unidadesComunes = UNIDADES_COMUNES;
 
   alimentos: any[] = [];
 
-  mensaje = '';
-  mensajeTipo: 'exito' | 'error' = 'exito';
   cargando = false;
   intentoGuardar = false;
 
@@ -120,7 +120,7 @@ export class AlimentoAnadir implements OnInit {
       const tieneCodigoBarras = datos.codigo_barras;
 
       if (!tieneNombre && !tieneMarca && !tieneCategoria && !tieneIngredientes && !tieneMacros && !tieneCodigoBarras) {
-        this.mostrarMensaje('Error: No se detectó información del producto', 'error');
+        this.flash.mostrar('Error: No se detectó información del producto', 'error');
         return;
       }
 
@@ -153,7 +153,7 @@ export class AlimentoAnadir implements OnInit {
       if (datos.nombre_unidad) this.nuevoAlimento.nombre_unidad = datos.nombre_unidad;
       this.cdr.detectChanges();
     } catch (error) {
-      this.mostrarMensaje('Error al procesar imagen: ' + this.mensajeOcr(error), 'error');
+      this.flash.mostrar('Error al procesar imagen: ' + this.mensajeOcr(error), 'error');
     } finally {
       this.cargandoOCR = false;
       this.cdr.detectChanges();
@@ -189,7 +189,7 @@ export class AlimentoAnadir implements OnInit {
       this.ocrIngredientesEstado = 'listo';
     } catch (e: any) {
       this.ocrIngredientesEstado = 'error';
-      this.mostrarMensaje('Error OCR ingredientes: ' + this.mensajeOcr(e), 'error');
+      this.flash.mostrar('Error OCR ingredientes: ' + this.mensajeOcr(e), 'error');
     } finally {
       this.cdr.detectChanges();
     }
@@ -222,7 +222,7 @@ export class AlimentoAnadir implements OnInit {
       setTimeout(() => { this.codigoRellenado = false; this.cdr.detectChanges(); }, 3000);
     } catch (e: any) {
       this.ocrCodigoEstado = 'error';
-      this.mostrarMensaje('Error al leer el código: ' + this.mensajeOcr(e), 'error');
+      this.flash.mostrar('Error al leer el código: ' + this.mensajeOcr(e), 'error');
     } finally {
       this.cdr.detectChanges();
     }
@@ -270,7 +270,7 @@ export class AlimentoAnadir implements OnInit {
       setTimeout(() => { this.macrosRellenados = false; this.cdr.detectChanges(); }, 3000);
     } catch (e: any) {
       this.ocrMacrosEstado = 'error';
-      this.mostrarMensaje('Error OCR macros: ' + this.mensajeOcr(e), 'error');
+      this.flash.mostrar('Error OCR macros: ' + this.mensajeOcr(e), 'error');
     } finally {
       this.cdr.detectChanges();
     }
@@ -331,7 +331,7 @@ export class AlimentoAnadir implements OnInit {
       if (!this.nuevoAlimento.marca.trim()) { falta.push('marca'); this.marcaFaltante = true; }
       if (this.nuevoAlimento.calorias <= 0) falta.push('calorías');
       if (!this.nuevoAlimento.categoria) falta.push('categoría');
-      this.mostrarMensaje(`Completa los campos obligatorios: ${falta.join(', ')}`, 'error');
+      this.flash.mostrar(`Completa los campos obligatorios: ${falta.join(', ')}`, 'error');
       this.cdr.detectChanges();
       setTimeout(() => {
         const primerCampoError = document.querySelector('.campo-error');
@@ -386,7 +386,7 @@ export class AlimentoAnadir implements OnInit {
         this.verificarSimilares();
       },
       error: () => {
-        this.mostrarMensaje('Error al verificar duplicados', 'error');
+        this.flash.mostrar('Error al verificar duplicados', 'error');
         this.cargando = false;
         this.cdr.detectChanges();
       }
@@ -452,39 +452,39 @@ export class AlimentoAnadir implements OnInit {
           this.alimentosService.toggleFavorito(this.alimentoDuplicado.id).subscribe({
             next: (res) => {
               this.alimentoDuplicado.favorito = res.alimento.favorito;
-              this.mostrarMensaje('✅ EAN actualizado y agregado a favoritos', 'exito');
+              this.flash.mostrar('✅ EAN actualizado y agregado a favoritos', 'exito');
               this.cerrarModalDuplicado();
               this.cargando = false;
               this.cdr.detectChanges();
             },
-            error: () => { this.mostrarMensaje('Error al actualizar favorito', 'error'); this.cargando = false; this.cdr.detectChanges(); }
+            error: () => { this.flash.mostrar('Error al actualizar favorito', 'error'); this.cargando = false; this.cdr.detectChanges(); }
           });
         },
-        error: () => { this.mostrarMensaje('Error al actualizar EAN', 'error'); this.cargando = false; this.cdr.detectChanges(); }
+        error: () => { this.flash.mostrar('Error al actualizar EAN', 'error'); this.cargando = false; this.cdr.detectChanges(); }
       });
     } else {
       this.alimentosService.toggleFavorito(this.alimentoDuplicado.id).subscribe({
         next: (res) => {
           this.alimentoDuplicado.favorito = res.alimento.favorito;
-          this.mostrarMensaje(this.alimentoDuplicado.favorito ? '⭐ Agregado a favoritos' : '☆ Removido de favoritos', 'exito');
+          this.flash.mostrar(this.alimentoDuplicado.favorito ? '⭐ Agregado a favoritos' : '☆ Removido de favoritos', 'exito');
           this.cerrarModalDuplicado();
           this.cargando = false;
           this.cdr.detectChanges();
         },
-        error: () => { this.mostrarMensaje('Error al actualizar favorito', 'error'); this.cargando = false; this.cdr.detectChanges(); }
+        error: () => { this.flash.mostrar('Error al actualizar favorito', 'error'); this.cargando = false; this.cdr.detectChanges(); }
       });
     }
   }
 
   actualizarCodigoDelDuplicado() {
     if (!this.alimentoDuplicado || !this.codigoBarrasNuevo) {
-      this.mostrarMensaje('Error: faltan datos para actualizar', 'error');
+      this.flash.mostrar('Error: faltan datos para actualizar', 'error');
       return;
     }
     this.cargando = true;
     this.alimentosService.actualizarCodigoBarras(this.alimentoDuplicado.id, this.codigoBarrasNuevo).subscribe({
       next: () => {
-        this.mostrarMensaje('✅ Código de barras actualizado correctamente', 'exito');
+        this.flash.mostrar('✅ Código de barras actualizado correctamente', 'exito');
         this.alimentoDuplicado = null;
         this.codigoBarrasNuevo = null;
         this.mostrarModalDuplicado = false;
@@ -493,7 +493,7 @@ export class AlimentoAnadir implements OnInit {
       },
       error: (err) => {
         const errorMsg = err.error?.error || err.error?.mensaje || err.statusText || 'Error desconocido';
-        this.mostrarMensaje('❌ Error al actualizar código: ' + errorMsg, 'error');
+        this.flash.mostrar('❌ Error al actualizar código: ' + errorMsg, 'error');
         this.cargando = false;
         this.cdr.detectChanges();
       }
@@ -525,13 +525,13 @@ export class AlimentoAnadir implements OnInit {
           const existente = err.error?.producto_existente ?? 'producto existente';
           if (err.error?.tipo_duplicado === 'nombre') {
             this.nombreDuplicado = existente;
-            this.mostrarMensaje(`Ya existe un alimento con ese nombre: "${existente}"`, 'error');
+            this.flash.mostrar(`Ya existe un alimento con ese nombre: "${existente}"`, 'error');
           } else {
             this.codigoDuplicado = existente;
-            this.mostrarMensaje(`Código duplicado — ya existe: "${existente}"`, 'error');
+            this.flash.mostrar(`Código duplicado — ya existe: "${existente}"`, 'error');
           }
         } else {
-          this.mostrarMensaje('Error al crear el alimento', 'error');
+          this.flash.mostrar('Error al crear el alimento', 'error');
         }
         this.cargando = false;
         this.cdr.detectChanges();
@@ -604,9 +604,4 @@ export class AlimentoAnadir implements OnInit {
     return e?.error?.error ?? e?.error?.message ?? e?.message ?? `Error ${e?.status ?? ''}`.trim();
   }
 
-  mostrarMensaje(texto: string, tipo: 'exito' | 'error') {
-    this.mensaje = texto;
-    this.mensajeTipo = tipo;
-    setTimeout(() => this.mensaje = '', 4000);
-  }
 }

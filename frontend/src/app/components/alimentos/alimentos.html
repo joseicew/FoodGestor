@@ -9,9 +9,7 @@
     <button class="tab" [class.active]="activePanel === 'actualizar'" (click)="cambiarPanel('actualizar')">🔄 Actualizar</button>
   </div>
 
-  @if (mensaje) {
-    <div class="mensaje" [class.error]="mensajeTipo === 'error'">{{ mensaje }}</div>
-  }
+  <app-mensaje-flash />
 
   <!-- ═══════════════ PANEL BUSCAR ═══════════════ -->
   @if (activePanel === 'buscar') {

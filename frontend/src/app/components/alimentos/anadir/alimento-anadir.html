@@ -4,9 +4,7 @@
     <h1>➕ Añadir alimento</h1>
   </div>
 
-  @if (mensaje) {
-    <div class="mensaje" [class.error]="mensajeTipo === 'error'">{{ mensaje }}</div>
-  }
+  <app-mensaje-flash />
 
   <div class="tab-panel">
     <div class="ocr-top-section">

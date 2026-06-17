@@ -11,22 +11,22 @@ import { AuthService } from '../../services/auth';
 import { Chart, registerables } from 'chart.js';
 import { ModalCantidadAlimentoComponent } from '../shared/modal-cantidad-alimento/modal-cantidad-alimento';
 import { BusquedaAlimentoComponent } from '../shared/busqueda-alimento/busqueda-alimento';
+import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-raciones',
-  imports: [CommonModule, FormsModule, ModalCantidadAlimentoComponent, BusquedaAlimentoComponent],
+  imports: [CommonModule, FormsModule, ModalCantidadAlimentoComponent, BusquedaAlimentoComponent, MensajeFlash],
   templateUrl: './raciones.html',
   styleUrl: './raciones.css',
 })
 export class Raciones implements OnInit, AfterViewInit {
   @ViewChild('macrosChart') macrosChartRef?: ElementRef;
+  @ViewChild(MensajeFlash) flash!: MensajeFlash;
 
   private macrosChart: Chart | null = null;
   private cantidadTimeout: any = null;
-  private mensajeTimer: any = null;
-
   raciones: any[] = [];
   alimentos: any[] = [];
 
@@ -40,8 +40,6 @@ export class Raciones implements OnInit, AfterViewInit {
   cargando = false;
   cargandoRaciones = true;
   cargandoOperacion = false;
-  mensaje = '';
-  mensajeTipo: 'exito' | 'error' = 'exito';
 
   // Modal para elegir cantidad al agregar alimento
   alimentoParaAgregar: any = null;
@@ -84,17 +82,29 @@ export class Raciones implements OnInit, AfterViewInit {
   errorRed = false;
 
   cargarRaciones() {
-    this.cargandoRaciones = true;
     this.errorRed = false;
+
+    // Mostrar caché inmediatamente si existe (sin spinner)
+    const cachedRaciones = this.cacheService.obtenerRaciones();
+    if (cachedRaciones.length > 0) {
+      this.raciones = cachedRaciones;
+      this.cargandoRaciones = false;
+      this.cdr.detectChanges();
+    }
+
+    // Refrescar desde servidor en background
     this.racionesService.obtenerRaciones().subscribe({
       next: (data) => {
-        this.raciones = data || [];
         this.cargandoRaciones = false;
-        this.cdr.detectChanges();
+        if (this.cacheService.hanCambiadoRaciones(data || [])) {
+          this.raciones = data || [];
+          this.cacheService.guardarRaciones(data || []);
+          this.cdr.detectChanges();
+        }
       },
       error: (error) => {
         this.cargandoRaciones = false;
-        if (error.status === 0) {
+        if (error.status === 0 && this.raciones.length === 0) {
           this.errorRed = true;
         }
         this.cdr.detectChanges();
@@ -103,15 +113,27 @@ export class Raciones implements OnInit, AfterViewInit {
   }
 
   cargarAlimentos() {
+    // Mostrar caché inmediatamente si existe
+    const cachedAlimentos = this.cacheService.obtenerAlimentos();
+    if (cachedAlimentos.length > 0) {
+      this.alimentos = cachedAlimentos;
+      this.cdr.detectChanges();
+    }
+
+    // Refrescar desde servidor en background
     this.alimentosService.obtenerAlimentos().subscribe({
       next: (data) => {
-        this.alimentos = data || [];
-        this.cdr.detectChanges();
+        if (this.cacheService.hanCambiadoAlimentos(data || [])) {
+          this.alimentos = data || [];
+          this.cacheService.guardarAlimentos(data || []);
+          this.cdr.detectChanges();
+        }
       },
       error: (error) => {
-        console.log('Sin alimentos:', error.status);
-        this.alimentos = [];
-        this.cdr.detectChanges();
+        if (this.alimentos.length === 0) {
+          console.log('Sin alimentos:', error.status);
+          this.alimentos = [];
+        }
       }
     });
   }
@@ -131,7 +153,7 @@ export class Raciones implements OnInit, AfterViewInit {
   crearRacion() {
     const nombre = this.nuevoRacionNombre.trim();
     if (!nombre) {
-      this.mostrarMensaje('El nombre del ración es obligatorio', 'error');
+      this.flash.mostrar('El nombre del ración es obligatorio', 'error');
       return;
     }
 
@@ -180,14 +202,14 @@ export class Raciones implements OnInit, AfterViewInit {
 
         setTimeout(() => {
           this.activePanel = 'editar';
-          this.mostrarMensaje(`✅ "${nombre}" creado`, 'exito');
+          this.flash.mostrar(`✅ "${nombre}" creado`, 'exito');
           this.crearGrafica();
           this.cdr.detectChanges();
         }, 300);
       },
       error: (err) => {
         const msg = err.error?.error || 'Error al crear ración';
-        this.mostrarMensaje(`❌ ${msg}. Reintentando...`, 'error');
+        this.flash.mostrar(`❌ ${msg}. Reintentando...`, 'error');
         this.cargando = false;
       }
     });
@@ -221,35 +243,42 @@ export class Raciones implements OnInit, AfterViewInit {
   onConfirmarCantidad(gramos: number) {
     if (!this.racionSeleccionada || !this.alimentoParaAgregar) return;
 
-    this.cargandoOperacion = true;
-    this.cdr.detectChanges();
-
     const alimento = this.alimentoParaAgregar;
+    const racionId = this.racionSeleccionada.id;
 
-    this.racionesService.agregarAlimento(this.racionSeleccionada.id, alimento.id, gramos).subscribe({
-      next: (res) => {
-        this.racionSeleccionada = res.racion;
+    // Actualización visual instantánea: añadir alimento a la lista local
+    this.racionSeleccionada.alimentos.push({ ...alimento, cantidad: gramos });
+    this.onCancelarCantidad();
+    this.cdr.detectChanges();
+    setTimeout(() => this.crearGrafica(), 100);
 
-        const indexEnLista = this.raciones.findIndex(r => r.id === this.racionSeleccionada.id);
-        if (indexEnLista >= 0) {
-          this.raciones[indexEnLista] = { ...this.racionSeleccionada };
+    this.optimisticUpdateService.encolar({
+      accion: () => this.racionesService.agregarAlimento(racionId, alimento.id, gramos),
+      enExito: (res) => {
+        // Reemplazar con datos reales del servidor (totales actualizados)
+        const racion = res.racion;
+        const idx = this.raciones.findIndex(r => r.id === racion.id);
+        if (idx >= 0) this.raciones[idx] = { ...racion };
+        if (this.racionSeleccionada?.id === racion.id) {
+          this.racionSeleccionada = { ...racion };
         }
-
-        this.mostrarMensaje(`${alimento.nombre} agregado`, 'exito');
-        this.cargandoOperacion = false;
-        this.onCancelarCantidad();
+        this.flash.mostrar(`${alimento.nombre} agregado`, 'exito');
         this.cdr.detectChanges();
-
         setTimeout(() => this.crearGrafica(), 100);
       },
-      error: (err) => {
+      enError: (err) => {
+        // Revertir: quitar el alimento que se añadió localmente
+        if (this.racionSeleccionada?.id === racionId) {
+          this.racionSeleccionada.alimentos = this.racionSeleccionada.alimentos.filter(
+            (a: any) => a.id !== alimento.id
+          );
+        }
         const msg = err.status === 409
           ? '⚠️ Este alimento ya está en la ración'
           : (err.error?.error || 'Error al agregar alimento');
-        this.mostrarMensaje(msg, 'error');
-        if (err.status === 409) this.onCancelarCantidad();
-        this.cargandoOperacion = false;
+        this.flash.mostrar(msg, 'error');
         this.cdr.detectChanges();
+        setTimeout(() => this.crearGrafica(), 100);
       }
     });
   }
@@ -261,38 +290,42 @@ export class Raciones implements OnInit, AfterViewInit {
   removerAlimento(alimentoId: number) {
     if (!this.racionSeleccionada) return;
 
-    this.cargandoOperacion = true;
+    const racionId = this.racionSeleccionada.id;
+    const snapshot = [...this.racionSeleccionada.alimentos];
+
+    // Actualización visual instantánea: filtrar el alimento
+    this.racionSeleccionada.alimentos = this.racionSeleccionada.alimentos.filter(
+      (a: any) => a.id !== alimentoId
+    );
     this.cdr.detectChanges();
+    setTimeout(() => this.crearGrafica(), 100);
 
-    this.racionesService.removerAlimento(this.racionSeleccionada.id, alimentoId).subscribe({
-      next: (res) => {
-        this.racionSeleccionada = res.racion;
-
-        const indexEnLista = this.raciones.findIndex(r => r.id === this.racionSeleccionada.id);
-        if (indexEnLista >= 0) {
-          this.raciones[indexEnLista] = { ...this.racionSeleccionada };
+    this.optimisticUpdateService.encolar({
+      accion: () => this.racionesService.removerAlimento(racionId, alimentoId),
+      enExito: (res) => {
+        // Reemplazar con datos reales del servidor (totales actualizados)
+        const racion = res.racion;
+        const idx = this.raciones.findIndex(r => r.id === racion.id);
+        if (idx >= 0) this.raciones[idx] = { ...racion };
+        if (this.racionSeleccionada?.id === racion.id) {
+          this.racionSeleccionada = { ...racion };
         }
-
-        this.mostrarMensaje('Alimento removido', 'exito');
-        this.cargandoOperacion = false;
+        this.flash.mostrar('Alimento removido', 'exito');
         this.cdr.detectChanges();
         setTimeout(() => this.crearGrafica(), 100);
       },
-      error: (err) => {
+      enError: (err) => {
         if (err.status === 404) {
-          // El alimento ya no estaba en la ración — limpiarlo del estado local
-          this.racionSeleccionada.alimentos = this.racionSeleccionada.alimentos.filter(
-            (a: any) => a.id !== alimentoId
-          );
-          const indexEnLista = this.raciones.findIndex((r: any) => r.id === this.racionSeleccionada.id);
-          if (indexEnLista >= 0) {
-            this.raciones[indexEnLista] = { ...this.racionSeleccionada };
-          }
-        } else {
-          this.mostrarMensaje('Error al remover alimento', 'error');
+          // Ya no existía en servidor — el borrado local ya es correcto
+          return;
         }
-        this.cargandoOperacion = false;
+        // Revertir: restaurar snapshot
+        if (this.racionSeleccionada?.id === racionId) {
+          this.racionSeleccionada.alimentos = snapshot;
+        }
+        this.flash.mostrar('Error al remover alimento', 'error');
         this.cdr.detectChanges();
+        setTimeout(() => this.crearGrafica(), 100);
       }
     });
   }
@@ -326,7 +359,7 @@ export class Raciones implements OnInit, AfterViewInit {
           setTimeout(() => this.crearGrafica(), 50);
         },
         error: () => {
-          this.mostrarMensaje('Error al actualizar cantidad', 'error');
+          this.flash.mostrar('Error al actualizar cantidad', 'error');
           this.cdr.detectChanges();
         }
       });
@@ -336,19 +369,23 @@ export class Raciones implements OnInit, AfterViewInit {
   eliminarRacion(racionId: number) {
     if (!confirm('¿Eliminar este ración?')) return;
 
-    this.cargando = true;
-    this.racionesService.eliminarRacion(racionId).subscribe({
-      next: () => {
-        this.raciones = this.raciones.filter(r => r.id !== racionId);
-        this.mostrarMensaje('Ración eliminado', 'exito');
-        this.racionSeleccionada = null;
-        this.activePanel = 'lista';
-        this.cargando = false;
-        this.cdr.detectChanges();
+    const snapshotRaciones = [...this.raciones];
+
+    // Actualización visual instantánea: volver a la lista sin esperar
+    this.raciones = this.raciones.filter(r => r.id !== racionId);
+    this.racionSeleccionada = null;
+    this.activePanel = 'lista';
+    this.cdr.detectChanges();
+
+    this.optimisticUpdateService.encolar({
+      accion: () => this.racionesService.eliminarRacion(racionId),
+      enExito: () => {
+        this.flash.mostrar('Ración eliminada', 'exito');
       },
-      error: () => {
-        this.mostrarMensaje('Error al eliminar ración', 'error');
-        this.cargando = false;
+      enError: () => {
+        // Revertir: restaurar lista
+        this.raciones = snapshotRaciones;
+        this.flash.mostrar('Error al eliminar ración', 'error');
         this.cdr.detectChanges();
       }
     });
@@ -453,16 +490,6 @@ export class Raciones implements OnInit, AfterViewInit {
     } catch (error) {
       console.error('Error creando gráfica:', error);
     }
-  }
-
-  private mostrarMensaje(texto: string, tipo: 'exito' | 'error') {
-    clearTimeout(this.mensajeTimer);
-    this.mensaje = texto;
-    this.mensajeTipo = tipo;
-    this.mensajeTimer = setTimeout(() => {
-      this.mensaje = '';
-      this.cdr.detectChanges();
-    }, 3000);
   }
 
   tieneAlergeno(alimento: any): boolean {

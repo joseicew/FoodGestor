@@ -3,10 +3,7 @@
     <h1>📅 Calendario</h1>
   </div>
 
-  <!-- Mensaje flash -->
-  @if (mensaje) {
-    <div class="mensaje" [class.error]="mensajeTipo === 'error'">{{ mensaje }}</div>
-  }
+  <app-mensaje-flash />
 
   <!-- Estado de carga inicial -->
   @if (cargando && !diaActual) {
@@ -188,6 +185,7 @@
                           <span class="unidad">g</span>
                         </div>
                         <span class="separador">|</span>
+                        <span class="item-kcal">{{ ((alimento.calorias || 0) * (alimento.cantidad || 100) / 100) | number:'1.0-0' }} kcal</span>
                         <button class="btn-eliminar"
                                 (click)="removerAlimento(tipoComida, alimento.id)"
                                 title="Eliminar">🗑️</button>

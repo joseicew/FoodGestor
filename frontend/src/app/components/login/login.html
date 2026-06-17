@@ -6,9 +6,7 @@
       <p class="subtitle">Tu asistente nutricional</p>
     </div>
 
-    @if (mensaje) {
-      <div class="mensaje" [class.error]="mensajeTipo === 'error'">{{ mensaje }}</div>
-    }
+    <app-mensaje-flash />
 
     <form (ngSubmit)="login()" class="form">
       <div class="form-group">

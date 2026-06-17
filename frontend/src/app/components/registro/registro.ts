@@ -1,23 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-registro',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, MensajeFlash],
   templateUrl: './registro.html',
   styleUrl: './registro.css'
 })
 export class RegistroComponent implements OnInit {
+  @ViewChild(MensajeFlash) flash!: MensajeFlash;
+
   email: string = '';
   password: string = '';
   confirmPassword: string = '';
   cargando: boolean = false;
-  mensaje: string = '';
-  mensajeTipo: 'error' | 'exito' = 'error';
 
   constructor(
     private authService: AuthService,
@@ -46,38 +47,38 @@ export class RegistroComponent implements OnInit {
 
     // Validación: email
     if (!emailLimpio) {
-      this.mostrarMensaje('Por favor ingresa tu email', 'error');
+      this.flash.mostrar('Por favor ingresa tu email', 'error');
       return;
     }
 
     // Validación: contraseña
     if (!passwordLimpia) {
-      this.mostrarMensaje('Por favor ingresa una contraseña', 'error');
+      this.flash.mostrar('Por favor ingresa una contraseña', 'error');
       return;
     }
 
     // Validación: confirmación de contraseña
     if (!confirmPasswordLimpia) {
-      this.mostrarMensaje('Por favor confirma tu contraseña', 'error');
+      this.flash.mostrar('Por favor confirma tu contraseña', 'error');
       return;
     }
 
     // Validación: email válido (formato)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailLimpio)) {
-      this.mostrarMensaje('Email inválido (debe contener @ y un dominio)', 'error');
+      this.flash.mostrar('Email inválido (debe contener @ y un dominio)', 'error');
       return;
     }
 
     // Validación: contraseñas coinciden
     if (passwordLimpia !== confirmPasswordLimpia) {
-      this.mostrarMensaje('Las contraseñas no coinciden', 'error');
+      this.flash.mostrar('Las contraseñas no coinciden', 'error');
       return;
     }
 
     // Validación: contraseña fuerte (mínimo 8 caracteres)
     if (passwordLimpia.length < 8) {
-      this.mostrarMensaje('La contraseña debe tener al menos 8 caracteres', 'error');
+      this.flash.mostrar('La contraseña debe tener al menos 8 caracteres', 'error');
       return;
     }
 
@@ -87,7 +88,7 @@ export class RegistroComponent implements OnInit {
     const tieneMinuscula = /[a-z]/.test(passwordLimpia);
 
     if (!tieneNumero || !tieneMayuscula || !tieneMinuscula) {
-      this.mostrarMensaje(
+      this.flash.mostrar(
         'La contraseña debe contener mayúscula, minúscula y número',
         'error'
       );
@@ -106,16 +107,9 @@ export class RegistroComponent implements OnInit {
         this.cargando = false;
         const mensaje =
           error.error?.error || 'Error en el registro (email podría estar en uso)';
-        this.mostrarMensaje(mensaje, 'error');
+        this.flash.mostrar(mensaje, 'error');
       }
     });
   }
 
-  private mostrarMensaje(texto: string, tipo: 'error' | 'exito'): void {
-    this.mensaje = texto;
-    this.mensajeTipo = tipo;
-    setTimeout(() => {
-      this.mensaje = '';
-    }, 4000);
-  }
 }

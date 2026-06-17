@@ -1,11 +1,13 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { AlimentosService } from '../../services/alimentos';
 import { IngredientesService } from '../../services/ingredientes';
 import { AuthService } from '../../services/auth';
 import { AllergensService } from '../../services/allergens';
+import { CacheService } from '../../services/cache';
 import { AlimentoFiltros } from './filtros/alimento-filtros';
 import { AlimentoLista } from './lista/alimento-lista';
 import { AlimentoDetalle, CATEGORIAS } from './detalle/alimento-detalle';
@@ -13,11 +15,13 @@ import { AlimentoDetalle, CATEGORIAS } from './detalle/alimento-detalle';
 @Component({
   selector: 'app-alimentos',
   standalone: true,
-  imports: [CommonModule, FormsModule, AlimentoFiltros, AlimentoLista, AlimentoDetalle],
+  imports: [CommonModule, FormsModule, AlimentoFiltros, AlimentoLista, AlimentoDetalle, MensajeFlash],
   templateUrl: './alimentos.html',
   styleUrl: './alimentos.css',
 })
 export class Alimentos implements OnInit {
+  @ViewChild(MensajeFlash) flash!: MensajeFlash;
+
   activePanel: 'buscar' | 'favoritos' | 'actualizar' = 'buscar';
 
   readonly categorias = CATEGORIAS;
@@ -27,8 +31,6 @@ export class Alimentos implements OnInit {
 
   terminoBusqueda = '';
   categoriaFiltro = '';
-  mensaje = '';
-  mensajeTipo: 'exito' | 'error' = 'exito';
 
   alergenosDelUsuario: string[] = [];
 
@@ -49,6 +51,7 @@ export class Alimentos implements OnInit {
     private ingredientesService: IngredientesService,
     private authService: AuthService,
     private allergensService: AllergensService,
+    private cacheService: CacheService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -69,13 +72,31 @@ export class Alimentos implements OnInit {
 
   // ── Datos ──
   cargarAlimentos() {
-    this.alimentosService.obtenerAlimentos().subscribe({
-      next: (data) => {
-        this.alimentos = data;
+    // Caché solo si no hay datos aún (carga inicial), no en llamadas post-mutación
+    if (this.alimentos.length === 0) {
+      const cached = this.cacheService.obtenerAlimentos();
+      if (cached.length > 0) {
+        this.alimentos = cached;
         this.buscarAlimento();
         this.cdr.detectChanges();
+      }
+    }
+
+    // Refrescar desde servidor en background — silencioso si no hubo cambios
+    this.alimentosService.obtenerAlimentos().subscribe({
+      next: (data) => {
+        if (this.cacheService.hanCambiadoAlimentos(data)) {
+          this.alimentos = data;
+          this.cacheService.guardarAlimentos(data);
+          this.buscarAlimento();
+          this.cdr.detectChanges();
+        }
       },
-      error: () => this.mostrarMensaje('Error al conectar con el servidor', 'error')
+      error: () => {
+        if (this.alimentos.length === 0) {
+          this.flash.mostrar('Error al conectar con el servidor', 'error');
+        }
+      }
     });
   }
 
@@ -101,7 +122,6 @@ export class Alimentos implements OnInit {
   // ── Pestañas ──
   cambiarPanel(panel: 'buscar' | 'favoritos' | 'actualizar') {
     this.activePanel = panel;
-    this.mensaje = '';
     this.terminoBusqueda = '';
     this.categoriaFiltro = '';
     this.cargarAlimentos();
@@ -119,10 +139,10 @@ export class Alimentos implements OnInit {
     this.alimentosService.toggleFavorito(alimento.id).subscribe({
       next: (res) => {
         alimento.favorito = res.alimento.favorito;
-        this.mostrarMensaje(alimento.favorito ? '⭐ Agregado a favoritos' : '☆ Removido de favoritos', 'exito');
+        this.flash.mostrar(alimento.favorito ? '⭐ Agregado a favoritos' : '☆ Removido de favoritos', 'exito');
         this.cdr.detectChanges();
       },
-      error: () => this.mostrarMensaje('Error al actualizar favorito', 'error')
+      error: () => this.flash.mostrar('Error al actualizar favorito', 'error')
     });
   }
 
@@ -193,10 +213,10 @@ export class Alimentos implements OnInit {
           this.mostrarModalVerificarIngredientes = true;
           this.cdr.markForCheck();
         } else {
-          this.mostrarMensaje('No hay ingredientes para verificar', 'exito');
+          this.flash.mostrar('No hay ingredientes para verificar', 'exito');
         }
       },
-      error: () => this.mostrarMensaje('Error al cargar ingredientes pendientes', 'error')
+      error: () => this.flash.mostrar('Error al cargar ingredientes pendientes', 'error')
     });
   }
 
@@ -247,7 +267,7 @@ export class Alimentos implements OnInit {
 
   guardarIngredienteVerificado(ingrediente: any) {
     if (!ingrediente || !ingrediente.id) {
-      this.mostrarMensaje('Error: Ingrediente inválido', 'error');
+      this.flash.mostrar('Error: Ingrediente inválido', 'error');
       return;
     }
     this.alimentosService.actualizarIngrediente(ingrediente.id, {
@@ -259,24 +279,24 @@ export class Alimentos implements OnInit {
       alergenos_categorias: ingrediente.alergenos_categorias || []
     }).subscribe({
       next: () => {
-        this.mostrarMensaje('Ingrediente verificado correctamente', 'exito');
+        this.flash.mostrar('Ingrediente verificado correctamente', 'exito');
         this.pasarAlSiguienteIngrediente(ingrediente.id);
       },
-      error: () => this.mostrarMensaje('Error al guardar el ingrediente', 'error')
+      error: () => this.flash.mostrar('Error al guardar el ingrediente', 'error')
     });
   }
 
   eliminarIngredienteIncorrecto(ingrediente: any) {
     if (!ingrediente || !ingrediente.id) {
-      this.mostrarMensaje('Error: Ingrediente inválido', 'error');
+      this.flash.mostrar('Error: Ingrediente inválido', 'error');
       return;
     }
     this.alimentosService.eliminarIngrediente(ingrediente.id).subscribe({
       next: () => {
-        this.mostrarMensaje('Ingrediente eliminado correctamente', 'exito');
+        this.flash.mostrar('Ingrediente eliminado correctamente', 'exito');
         this.pasarAlSiguienteIngrediente(ingrediente.id);
       },
-      error: () => this.mostrarMensaje('Error al eliminar el ingrediente', 'error')
+      error: () => this.flash.mostrar('Error al eliminar el ingrediente', 'error')
     });
   }
 
@@ -287,20 +307,14 @@ export class Alimentos implements OnInit {
     if (this.ingredientesAVerificar.length > 0) {
       this.prepararIngredienteVerificacion(this.ingredientesAVerificar[0]);
     } else {
-      this.mostrarMensaje('¡Todos los ingredientes han sido procesados!', 'exito');
+      this.flash.mostrar('¡Todos los ingredientes han sido procesados!', 'exito');
       this.cerrarModalVerificarIngredientes();
     }
     this.totalIngredientesVerificar = this.ingredientesAVerificar.length;
     this.cdr.markForCheck();
   }
 
-  mostrarMensaje(texto: string, tipo: 'exito' | 'error') {
-    this.mensaje = texto;
-    this.mensajeTipo = tipo;
-    setTimeout(() => this.mensaje = '', 4000);
-  }
-
   onMensajeDetalle(ev: { texto: string; tipo: 'exito' | 'error' }) {
-    this.mostrarMensaje(ev.texto, ev.tipo);
+    this.flash.mostrar(ev.texto, ev.tipo);
   }
 }
