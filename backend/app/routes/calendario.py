@@ -216,7 +216,7 @@ def agregar_alimento(fecha, tipo_comida):
             return jsonify({'error': 'alimento_id es requerido'}), 400
 
         fecha_obj = datetime.strptime(fecha, '%Y-%m-%d').date()
-        alimento = Alimento.query.filter_by(id=alimento_id, usuario_id=usuario_id).first()
+        alimento = Alimento.query.get(alimento_id)
 
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
@@ -264,8 +264,9 @@ def agregar_alimento(fecha, tipo_comida):
     except ValueError:
         return jsonify({'error': 'Formato de fecha inválido (use YYYY-MM-DD)'}), 400
     except Exception as e:
+        import traceback
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
 
 
 @calendario_bp.route('/<fecha>/<tipo_comida>/raciones/<int:racion_id>', methods=['DELETE'])

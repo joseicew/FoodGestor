@@ -1,0 +1,65 @@
+@if (alimento) {
+  <div class="modal-overlay" style="justify-content:center;" (click)="onCancelar()">
+    <div class="modal-box" style="position:relative;" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="onCancelar()" style="position:absolute; top:0; right:0;">✕</button>
+
+      <div style="padding: 16px;">
+        <div style="margin-bottom: 16px;">
+          <h3 style="margin: 0 0 8px 0;">{{ alimento.nombre }}</h3>
+          @if (alimento.marca) {
+            <p style="margin: 0; font-size: 13px; color: #666;">{{ alimento.marca }}</p>
+          }
+          @if (alimento.peso_unidad && alimento.nombre_unidad) {
+            <p style="margin: 8px 0 0 0; font-size: 12px; color: #999; background: #f5f5f5; padding: 8px 12px; border-radius: 4px;">
+              1 {{ alimento.nombre_unidad }} = {{ alimento.peso_unidad }}g
+            </p>
+          }
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          @if (alimento.peso_unidad && alimento.nombre_unidad) {
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+              <button (click)="modo = 'unidades'"
+                      [style.background]="modo === 'unidades' ? '#4CAF50' : '#f0f0f0'"
+                      [style.color]="modo === 'unidades' ? '#fff' : '#666'"
+                      style="flex: 1; padding: 8px; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                Porción
+              </button>
+              <button (click)="modo = 'gramos'"
+                      [style.background]="modo === 'gramos' ? '#4CAF50' : '#f0f0f0'"
+                      [style.color]="modo === 'gramos' ? '#fff' : '#666'"
+                      style="flex: 1; padding: 8px; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                gr/ml
+              </button>
+            </div>
+          }
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text"
+                   [(ngModel)]="cantidad"
+                   [placeholder]="modo === 'unidades' ? 'Ej: 1, 1/2, 0.5' : '100'"
+                   style="flex: 1; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 16px; font-weight: 600; text-align: right;" />
+            <span style="font-size: 15px; color: #444; font-weight: 600; white-space: nowrap; min-width: 44px;">
+              @if (modo === 'unidades' && alimento.nombre_unidad) {
+                {{ alimento.nombre_unidad }}
+              } @else {
+                gr/ml
+              }
+            </span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button (click)="onConfirmar()"
+                  style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">
+            ✓ Agregar
+          </button>
+          <button (click)="onCancelar()"
+                  style="flex: 1; padding: 10px; background: #f0f0f0; color: #666; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">
+            ← Atrás
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

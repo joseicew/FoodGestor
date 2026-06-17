@@ -20,6 +20,7 @@ export class Perfil implements OnInit {
   cargando: boolean = false;
   mensaje: string = '';
   mensajeTipo: 'error' | 'exito' = 'error';
+  confirmarLogout = false;
 
   // Datos en edición
   nombreCompleto: string = '';
@@ -422,11 +423,20 @@ export class Perfil implements OnInit {
     return actividadMap[nivel_actividad] || nivel_actividad.toUpperCase();
   }
 
+  abrirConfirmacionLogout() { this.confirmarLogout = true; }
+  cerrarConfirmacionLogout() { this.confirmarLogout = false; }
+
+  logout() {
+    this.confirmarLogout = false;
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
   private mostrarMensaje(texto: string, tipo: 'error' | 'exito'): void {
     this.mensaje = texto;
     this.mensajeTipo = tipo;
     setTimeout(() => {
       this.mensaje = '';
-    }, 4000);
+    }, 3000);
   }
 }

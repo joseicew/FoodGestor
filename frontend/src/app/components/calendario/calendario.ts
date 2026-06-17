@@ -9,10 +9,11 @@ import { AuthService } from '../../services/auth';
 import { OptimisticUpdateService } from '../../services/optimistic-update';
 import { CacheService } from '../../services/cache';
 import { AllergensService } from '../../services/allergens';
+import { BusquedaAlimentoComponent } from '../shared/busqueda-alimento/busqueda-alimento';
 
 @Component({
   selector: 'app-calendario',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent],
   templateUrl: './calendario.html',
   styleUrl: './calendario.css'
 })
@@ -59,21 +60,14 @@ export class Calendario implements OnInit {
   raciones: any[] = [];
   alimentos: any[] = [];
   racionesFiltradas: any[] = [];
-  alimentosFiltrados: any[] = [];
 
   // Estado de UI
   cargando = false;
-  mostrarModalRacion = false;
-  mostrarModalAlimento = false;
-  tipoComidaActual: string = '';
+  panelActivo: { tipoComida: string; modo: 'racion' | 'alimento' } | null = null;
   terminoBusquedaRacion = '';
-  terminoBusquedaAlimento = '';
   mensaje = '';
   mensajeTipo: 'exito' | 'error' = 'exito';
-  alimentoSeleccionadoParaAgregar: any = null;
-  cantidadAlimento: string | number = 1;
-  modoAgregarAlimento: 'unidades' | 'gramos' = 'unidades';
-
+  private mensajeTimer: any = null;
   // Alergias del usuario
   intoleranciaUsuario: string[] = [];
 
@@ -180,13 +174,10 @@ export class Calendario implements OnInit {
     this.alimentosService.obtenerAlimentos().subscribe({
       next: (data) => {
         this.alimentos = data || [];
-        this.alimentosFiltrados = data || [];
       },
       error: (error) => {
-        // Si no hay alimentos, simplemente cargar array vacío (no es un error)
         console.log('Sin alimentos inicialmente:', error.status);
         this.alimentos = [];
-        this.alimentosFiltrados = [];
       }
     });
   }
@@ -232,182 +223,60 @@ export class Calendario implements OnInit {
 
   // ── Modales ──
 
-  abrirModalRacion(tipoComida: string) {
-    this.tipoComidaActual = tipoComida;
-    this.terminoBusquedaRacion = '';
-    this.racionesFiltradas = this.raciones;
-    this.mostrarModalRacion = true;
-  }
-
-  cerrarModalRacion() {
-    this.mostrarModalRacion = false;
-    this.tipoComidaActual = '';
-  }
-
-  abrirModalAlimento(tipoComida: string) {
-    this.tipoComidaActual = tipoComida;
-    this.terminoBusquedaAlimento = '';
-    this.alimentosFiltrados = this.alimentos;
-    this.mostrarModalAlimento = true;
-  }
-
-  cerrarModalAlimento() {
-    this.mostrarModalAlimento = false;
-    this.tipoComidaActual = '';
-    this.alimentoSeleccionadoParaAgregar = null;
-    this.cantidadAlimento = 1;
-    this.modoAgregarAlimento = 'unidades';
-  }
-
   buscarRaciones() {
-    if (!this.terminoBusquedaRacion.trim()) {
-      this.racionesFiltradas = this.raciones;
-      return;
-    }
-
-    const t = this.terminoBusquedaRacion.toLowerCase();
-    this.racionesFiltradas = this.raciones.filter(r =>
-      r.nombre.toLowerCase().includes(t)
-    );
+    const t = this.terminoBusquedaRacion.toLowerCase().trim();
+    this.racionesFiltradas = t
+      ? this.raciones.filter(r => r.nombre.toLowerCase().includes(t))
+      : this.raciones;
   }
 
-  buscarAlimentos() {
-    if (!this.terminoBusquedaAlimento.trim()) {
-      // Ordenar favoritos primero
-      this.alimentosFiltrados = [...this.alimentos].sort((a, b) => {
-        if (a.favorito && !b.favorito) return -1;
-        if (!a.favorito && b.favorito) return 1;
-        return 0;
-      });
-      return;
+  // ── Panel inline ──
+
+  togglePanel(tipoComida: string, modo: 'racion' | 'alimento') {
+    const mismoPanel = this.panelActivo?.tipoComida === tipoComida && this.panelActivo?.modo === modo;
+    if (mismoPanel) {
+      this.panelActivo = null;
+    } else {
+      this.terminoBusquedaRacion = '';
+      this.racionesFiltradas = this.raciones;
+      this.panelActivo = { tipoComida, modo };
     }
-
-    const t = this.terminoBusquedaAlimento.toLowerCase();
-    const filtrados = this.alimentos.filter(a =>
-      a.nombre.toLowerCase().includes(t) ||
-      a.marca.toLowerCase().includes(t)
-    );
-
-    // Ordenar favoritos primero en los resultados
-    this.alimentosFiltrados = filtrados.sort((a, b) => {
-      if (a.favorito && !b.favorito) return -1;
-      if (!a.favorito && b.favorito) return 1;
-      return 0;
-    });
   }
 
   // ── Agregar items a comida ──
 
-  agregarRacionAlComida(racion: any) {
-    if (!this.tipoComidaActual) return;
-
+  onSeleccionarRacionInline(tipoComida: string, racion: any) {
+    this.panelActivo = null;
     const fechaStr = this.formatoFecha(this.fechaSeleccionada);
-
-    // Mostrar feedback inmediato al usuario
-    this.mostrarMensaje(`⏳ Guardando ${racion.nombre}...`, 'exito');
-    this.cerrarModalRacion();
-
-    // Sincronización optimista
     this.optimisticUpdateService.agregarRacionOptimista(
-      fechaStr,
-      this.tipoComidaActual,
-      racion.id,
-      1,
-      this.diaActual,
-      () => this.calendarioService.agregarRacionAlComida(
-        fechaStr,
-        this.tipoComidaActual,
-        racion.id,
-        1
-      )
+      fechaStr, tipoComida, racion.id, 1, this.diaActual,
+      () => this.calendarioService.agregarRacionAlComida(fechaStr, tipoComida, racion.id, 1)
     ).subscribe({
       next: () => {
-        // Recargar el día para obtener datos actualizados del servidor
         this.cargarDia(this.fechaSeleccionada);
         this.mostrarMensaje(`✅ ${racion.nombre} agregado`, 'exito');
       },
       error: (err) => {
         console.error('Error al agregar ración:', err);
-        this.mostrarMensaje(`❌ Error al guardar ${racion.nombre}. Reintentando...`, 'error');
-        // El OptimisticUpdateService ya revirtió los cambios locales
-        // Aquí podrías agregar un botón de reintentar
+        this.mostrarMensaje(`❌ Error al guardar ${racion.nombre}`, 'error');
       }
     });
   }
 
-  seleccionarAlimentoParaAgregar(alimento: any) {
-    this.alimentoSeleccionadoParaAgregar = alimento;
-    this.cantidadAlimento = 1; // Por defecto, 1 ración/unidad
-    this.modoAgregarAlimento = 'unidades'; // Por defecto, agregar por unidades
-  }
-
-  // Convertir fracciones a número decimal
-  private convertirFraccionANumero(valor: string | number): number {
-    const str = String(valor).trim();
-
-    // Si contiene "/", es una fracción (ej: 1/2)
-    if (str.includes('/')) {
-      const partes = str.split('/');
-      if (partes.length === 2) {
-        const numerador = parseFloat(partes[0].trim());
-        const denominador = parseFloat(partes[1].trim());
-        if (!isNaN(numerador) && !isNaN(denominador) && denominador !== 0) {
-          return numerador / denominador;
-        }
-      }
-    }
-
-    // Si es un número decimal normal
-    const num = parseFloat(str);
-    return !isNaN(num) ? num : 1;
-  }
-
-  agregarAlimentoAlComida() {
-    if (!this.tipoComidaActual || !this.alimentoSeleccionadoParaAgregar) return;
-
+  onSeleccionarAlimentoInline(tipoComida: string, alimento: any) {
+    this.panelActivo = null;
     const fechaStr = this.formatoFecha(this.fechaSeleccionada);
-    const alimento = this.alimentoSeleccionadoParaAgregar;
-
-    let gramosAgregar = 0;
-
-    if (this.modoAgregarAlimento === 'unidades') {
-      // Modo: cantidad en unidades/raciones
-      const cantidadNumerico = this.convertirFraccionANumero(this.cantidadAlimento);
-      gramosAgregar = cantidadNumerico * 100; // Por defecto, 100g por ración
-      if (alimento.peso_unidad) {
-        // Si el alimento tiene unidad, usar ese peso
-        gramosAgregar = cantidadNumerico * alimento.peso_unidad;
-      }
-    } else {
-      // Modo: cantidad en gramos directamente
-      gramosAgregar = this.convertirFraccionANumero(this.cantidadAlimento);
-    }
-
-    // Mostrar feedback inmediato
-    this.mostrarMensaje(`⏳ Guardando ${alimento.nombre}...`, 'exito');
-    this.cerrarModalAlimento();
-
-    // Sincronización optimista
     this.optimisticUpdateService.agregarAlimentoOptimista(
-      fechaStr,
-      this.tipoComidaActual,
-      alimento.id,
-      gramosAgregar,
-      () => this.calendarioService.agregarAlimentoAlComida(
-        fechaStr,
-        this.tipoComidaActual,
-        alimento.id,
-        gramosAgregar
-      )
+      fechaStr, tipoComida, alimento.id, 100,
+      () => this.calendarioService.agregarAlimentoAlComida(fechaStr, tipoComida, alimento.id, 100)
     ).subscribe({
       next: () => {
-        // Recargar el día para obtener datos actualizados del servidor
         this.cargarDia(this.fechaSeleccionada);
         this.mostrarMensaje(`✅ ${alimento.nombre} agregado`, 'exito');
       },
       error: (err) => {
         console.error('Error al agregar alimento:', err);
-        this.mostrarMensaje(`❌ Error al guardar ${alimento.nombre}. Reintentando...`, 'error');
+        this.mostrarMensaje(`❌ Error al guardar ${alimento.nombre}`, 'error');
       }
     });
   }
@@ -415,32 +284,44 @@ export class Calendario implements OnInit {
   // ── Remover items de comida ──
 
   removerRacion(tipoComida: string, racionId: number) {
+    if (this.diaActual[tipoComida]) {
+      this.diaActual[tipoComida].raciones = this.diaActual[tipoComida].raciones.filter(
+        (r: any) => r.id !== racionId
+      );
+      this.cdr.detectChanges();
+    }
+
     const fechaStr = this.formatoFecha(this.fechaSeleccionada);
-    this.calendarioService.removerRacionDelComida(
-      fechaStr,
-      tipoComida,
-      racionId
-    ).subscribe({
+    this.calendarioService.removerRacionDelComida(fechaStr, tipoComida, racionId).subscribe({
       next: () => {
         this.mostrarMensaje('Ración removida', 'exito');
         this.cargarDia(this.fechaSeleccionada);
       },
-      error: () => this.mostrarMensaje('Error al remover ración', 'error')
+      error: () => {
+        this.mostrarMensaje('Error al remover ración', 'error');
+        this.cargarDia(this.fechaSeleccionada);
+      }
     });
   }
 
   removerAlimento(tipoComida: string, alimentoId: number) {
+    if (this.diaActual[tipoComida]) {
+      this.diaActual[tipoComida].alimentos = this.diaActual[tipoComida].alimentos.filter(
+        (a: any) => a.id !== alimentoId
+      );
+      this.cdr.detectChanges();
+    }
+
     const fechaStr = this.formatoFecha(this.fechaSeleccionada);
-    this.calendarioService.removerAlimentoDelComida(
-      fechaStr,
-      tipoComida,
-      alimentoId
-    ).subscribe({
+    this.calendarioService.removerAlimentoDelComida(fechaStr, tipoComida, alimentoId).subscribe({
       next: () => {
         this.mostrarMensaje('Alimento removido', 'exito');
         this.cargarDia(this.fechaSeleccionada);
       },
-      error: () => this.mostrarMensaje('Error al remover alimento', 'error')
+      error: () => {
+        this.mostrarMensaje('Error al remover alimento', 'error');
+        this.cargarDia(this.fechaSeleccionada);
+      }
     });
   }
 
@@ -476,7 +357,14 @@ export class Calendario implements OnInit {
   }
 
   actualizarCantidadAlimento(tipoComida: string, alimentoId: number, cantidad: string) {
-    const cant = this.convertirFraccionANumero(cantidad);
+    const str = String(cantidad).trim();
+    let cant: number;
+    if (str.includes('/')) {
+      const [num, den] = str.split('/').map(p => parseFloat(p.trim()));
+      cant = (!isNaN(num) && !isNaN(den) && den !== 0) ? num / den : 1;
+    } else {
+      cant = parseFloat(str) || 1;
+    }
     if (cant <= 0) return;
 
     const fechaStr = this.formatoFecha(this.fechaSeleccionada);
@@ -507,15 +395,28 @@ export class Calendario implements OnInit {
   // ── Utilidades ──
 
   getColorPorcentaje(porcentaje: number): string {
-    if (porcentaje > 100) return '#d32f2f'; // Rojo
-    if (porcentaje > 80) return '#f57c00'; // Naranja
-    return '#2e7d32'; // Verde
+    if (porcentaje > 100) return '#d32f2f';
+    if (porcentaje > 80) return '#f57c00';
+    return '#2e7d32';
+  }
+
+  getColorBarra(porcentaje: number): string {
+    if (porcentaje <= 80) return '#a5d6a7';
+    if (porcentaje <= 100) return '#ffcc80';
+    // Más del 100%: rojo que se intensifica progresivamente
+    const exceso = Math.min(porcentaje - 100, 100); // 0–100 de exceso
+    const lightness = Math.round(75 - (exceso / 100) * 30); // 75% → 45%
+    return `hsl(0, 80%, ${lightness}%)`;
   }
 
   private mostrarMensaje(texto: string, tipo: 'exito' | 'error') {
+    clearTimeout(this.mensajeTimer);
     this.mensaje = texto;
     this.mensajeTipo = tipo;
-    setTimeout(() => this.mensaje = '', 4000);
+    this.mensajeTimer = setTimeout(() => {
+      this.mensaje = '';
+      this.cdr.detectChanges();
+    }, 3000);
   }
 
   tieneAlergeno(alimento: any): boolean {

@@ -160,6 +160,20 @@
   font-weight: 600;
 }
 
+.total-barra {
+  height: 4px;
+  background: #cacaca;
+  border-radius: 2px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.total-barra-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
 /* ── Comida Section ── */
 .comida-section {
   margin-bottom: 12px;
@@ -265,6 +279,10 @@
   font-weight: 500;
   color: #2d2d2d;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
 }
 
 .item-marca {
@@ -312,6 +330,12 @@
   margin: 0 4px;
 }
 
+.item-kcal {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
 .btn-eliminar {
   background: transparent;
   border: none;
@@ -349,19 +373,91 @@
   border-color: #2e7d32;
 }
 
-/* ── Modal ── */
-/* .modal-overlay → global */
+.btn-agregar-activo {
+  background: #f5f5f5;
+  color: #888;
+  border-color: #ccc;
+}
 
-.modal-box {
+.btn-agregar-activo:hover {
+  background: #eee;
+  border-color: #bbb;
+}
+
+/* ── Panel inline ── */
+.inline-panel {
+  margin-top: 8px;
+  padding: 10px;
+  background: #f9f9f9;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+}
+
+.inline-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  box-sizing: border-box;
+  outline: none;
   background: #fff;
-  border-radius: 16px;
-  width: 90vw;
-  max-height: 90vh;
-  overflow: hidden;
+}
+
+.inline-input:focus {
+  border-color: #4CAF50;
+}
+
+.inline-lista {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 6px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  gap: 2px;
 }
+
+.inline-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s;
+}
+
+.inline-item:hover {
+  background: #e8f5e9;
+  border-color: #c8e6c9;
+}
+
+.inline-nombre {
+  font-size: 13px;
+  font-weight: 500;
+  color: #2d2d2d;
+}
+
+.inline-meta {
+  font-size: 11px;
+  color: #999;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.inline-vacio {
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+  padding: 8px 0;
+}
+
+/* ── Modal ── */
+/* .modal-overlay, .modal-box → global styles.css */
 
 .modal-header {
   display: flex;

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -29,13 +29,15 @@ def create_app():
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Connection pooling para PostgreSQL
+    # Connection pooling para PostgreSQL (Neon.tech hiberna tras ~5 min de inactividad)
     if database_url and 'postgresql' in database_url:
         app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
             'pool_pre_ping': True,
             'pool_size': 3,
-            'pool_recycle': 3600,
-            'max_overflow': 0,
+            'pool_recycle': 300,       # reciclar cada 5 min (igual que el auto-pause de Neon)
+            'pool_timeout': 20,        # fallar en 20s (antes del timeout de Gunicorn de 30s)
+            'max_overflow': 2,
+            'connect_args': {'connect_timeout': 10},  # TCP: desistir en 10s si Neon no responde
         }
 
     # Configurar JWT
@@ -51,7 +53,17 @@ def create_app():
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
          supports_credentials=False)
     jwt.init_app(app)
-    
+
+    # Error handler global: garantiza que los errores no capturados devuelvan JSON (no HTML)
+    @app.errorhandler(Exception)
+    def handle_unhandled_exception(e):
+        logging.error(f'Unhandled exception: {e}', exc_info=True)
+        try:
+            db.session.remove()
+        except Exception:
+            pass
+        return jsonify({'error': str(e)}), 500
+
     # Registrar blueprints
     from app.routes.auth import auth_bp
     from app.routes.alimentos import alimentos_bp

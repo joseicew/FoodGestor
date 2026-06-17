@@ -43,13 +43,8 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - network first, then cache
 self.addEventListener('fetch', (event) => {
-  // Don't cache API calls
+  // API calls: no interceptar — dejar que el error real llegue al cliente
   if (event.request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return new Response('Network error', { status: 503 });
-      })
-    );
     return;
   }
 

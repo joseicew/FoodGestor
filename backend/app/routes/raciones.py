@@ -8,10 +8,16 @@ from sqlalchemy import select
 raciones_bp = Blueprint('raciones', __name__, url_prefix='/api/raciones')
 
 
+def _safe_rollback():
+    try:
+        db.session.rollback()
+    except Exception:
+        db.session.remove()
+
+
 @raciones_bp.route('', methods=['GET'])
 @jwt_required()
 def obtener_raciones():
-    """Obtiene todas las raciones del usuario actual"""
     try:
         usuario_id = int(get_jwt_identity())
         raciones = Racion.query.filter_by(usuario_id=usuario_id).all()
@@ -23,12 +29,11 @@ def obtener_raciones():
 @raciones_bp.route('/<int:racion_id>', methods=['GET'])
 @jwt_required()
 def obtener_racion(racion_id):
-    """Obtiene una ración específica del usuario actual"""
     try:
         usuario_id = int(get_jwt_identity())
         racion = Racion.query.filter_by(id=racion_id, usuario_id=usuario_id).first()
         if not racion:
-            return jsonify({'error': 'Ración no encontrado'}), 404
+            return jsonify({'error': 'Ración no encontrada'}), 404
         return jsonify(racion.to_dict()), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -37,7 +42,6 @@ def obtener_racion(racion_id):
 @raciones_bp.route('', methods=['POST'])
 @jwt_required()
 def crear_racion():
-    """Crea una nueva ración para el usuario actual"""
     try:
         usuario_id = int(get_jwt_identity())
         data = request.get_json() or {}
@@ -46,7 +50,6 @@ def crear_racion():
         if not nombre:
             return jsonify({'error': 'El nombre es obligatorio'}), 400
 
-        # Verificar que no exista una ración con ese nombre para este usuario
         existe = Racion.query.filter_by(nombre=nombre, usuario_id=usuario_id).first()
         if existe:
             return jsonify({'error': f'Ya existe una ración llamada "{nombre}"'}), 409
@@ -60,21 +63,20 @@ def crear_racion():
         db.session.commit()
 
         return jsonify({
-            'mensaje': 'Ración creado exitosamente',
+            'mensaje': 'Ración creada exitosamente',
             'racion': racion.to_dict()
         }), 201
     except Exception as e:
-        db.session.rollback()
+        _safe_rollback()
         return jsonify({'error': str(e)}), 500
 
 
 @raciones_bp.route('/<int:racion_id>', methods=['PUT'])
 def actualizar_racion(racion_id):
-    """Actualiza una ración existente"""
     try:
         racion = Racion.query.get(racion_id)
         if not racion:
-            return jsonify({'error': 'Ración no encontrado'}), 404
+            return jsonify({'error': 'Ración no encontrada'}), 404
 
         data = request.get_json() or {}
 
@@ -88,41 +90,39 @@ def actualizar_racion(racion_id):
 
         db.session.commit()
         return jsonify({
-            'mensaje': 'Ración actualizado',
+            'mensaje': 'Ración actualizada',
             'racion': racion.to_dict()
         }), 200
     except Exception as e:
-        db.session.rollback()
+        _safe_rollback()
         return jsonify({'error': str(e)}), 500
 
 
 @raciones_bp.route('/<int:racion_id>', methods=['DELETE'])
 def eliminar_racion(racion_id):
-    """Elimina una ración"""
     try:
         racion = Racion.query.get(racion_id)
         if not racion:
-            return jsonify({'error': 'Ración no encontrado'}), 404
+            return jsonify({'error': 'Ración no encontrada'}), 404
 
         db.session.delete(racion)
         db.session.commit()
-        return jsonify({'mensaje': 'Ración eliminado'}), 200
+        return jsonify({'mensaje': 'Ración eliminada'}), 200
     except Exception as e:
-        db.session.rollback()
+        _safe_rollback()
         return jsonify({'error': str(e)}), 500
 
 
 @raciones_bp.route('/<int:racion_id>/alimentos', methods=['POST'])
 def agregar_alimento_racion(racion_id):
-    """Agrega un alimento a una ración"""
     try:
         racion = Racion.query.get(racion_id)
         if not racion:
-            return jsonify({'error': 'Ración no encontrado'}), 404
+            return jsonify({'error': 'Ración no encontrada'}), 404
 
         data = request.get_json() or {}
         alimento_id = data.get('alimento_id')
-        cantidad = data.get('cantidad', 100)  # default 100g
+        cantidad = data.get('cantidad', 100)
 
         if not alimento_id:
             return jsonify({'error': 'alimento_id es requerido'}), 400
@@ -131,7 +131,6 @@ def agregar_alimento_racion(racion_id):
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
-        # Verificar si ya existe
         existe = db.session.execute(
             select(racion_alimentos).where(
                 (racion_alimentos.c.racion_id == racion_id) &
@@ -142,7 +141,6 @@ def agregar_alimento_racion(racion_id):
         if existe:
             return jsonify({'error': 'Este alimento ya está en la ración'}), 409
 
-        # Insertar directamente en la tabla junction con la cantidad
         stmt = racion_alimentos.insert().values(
             racion_id=racion_id,
             alimento_id=alimento_id,
@@ -151,50 +149,51 @@ def agregar_alimento_racion(racion_id):
         db.session.execute(stmt)
         db.session.commit()
 
-        # Recargar la ración para obtener la versión actualizada
         db.session.refresh(racion)
         return jsonify({
             'mensaje': 'Alimento agregado a la ración',
             'racion': racion.to_dict()
         }), 201
     except Exception as e:
-        db.session.rollback()
+        _safe_rollback()
         return jsonify({'error': str(e)}), 500
 
 
 @raciones_bp.route('/<int:racion_id>/alimentos/<int:alimento_id>', methods=['DELETE'])
 def remover_alimento_racion(racion_id, alimento_id):
-    """Remueve un alimento de una ración"""
     try:
         racion = Racion.query.get(racion_id)
         if not racion:
-            return jsonify({'error': 'Ración no encontrado'}), 404
+            return jsonify({'error': 'Ración no encontrada'}), 404
 
-        alimento = Alimento.query.get(alimento_id)
-        if not alimento:
-            return jsonify({'error': 'Alimento no encontrado'}), 404
+        # Borrar directamente de la junction table sin depender del ORM
+        result = db.session.execute(
+            racion_alimentos.delete().where(
+                (racion_alimentos.c.racion_id == racion_id) &
+                (racion_alimentos.c.alimento_id == alimento_id)
+            )
+        )
 
-        if alimento in racion.alimentos:
-            racion.alimentos.remove(alimento)
-            db.session.commit()
-            return jsonify({
-                'mensaje': 'Alimento removido de la ración',
-                'racion': racion.to_dict()
-            }), 200
-        else:
+        if result.rowcount == 0:
             return jsonify({'error': 'El alimento no está en esta ración'}), 404
+
+        db.session.commit()
+        db.session.expire(racion)
+        return jsonify({
+            'mensaje': 'Alimento removido de la ración',
+            'racion': racion.to_dict()
+        }), 200
     except Exception as e:
-        db.session.rollback()
+        _safe_rollback()
         return jsonify({'error': str(e)}), 500
 
 
 @raciones_bp.route('/<int:racion_id>/alimentos/<int:alimento_id>', methods=['PUT'])
 def actualizar_cantidad_alimento(racion_id, alimento_id):
-    """Actualiza la cantidad de un alimento en una ración"""
     try:
         racion = Racion.query.get(racion_id)
         if not racion:
-            return jsonify({'error': 'Ración no encontrado'}), 404
+            return jsonify({'error': 'Ración no encontrada'}), 404
 
         alimento = Alimento.query.get(alimento_id)
         if not alimento:
@@ -206,7 +205,6 @@ def actualizar_cantidad_alimento(racion_id, alimento_id):
         if cantidad <= 0:
             return jsonify({'error': 'La cantidad debe ser mayor a 0'}), 400
 
-        # Actualizar cantidad
         db.session.execute(
             racion_alimentos.update().where(
                 (racion_alimentos.c.racion_id == racion_id) &
@@ -220,23 +218,19 @@ def actualizar_cantidad_alimento(racion_id, alimento_id):
             'racion': racion.to_dict()
         }), 200
     except Exception as e:
-        db.session.rollback()
+        _safe_rollback()
         return jsonify({'error': str(e)}), 500
 
 
 @raciones_bp.route('/sync/diff', methods=['POST'])
 @jwt_required()
 def verificar_cambios_raciones():
-    """Verifica si hay cambios en las raciones del usuario desde la última carga"""
     try:
         usuario_id = int(get_jwt_identity())
         data = request.get_json() or {}
         cliente_count = data.get('count', 0)
 
-        # Contar raciones actuales en el servidor para este usuario
         total_raciones = Racion.query.filter_by(usuario_id=usuario_id).count()
-
-        # Si la cantidad cambió, hay cambios
         hay_cambios = cliente_count != total_raciones
 
         return jsonify({

@@ -1,7 +1,24 @@
 <div class="perfil-container">
+  <!-- Botón cerrar sesión (fijo arriba a la derecha, solo visible en Perfil) -->
+  <button class="btn-logout-float" (click)="abrirConfirmacionLogout()" title="Cerrar sesión">🚪</button>
+
   @if (!editando) {
     <div class="header">
       <h1>👤 {{ usuario.nombre_completo }}</h1>
+    </div>
+  }
+
+  <!-- Modal de confirmación de logout -->
+  @if (confirmarLogout) {
+    <div class="modal-overlay" (click)="cerrarConfirmacionLogout()">
+      <div class="logout-modal" (click)="$event.stopPropagation()">
+        <h3>¿Cerrar sesión?</h3>
+        <p>¿Estás seguro de que quieres cerrar sesión?</p>
+        <div class="logout-modal-actions">
+          <button class="btn-cancel" (click)="cerrarConfirmacionLogout()">Cancelar</button>
+          <button class="btn-confirm" (click)="logout()">🚪 Sí, salir</button>
+        </div>
+      </div>
     </div>
   }
 

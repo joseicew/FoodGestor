@@ -15,6 +15,13 @@
           <h3>Cargando raciones...</h3>
           <p>Por favor espera</p>
         </div>
+      } @else if (errorRed) {
+        <div class="empty-state-large">
+          <div class="empty-icon">📡</div>
+          <h3>Sin conexión con el servidor</h3>
+          <p>Comprueba que el backend está activo y vuelve a intentarlo</p>
+          <button class="btn-crear-grande" (click)="cargarRaciones()">🔄 Reintentar</button>
+        </div>
       } @else if (raciones.length === 0) {
         <div class="empty-state-large">
           <div class="empty-icon">🍽️</div>
@@ -68,13 +75,61 @@
   <!-- ═══════════════ PANEL EDITAR ═══════════════ -->
   @if (activePanel === 'editar' && racionSeleccionada) {
       <div class="panel-header">
-        <div>
+        <div style="display:flex; align-items:center; gap:10px;">
           <h2>{{ racionSeleccionada.nombre }}</h2>
+          @if (cargandoOperacion) {
+            <span class="spinner" style="font-size:18px; flex-shrink:0;"></span>
+          }
         </div>
         <button class="btn-volver" (click)="volverALista()" title="Volver">↖️</button>
       </div>
 
-      <!-- Información Nutricional -->
+      <!-- Sección de Alimentos -->
+      <div class="alimentos-section">
+        <h3>Alimentos ({{ racionSeleccionada.alimentos.length }})</h3>
+
+        <!-- Lista de alimentos añadidos -->
+        @if (racionSeleccionada.alimentos.length > 0) {
+          <div class="alimentos-agregados">
+            @for (alimento of racionSeleccionada.alimentos; track alimento.id) {
+              <div class="alimento-en-menu" [class.allergen-warning]="tieneAlergeno(alimento)">
+                <div class="alimento-data">
+                  <span class="alimento-nombre">{{ alimento.nombre }}</span>
+                  <span class="alimento-marca">{{ alimento.marca }}</span>
+                </div>
+                <div class="alimento-cantidad">
+                  <input type="number" [value]="alimento.cantidad" min="1" step="10"
+                         (change)="actualizarCantidad(alimento.id, $any($event.target).value)"
+                         placeholder="100" />
+                  <span class="cantidad-unidad">g</span>
+                </div>
+                <div class="kcal-display">
+                  <span class="kcal-valor">{{ (alimento.calorias * alimento.cantidad / 100) | number:'1.0-0' }}</span>
+                  <span class="kcal-label">kcal</span>
+                </div>
+                <button class="btn-remover" (click)="removerAlimento(alimento.id)" title="Remover">🗑️</button>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-state-small">Añade alimentos para comenzar</p>
+        }
+
+        <hr class="seccion-divider" />
+
+        <!-- Añadir alimento -->
+        <h3>Añadir alimento</h3>
+        <app-busqueda-alimento
+          [alimentos]="alimentos"
+          [excluirIds]="alimentosEnRacionIds"
+          (seleccionar)="seleccionarAlimentoParaAgregar($event)">
+        </app-busqueda-alimento>
+
+        <hr class="seccion-divider" />
+      </div>
+
+      <!-- Macronutrientes totales -->
+      <h3 class="macros-titulo">Macronutrientes totales</h3>
       <div class="macros-section">
         <div class="macros-row">
           <div class="macro-stat">
@@ -127,71 +182,6 @@
           <canvas #macrosChart></canvas>
         </div>
       </div>
-
-      <!-- Sección de Alimentos -->
-      <div class="alimentos-section">
-        <h3>Alimentos ({{ racionSeleccionada.alimentos.length }})</h3>
-
-        <!-- Búsqueda de alimentos -->
-        <div class="busqueda-alimentos">
-          <input type="text" [(ngModel)]="terminoBusquedaAlimentos" (ngModelChange)="buscarAlimentos()"
-                 placeholder="🔍 Buscar alimento para agregar..." />
-        </div>
-
-        <!-- Lista de alimentos para agregar -->
-        @if (terminoBusquedaAlimentos.trim()) {
-          <div class="alimentos-disponibles">
-            @if (alimentosFiltrados.length === 0) {
-              <p class="empty-state-small">Sin resultados</p>
-            }
-            @for (alimento of alimentosFiltrados; track alimento.id) {
-              @if (!racionSeleccionada.alimentos.find(a => a.id === alimento.id)) {
-                <button class="modal-item" (click)="seleccionarAlimentoParaAgregar(alimento)" [class.favorito]="alimento.favorito" style="justify-content: space-between;">
-                  <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                    @if (alimento.favorito) {
-                      <span style="font-size: 16px; flex-shrink: 0;">⭐</span>
-                    }
-                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                      {{ alimento.nombre }} <span style="color: #999;">({{ alimento.marca }})</span>
-                    </span>
-                  </div>
-                  <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
-                    <span style="font-weight: 500; color: #666; font-size: 13px;">{{ alimento.calorias }} kcal</span>
-                    <span style="font-size: 18px; color: #4CAF50; font-weight: bold;">➕</span>
-                  </div>
-                </button>
-              }
-            }
-          </div>
-        }
-
-        <!-- Alimentos en el ración -->
-        @if (racionSeleccionada.alimentos.length > 0) {
-          <div class="alimentos-agregados">
-            @for (alimento of racionSeleccionada.alimentos; track alimento.id) {
-              <div class="alimento-en-menu" [class.allergen-warning]="tieneAlergeno(alimento)">
-                <div class="alimento-data">
-                  <span class="alimento-nombre">{{ alimento.nombre }}</span>
-                  <span class="alimento-marca">{{ alimento.marca }}</span>
-                </div>
-                <div class="alimento-cantidad">
-                  <input type="number" [value]="alimento.cantidad" min="1" step="10"
-                         (change)="actualizarCantidad(alimento.id, $any($event.target).value)"
-                         placeholder="100" />
-                  <span class="cantidad-unidad">g</span>
-                </div>
-                <div class="kcal-display">
-                  <span class="kcal-valor">{{ (alimento.calorias * alimento.cantidad / 100) | number:'1.0-0' }}</span>
-                  <span class="kcal-label">kcal</span>
-                </div>
-                <button class="btn-remover" (click)="removerAlimento(alimento.id)" title="Remover">🗑️</button>
-              </div>
-            }
-          </div>
-        } @else {
-          <p class="empty-state-small">Busca y agrega alimentos para comenzar</p>
-        }
-      </div>
   }
 
   <!-- ═══════════════ MODAL CREAR MENÚ ═══════════════ -->
@@ -229,82 +219,12 @@
     </div>
   }
 
-  <!-- Modal para elegir cantidad al agregar alimento a ración -->
-  @if (alimentoParaAgregar) {
-    <div class="modal-overlay" (click)="terminarAgregarAlimento()">
-      <div class="modal-box" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Cantidad</h2>
-          <button class="modal-close" (click)="terminarAgregarAlimento()">✕</button>
-        </div>
-
-        <div style="padding: 16px;">
-          <div style="margin-bottom: 16px;">
-            <h3 style="margin: 0 0 8px 0;">{{ alimentoParaAgregar.nombre }}</h3>
-            <p style="margin: 0; font-size: 13px; color: #666;">{{ alimentoParaAgregar.marca }}</p>
-            @if (alimentoParaAgregar.peso_unidad && alimentoParaAgregar.nombre_unidad) {
-              <p style="margin: 8px 0 0 0; font-size: 12px; color: #999; background: #f5f5f5; padding: 8px 12px; border-radius: 4px;">
-                1 {{ alimentoParaAgregar.nombre_unidad }} = {{ alimentoParaAgregar.peso_unidad }}g
-              </p>
-            }
-          </div>
-
-          <div style="margin-bottom: 16px;">
-            <!-- Tabs para elegir modo -->
-            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-              <button (click)="modoAgregarAlimentoRacion = 'unidades'"
-                      [style.background]="modoAgregarAlimentoRacion === 'unidades' ? '#4CAF50' : '#f0f0f0'"
-                      [style.color]="modoAgregarAlimentoRacion === 'unidades' ? '#fff' : '#666'"
-                      style="flex: 1; padding: 8px; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                @if (alimentoParaAgregar.nombre_unidad) {
-                  {{ alimentoParaAgregar.nombre_unidad }}
-                } @else {
-                  Raciones
-                }
-              </button>
-              <button (click)="modoAgregarAlimentoRacion = 'gramos'"
-                      [style.background]="modoAgregarAlimentoRacion === 'gramos' ? '#4CAF50' : '#f0f0f0'"
-                      [style.color]="modoAgregarAlimentoRacion === 'gramos' ? '#fff' : '#666'"
-                      style="flex: 1; padding: 8px; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                Gramos
-              </button>
-            </div>
-
-            <!-- Input de cantidad -->
-            <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">
-              Cantidad
-            </label>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text"
-                     [(ngModel)]="cantidadAgregarAlimento"
-                     [placeholder]="modoAgregarAlimentoRacion === 'unidades' ? 'Ej: 1, 1/2, 0.5' : 'Ej: 250, 100'"
-                     style="flex: 1; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 14px;" />
-              <span style="font-size: 14px; color: #666; font-weight: 500;">
-                @if (modoAgregarAlimentoRacion === 'unidades') {
-                  @if (alimentoParaAgregar.nombre_unidad) {
-                    {{ alimentoParaAgregar.nombre_unidad }}
-                  } @else {
-                    ración
-                  }
-                } @else {
-                  g
-                }
-              </span>
-            </div>
-          </div>
-
-          <div style="display: flex; gap: 8px;">
-            <button (click)="confirmarAgregarAlimento()" style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">
-              ✓ Agregar
-            </button>
-            <button (click)="terminarAgregarAlimento()" style="flex: 1; padding: 10px; background: #f0f0f0; color: #666; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">
-              ← Atrás
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  }
+  <!-- Modal cantidad alimento -->
+  <app-modal-cantidad-alimento
+    [alimento]="alimentoParaAgregar"
+    (confirmar)="onConfirmarCantidad($event)"
+    (cancelar)="onCancelarCantidad()">
+  </app-modal-cantidad-alimento>
 </div>
 
 
