@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -53,6 +53,12 @@ def create_app():
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
          supports_credentials=False)
     jwt.init_app(app)
+
+    # OPTIONS preflight: responder 200 antes de que @jwt_required() lo intercepte
+    @app.before_request
+    def handle_options():
+        if request.method == 'OPTIONS':
+            return '', 200
 
     # Error handler global: garantiza que los errores no capturados devuelvan JSON (no HTML)
     @app.errorhandler(Exception)

@@ -452,7 +452,10 @@ def obtener_stats():
     """Devuelve calorías y macros totales por día para los últimos N días"""
     try:
         from app.models.usuario import Usuario
-        usuario_id = int(get_jwt_identity())
+        identity = get_jwt_identity()
+        usuario_id = int(identity) if identity is not None else None
+        if not usuario_id:
+            return jsonify({'error': 'No autenticado'}), 401
         dias = int(request.args.get('dias', 30))
         hoy = date.today()
         resultado = []
