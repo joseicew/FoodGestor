@@ -13,22 +13,6 @@
     }
   }
 
-  @if (authService.estaAutenticado()) {
-    <button class="btn-logout-float" (click)="abrirConfirmacionLogout()" title="Cerrar sesión">🚪</button>
-  }
-
-  @if (confirmarLogout) {
-    <div class="modal-overlay" (click)="cerrarConfirmacionLogout()">
-      <div class="logout-modal" (click)="$event.stopPropagation()">
-        <h3>¿Cerrar sesión?</h3>
-        <p>¿Estás seguro de que quieres cerrar sesión?</p>
-        <div class="logout-modal-actions">
-          <button class="btn-cancel" (click)="cerrarConfirmacionLogout()">Cancelar</button>
-          <button class="btn-confirm" (click)="logout()">🚪 Sí, salir</button>
-        </div>
-      </div>
-    </div>
-  }
 
   <main class="content">
     <router-outlet />
@@ -50,6 +34,10 @@
       <a routerLink="/calendario" routerLinkActive="active" class="nav-item">
         <span class="nav-icon">📅</span>
         <span class="nav-label">Calendario</span>
+      </a>
+      <a routerLink="/stats" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Stats</span>
       </a>
     </nav>
   }

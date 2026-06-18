@@ -2,6 +2,7 @@
   @if (!editando) {
     <div class="header">
       <h1>👤 {{ usuario.nombre_completo }}</h1>
+      <button class="btn-logout" (click)="abrirLogout()" title="Cerrar sesión">🚪</button>
     </div>
   }
 
@@ -140,9 +141,6 @@
       }
     </div>
 
-    <div class="coming-soon-card">
-      <p>🚧 Historial y estadísticas próximamente</p>
-    </div>
   } @else {
     <!-- VISTA DE EDICIÓN -->
     <div class="perfil-edicion-card">
@@ -413,6 +411,20 @@
           </button>
         </div>
       </form>
+    </div>
+  }
+
+  <!-- Modal logout -->
+  @if (confirmarLogout) {
+    <div class="modal-overlay" (click)="cerrarLogout()">
+      <div class="logout-modal" (click)="$event.stopPropagation()">
+        <h3>¿Cerrar sesión?</h3>
+        <p>Se cerrará tu sesión actual.</p>
+        <div class="logout-modal-actions">
+          <button class="btn-cancel" (click)="cerrarLogout()">Cancelar</button>
+          <button class="btn-confirm" (click)="hacerLogout()">Cerrar sesión</button>
+        </div>
+      </div>
     </div>
   }
 </div>

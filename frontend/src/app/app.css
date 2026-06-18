@@ -23,66 +23,6 @@
   padding-bottom: 70px;
 }
 
-/* ── Botón flotante de cerrar sesión (global, todas las pestañas) ── */
-.btn-logout-float {
-  position: fixed;
-  top: calc(max(env(safe-area-inset-top), 16px) + 6px);
-  right: 14px;
-  z-index: 200;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: #f44336;
-  color: #fff;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.35);
-  transition: all 0.2s;
-}
-
-.btn-logout-float:hover {
-  background: #d32f2f;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.45);
-}
-
-/* ── Modal de confirmación de logout ── */
-.logout-modal {
-  background: var(--bg-surface, #fff);
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 320px;
-  width: 90%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  text-align: center;
-}
-
-.logout-modal h3 { margin: 0 0 8px; font-size: 18px; color: var(--text-primary, #2d2d2d); }
-.logout-modal p { margin: 0 0 20px; font-size: 14px; color: var(--text-secondary, #777); }
-
-.logout-modal-actions { display: flex; gap: 12px; }
-
-.logout-modal-actions button {
-  flex: 1;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.logout-modal-actions .btn-cancel { background: #f0f0f0; color: #333; }
-.logout-modal-actions .btn-cancel:hover { background: #e0e0e0; }
-.logout-modal-actions .btn-confirm { background: #f44336; color: #fff; }
-.logout-modal-actions .btn-confirm:hover { background: #d32f2f; }
-
 .bottom-nav {
   position: fixed;
   bottom: 0;

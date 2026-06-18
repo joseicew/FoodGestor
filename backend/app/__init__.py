@@ -64,6 +64,9 @@ def create_app():
             pass
         return jsonify({'error': str(e)}), 500
 
+    # Importar modelos para que SQLAlchemy cree las tablas
+    from app.models.peso_historico import PesoHistorico  # noqa: F401
+
     # Registrar blueprints
     from app.routes.auth import auth_bp
     from app.routes.alimentos import alimentos_bp

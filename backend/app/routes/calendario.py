@@ -4,7 +4,7 @@ from app import db
 from app.models.comida_diaria import ComidaDiaria, comida_raciones, comida_alimentos
 from app.models.racion import Racion
 from app.models.alimento import Alimento
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from sqlalchemy import select
 
 calendario_bp = Blueprint('calendario', __name__, url_prefix='/api/calendario')
@@ -443,4 +443,39 @@ def actualizar_cantidad_alimento(fecha, tipo_comida, alimento_id):
         return jsonify({'error': 'Formato de fecha inválido (use YYYY-MM-DD)'}), 400
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@calendario_bp.route('/stats', methods=['GET'])
+@jwt_required()
+def obtener_stats():
+    """Devuelve calorías y macros totales por día para los últimos N días"""
+    try:
+        from app.models.usuario import Usuario
+        usuario_id = int(get_jwt_identity())
+        dias = int(request.args.get('dias', 30))
+        hoy = date.today()
+        resultado = []
+
+        usuario = Usuario.query.get(usuario_id)
+        objetivo_kcal = usuario.limites_calorias if usuario else 2500
+
+        for i in range(dias - 1, -1, -1):
+            fecha = hoy - timedelta(days=i)
+            fecha_str = fecha.isoformat()
+            comidas = obtener_dia_completo(fecha_str, usuario_id)
+            totales = calcular_totales_diarios(comidas) if comidas else {}
+            resultado.append({
+                'fecha': fecha_str,
+                'calorias': round(totales.get('calorias', 0), 1),
+                'proteinas': round(totales.get('proteinas', 0), 1),
+                'grasas': round(totales.get('grasas', 0), 1),
+                'hidratos': round(totales.get('hidratos_carbono', 0), 1),
+            })
+
+        return jsonify({
+            'dias': resultado,
+            'objetivo_kcal': objetivo_kcal
+        }), 200
+    except Exception as e:
         return jsonify({'error': str(e)}), 500

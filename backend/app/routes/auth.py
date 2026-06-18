@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
 from app import db
 from app.models.usuario import Usuario
+from app.models.peso_historico import PesoHistorico
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from datetime import date, timedelta
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -147,7 +149,16 @@ def actualizar_perfil():
         if 'altura' in data:
             usuario.altura = data['altura']
         if 'peso' in data:
-            usuario.peso = data['peso']
+            nuevo_peso = data['peso']
+            usuario.peso = nuevo_peso
+            # Registrar en historial (upsert por fecha)
+            from datetime import date as _date
+            hoy = _date.today()
+            registro_peso = PesoHistorico.query.filter_by(usuario_id=usuario.id, fecha=hoy).first()
+            if registro_peso:
+                registro_peso.peso = nuevo_peso
+            else:
+                db.session.add(PesoHistorico(usuario_id=usuario.id, fecha=hoy, peso=nuevo_peso))
         if 'nivel_actividad' in data:
             usuario.nivel_actividad = data['nivel_actividad']
         if 'objetivo' in data:
@@ -189,6 +200,58 @@ def actualizar_perfil():
 
         return jsonify(usuario.to_dict()), 200
 
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route('/peso-historico', methods=['GET'])
+@jwt_required()
+def obtener_peso_historico():
+    """Devuelve el historial de peso del usuario (últimos N días)"""
+    try:
+        usuario_id = get_jwt_identity()
+        dias = int(request.args.get('dias', 30))
+        desde = date.today() - timedelta(days=dias)
+        registros = PesoHistorico.query.filter(
+            PesoHistorico.usuario_id == usuario_id,
+            PesoHistorico.fecha >= desde
+        ).order_by(PesoHistorico.fecha).all()
+        return jsonify([r.to_dict() for r in registros]), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route('/peso-historico', methods=['POST'])
+@jwt_required()
+def registrar_peso():
+    """Registra o actualiza el peso del usuario para una fecha (por defecto hoy)"""
+    try:
+        usuario_id = get_jwt_identity()
+        data = request.get_json()
+        peso = data.get('peso')
+        if peso is None or peso <= 0:
+            return jsonify({'error': 'Peso inválido'}), 400
+
+        fecha_str = data.get('fecha')
+        fecha = date.fromisoformat(fecha_str) if fecha_str else date.today()
+
+        # Upsert: si ya hay registro para esa fecha, actualiza
+        registro = PesoHistorico.query.filter_by(usuario_id=usuario_id, fecha=fecha).first()
+        if registro:
+            registro.peso = peso
+        else:
+            registro = PesoHistorico(usuario_id=usuario_id, fecha=fecha, peso=peso)
+            db.session.add(registro)
+
+        # Actualizar también el peso actual del perfil
+        usuario = Usuario.query.get(usuario_id)
+        if usuario:
+            usuario.peso = peso
+            usuario.calcular_limites_base()
+
+        db.session.commit()
+        return jsonify(registro.to_dict()), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

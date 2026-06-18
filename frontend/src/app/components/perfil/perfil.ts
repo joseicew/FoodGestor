@@ -52,6 +52,8 @@ export class Perfil implements OnInit {
   getd_mantenimiento_temp: number | null = null;  // GETD sin déficit
   tdee_calculada_temp: number | null = null;      // GETD con déficit/superávit
 
+  confirmarLogout = false;
+
   // Totales diarios
   totalCalorias: number = 0;
   totalProteinas: number = 0;
@@ -483,6 +485,15 @@ export class Perfil implements OnInit {
       'muy_activo': 'MUY ACTIVO'
     };
     return actividadMap[nivel_actividad] || nivel_actividad.toUpperCase();
+  }
+
+  abrirLogout(): void { this.confirmarLogout = true; }
+  cerrarLogout(): void { this.confirmarLogout = false; }
+
+  hacerLogout(): void {
+    this.confirmarLogout = false;
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
 }

@@ -8,6 +8,7 @@ import { LoginComponent } from './components/login/login';
 import { RegistroComponent } from './components/registro/registro';
 import { OnboardingComponent } from './components/onboarding/onboarding';
 import { AuthGuard } from './guards/auth.guard';
+import { StatsComponent } from './components/stats/stats';
 
 export const routes: Routes = [
   // Rutas públicas
@@ -21,6 +22,7 @@ export const routes: Routes = [
   { path: 'alimentos/nuevo', component: AlimentoAnadir, canActivate: [AuthGuard] },
   { path: 'raciones', component: Raciones, canActivate: [AuthGuard] },
   { path: 'calendario', component: Calendario, canActivate: [AuthGuard] },
+  { path: 'stats', component: StatsComponent, canActivate: [AuthGuard] },
 
   // Redirect por defecto
   { path: '', redirectTo: 'perfil', pathMatch: 'full' }

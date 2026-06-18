@@ -1,0 +1,109 @@
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 12px;
+  gap: 12px;
+}
+
+.header { flex-shrink: 0; }
+.header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); padding: 12px 0 4px; }
+
+/* ── Tarjeta de peso ── */
+.peso-card {
+  background: var(--bg-surface);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.peso-actual { display: flex; flex-direction: column; gap: 2px; }
+.peso-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.peso-valor { font-size: 26px; font-weight: 700; color: var(--text-primary); line-height: 1; }
+.peso-valor small { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+
+.peso-form { display: flex; gap: 8px; align-items: center; }
+.peso-form input {
+  width: 90px;
+  padding: 8px 10px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  text-align: center;
+}
+.peso-form input:focus { outline: none; border-color: #4CAF50; }
+
+.btn-guardar-peso {
+  padding: 8px 14px;
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.btn-guardar-peso:hover { background: #388E3C; }
+.btn-guardar-peso:disabled { background: #888; cursor: not-allowed; }
+
+/* ── Selector de rango ── */
+.rango-selector {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-rango {
+  flex: 1;
+  padding: 7px 0;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-rango.active {
+  background: #4CAF50;
+  border-color: #4CAF50;
+  color: #fff;
+}
+
+/* ── Gráfica ── */
+.grafica-wrapper {
+  flex: 1;
+  min-height: 260px;
+  background: var(--bg-surface);
+  border-radius: 14px;
+  padding: 12px;
+  position: relative;
+}
+
+.grafica-wrapper canvas { width: 100% !important; height: 100% !important; }
+
+.loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.objetivo-texto {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.objetivo-texto strong { color: #FF9800; }
