@@ -158,19 +158,22 @@ export class SyncService {
       tap(result => {
         // Si hay cambios, recargar los datos correspondientes
         if (result.alimentos.hay_cambios) {
-          this.alimentosService.obtenerAlimentos().subscribe(
-            alimentos => this.cacheService.guardarAlimentos(alimentos)
-          );
+          this.alimentosService.obtenerAlimentos().subscribe({
+            next: alimentos => this.cacheService.guardarAlimentos(alimentos),
+            error: err => console.error('⚠️ Error sincronizando alimentos:', err)
+          });
         }
         if (result.raciones.hay_cambios) {
-          this.racionesService.obtenerRaciones().subscribe(
-            raciones => this.cacheService.guardarRaciones(raciones)
-          );
+          this.racionesService.obtenerRaciones().subscribe({
+            next: raciones => this.cacheService.guardarRaciones(raciones),
+            error: err => console.error('⚠️ Error sincronizando raciones:', err)
+          });
         }
         if (result.calendario.hay_cambios) {
-          this.calendarioService.obtenerCalendario().subscribe(
-            calendario => this.cacheService.guardarCalendario(calendario)
-          );
+          this.calendarioService.obtenerCalendario().subscribe({
+            next: calendario => this.cacheService.guardarCalendario(calendario),
+            error: err => console.error('⚠️ Error sincronizando calendario:', err)
+          });
         }
       })
     );

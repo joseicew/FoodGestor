@@ -88,6 +88,18 @@ export class Perfil implements OnInit {
     this.cargarPerfil();
     this.cargarTotalesDelDia();
 
+    // Precargar ingredientes para poder mostrar sus nombres en la vista
+    if (!this.ingredientesService.estaCargado()) {
+      this.ingredientesService.cargarTodosLosIngredientes().subscribe({
+        next: () => {
+          this.todosIngredientes = this.ingredientesService.obtenerIngredientesCacheados();
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.todosIngredientes = this.ingredientesService.obtenerIngredientesCacheados();
+    }
+
     // Iniciar verificación periódica de cambios
     this.autoSyncService.iniciarVerificacionPeriodica();
   }

@@ -30,6 +30,7 @@ export class AlimentoDetalle implements OnChanges {
   @Input() alimento: any = null;
   @Input() editable = false;
   @Input() alergenosUsuario: string[] = [];
+  @Input() ingredientesNoDeseados: number[] = [];
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardado = new EventEmitter<void>();
@@ -111,9 +112,15 @@ export class AlimentoDetalle implements OnChanges {
     return ingrediente.alergenos_categorias.some((a: string) => this.alergenosUsuario.includes(a));
   }
 
+  esIngredienteNoDeseado(ingrediente: any): boolean {
+    if (!ingrediente?.id || this.ingredientesNoDeseados.length === 0) return false;
+    return this.ingredientesNoDeseados.includes(Number(ingrediente.id));
+  }
+
   getColorIngrediente(ingrediente: any): string {
     if (!ingrediente) return '';
     if (this.tieneAlergeniaIngrediente(ingrediente)) return 'rojo';
+    if (this.esIngredienteNoDeseado(ingrediente)) return 'marron';
     if (ingrediente.es_aditivo) return 'naranja';
     if (ingrediente.alergenos_categorias && ingrediente.alergenos_categorias.length > 0) return 'amarillo';
     return '';

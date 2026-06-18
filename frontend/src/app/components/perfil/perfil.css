@@ -90,6 +90,17 @@
 
 .dato-valor-inline { font-size: 15px; font-weight: 600; color: #2d2d2d; flex: 1; }
 
+.dato-valor-inline.dato-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.dato-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.dato-tag.alergia { background: #fff3cd; color: #856404; }
+.dato-tag.no-deseado { background: #fde8e8; color: #b91c1c; }
+
 .dato-label { display: block; font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
 .dato-valor { display: block; font-size: 16px; font-weight: 600; color: #2d2d2d; }
 

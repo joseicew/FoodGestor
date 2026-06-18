@@ -113,6 +113,10 @@ def _migrar_columnas():
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE usuario ADD COLUMN alergenos_seleccionados TEXT DEFAULT '[]'"))
                 conn.commit()
+        if 'ingredientes_no_deseados' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE usuario ADD COLUMN ingredientes_no_deseados TEXT DEFAULT '[]'"))
+                conn.commit()
     except Exception as e:
         logging.error(f"Error migrating usuario table: {e}")
         pass

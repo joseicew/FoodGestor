@@ -91,6 +91,30 @@
         <div class="dato-label-inline">Objetivo</div>
         <div class="dato-valor-inline">{{ formatearObjetivo(usuario.objetivo) }}</div>
       </div>
+
+      <!-- Alergias -->
+      @if (alergenos_seleccionados.length > 0) {
+        <div class="dato-inline-row">
+          <div class="dato-label-inline">⚠️ Alergias</div>
+          <div class="dato-valor-inline dato-tags">
+            @for (a of alergenos_seleccionados; track a) {
+              <span class="dato-tag alergia">{{ a }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Ingredientes no deseados -->
+      @if (ingredientes_no_deseados.length > 0) {
+        <div class="dato-inline-row">
+          <div class="dato-label-inline">🚫 Evitar</div>
+          <div class="dato-valor-inline dato-tags">
+            @for (id of ingredientes_no_deseados; track id) {
+              <span class="dato-tag no-deseado">{{ nombreIngrediente(id) }}</span>
+            }
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Explicación de calorías -->

@@ -126,6 +126,13 @@
 }
 .ingrediente-rojo:hover { background: #ffcdd2 !important; box-shadow: 0 2px 6px rgba(211, 47, 47, 0.2) !important; }
 
+.ingrediente-marron {
+  background: #efebe9 !important;
+  color: #6d4c41 !important;
+  font-weight: 600 !important;
+}
+.ingrediente-marron:hover { background: #d7ccc8 !important; box-shadow: 0 2px 6px rgba(93, 64, 55, 0.2) !important; }
+
 .ingrediente-naranja {
   background: #fff3e0 !important;
   color: #e65100 !important;

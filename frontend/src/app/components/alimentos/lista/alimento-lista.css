@@ -1,18 +1,19 @@
 .alimentos-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background: transparent;
+  gap: 6px;
+  background: #445935;
+  border-radius: 40px;
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  padding-right: 8px;
+  /* padding-right: 8px; */
 }
 
 .alimento-card {
   background: #f9f9f9;
   border: 1px solid #eee;
-  border-radius: 10px;
+  border-radius: 40px;
   padding: 10px;
   padding-right: 50px;
   display: flex;
@@ -24,8 +25,15 @@
 .alimento-card.clickable { cursor: pointer; }
 .alimento-card.clickable:hover { background: #f1f8f1; border-color: #c8e6c9; }
 
+.alimento-card.con-no-deseados {
+  border: 4px solid #5b1f00;
+  background: #fdf0e8;
+}
+
+.alimento-card.con-no-deseados:hover { background: #f5d5b8; border-color: #3d1500; }
+
 .alimento-card.con-alergias {
-  border: 2px solid #f44336;
+  border: 3px solid #f44336;
   background: #ffebee;
 }
 

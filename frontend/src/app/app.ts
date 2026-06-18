@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth';
 import { ThemeService } from './services/theme';
@@ -16,8 +16,10 @@ export class App implements OnInit {
   authService = inject(AuthService);
   themeService = inject(ThemeService);
   syncStatusService = inject(SyncStatusService);
+  private router = inject(Router);
 
   syncStatus$!: Observable<SyncStatus>;
+  confirmarLogout = false;
 
   ngOnInit(): void {
     this.syncStatus$ = this.syncStatusService.status$;
@@ -33,5 +35,14 @@ export class App implements OnInit {
 
   getSyncText(): string {
     return this.syncStatusService.getStatusText();
+  }
+
+  abrirConfirmacionLogout() { this.confirmarLogout = true; }
+  cerrarConfirmacionLogout() { this.confirmarLogout = false; }
+
+  logout() {
+    this.confirmarLogout = false;
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

@@ -33,6 +33,8 @@ export class Alimentos implements OnInit {
   categoriaFiltro = '';
 
   alergenosDelUsuario: string[] = [];
+  ingredientesNoDeseadosUsuario: number[] = [];
+  perfilCargado = false;
 
   // Detalle
   alimentoDetalle: any = null;
@@ -175,15 +177,35 @@ export class Alimentos implements OnInit {
     this.authService.obtenerPerfil().subscribe({
       next: (perfil) => {
         this.alergenosDelUsuario = perfil.alergenos_seleccionados || [];
+        this.ingredientesNoDeseadosUsuario = perfil.ingredientes_no_deseados || [];
+        this.perfilCargado = true;
         this.cdr.detectChanges();
       },
-      error: () => {}
+      error: () => { this.perfilCargado = true; this.cdr.detectChanges(); }
+    });
+  }
+
+  private resolverIngredientes(alimento: any): any[] {
+    return (alimento.ingredientes || []).map((ing: any) => {
+      if (typeof ing === 'object') return ing;
+      return this.ingredientesService.obtenerIngredientePorNombre(ing) || { nombre: ing, alergenos_categorias: [] };
     });
   }
 
   tieneAlergiaUsuario = (alimento: any): boolean => {
-    if (!alimento || !alimento.ingredientes || this.alergenosDelUsuario.length === 0) return false;
-    return this.allergensService.tieneAlergeno(alimento, this.alergenosDelUsuario);
+    if (!alimento?.ingredientes || this.alergenosDelUsuario.length === 0) return false;
+    return this.allergensService.tieneAlergeno(
+      { ...alimento, ingredientes: this.resolverIngredientes(alimento) },
+      this.alergenosDelUsuario
+    );
+  };
+
+  tieneIngNoDeseadoUsuario = (alimento: any): boolean => {
+    if (!alimento?.ingredientes || this.ingredientesNoDeseadosUsuario.length === 0) return false;
+    return this.resolverIngredientes(alimento).some((ing: any) => {
+      const id = ing?.id != null ? Number(ing.id) : null;
+      return id != null && this.ingredientesNoDeseadosUsuario.includes(id);
+    });
   };
 
   // ── Verificación de ingredientes ──

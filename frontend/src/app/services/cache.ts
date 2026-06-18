@@ -291,6 +291,34 @@ export class CacheService {
     }
   }
 
+  // ── Cache por fecha (calendario) ──
+
+  private readonly CACHE_DIA_PREFIX = 'cache_dia_';
+
+  guardarDia(fecha: string, data: any): void {
+    const entry = { data, timestamp: Date.now(), hash: this.calcularHash([data]) };
+    localStorage.setItem(this.CACHE_DIA_PREFIX + fecha, JSON.stringify(entry));
+  }
+
+  obtenerDia(fecha: string): any | null {
+    const raw = localStorage.getItem(this.CACHE_DIA_PREFIX + fecha);
+    if (!raw) return null;
+    try {
+      const entry = JSON.parse(raw);
+      if (Date.now() - entry.timestamp > this.CACHE_DURATION) return null;
+      return entry.data;
+    } catch { return null; }
+  }
+
+  haCambiadoDia(fecha: string, nuevaData: any): boolean {
+    const raw = localStorage.getItem(this.CACHE_DIA_PREFIX + fecha);
+    if (!raw) return true;
+    try {
+      const entry = JSON.parse(raw);
+      return entry.hash !== this.calcularHash([nuevaData]);
+    } catch { return true; }
+  }
+
   /**
    * Limpia toda la caché (útil al logout)
    */

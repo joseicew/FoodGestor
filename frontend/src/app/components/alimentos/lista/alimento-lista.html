@@ -6,6 +6,7 @@
   @for (alimento of alimentos; track alimento.id) {
     <div class="alimento-card clickable"
          [class.con-alergias]="resaltarAlergias && tieneAlergia(alimento)"
+         [class.con-no-deseados]="tieneIngNoDeseado(alimento)"
          (click)="onSeleccionar(alimento)">
       <div style="flex: 1;">
         <div style="margin-bottom: 4px;">

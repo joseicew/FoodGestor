@@ -26,6 +26,9 @@ export class AutoSyncService implements OnDestroy {
       return;
     }
 
+    // Cancelar intervalo previo antes de crear uno nuevo (evita apilamiento)
+    this.destroy$.next();
+
     console.log('🔄 Iniciando verificación periódica de cambios (cada 60s)');
 
     interval(this.syncInterval)

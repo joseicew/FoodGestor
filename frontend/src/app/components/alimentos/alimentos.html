@@ -26,8 +26,11 @@
         [alimentos]="alimentosFiltrados"
         [resaltarAlergias]="true"
         [tieneAlergia]="tieneAlergiaUsuario"
+        [tieneIngNoDeseado]="tieneIngNoDeseadoUsuario"
         (seleccionar)="abrirDetalle($event, false)"
-        (toggleFavorito)="toggleFavorito($event.alimento)">
+        (toggleFavorito)="toggleFavorito($event.alimento)"
+        [style.opacity]="perfilCargado ? 1 : 0"
+        [style.transition]="'opacity 0.25s ease'">
       </app-alimento-lista>
     </div>
   }
@@ -84,6 +87,7 @@
       [alimento]="alimentoDetalle"
       [editable]="detalleEditable"
       [alergenosUsuario]="alergenosDelUsuario"
+      [ingredientesNoDeseados]="ingredientesNoDeseadosUsuario"
       (cerrar)="onDetalleCerrar()"
       (guardado)="onDetalleGuardado()"
       (eliminado)="onDetalleEliminado()"

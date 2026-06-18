@@ -1,6 +1,6 @@
 .panel-filtros {
   flex-shrink: 0;
-  background: transparent;
+  background: var(--bg-surface);
   padding: 8px 0;
 }
 

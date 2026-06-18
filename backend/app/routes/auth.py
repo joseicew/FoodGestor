@@ -169,13 +169,21 @@ def actualizar_perfil():
         if 'limites_azucares' in data:
             usuario.limites_azucares = data['limites_azucares']
 
+        import json
+
         # Actualizar alergenos seleccionados
         if 'alergenos_seleccionados' in data:
-            import json
             if isinstance(data['alergenos_seleccionados'], list):
                 usuario.alergenos_seleccionados = json.dumps(data['alergenos_seleccionados'])
             else:
                 usuario.alergenos_seleccionados = '[]'
+
+        # Actualizar ingredientes no deseados
+        if 'ingredientes_no_deseados' in data:
+            if isinstance(data['ingredientes_no_deseados'], list):
+                usuario.ingredientes_no_deseados = json.dumps(data['ingredientes_no_deseados'])
+            else:
+                usuario.ingredientes_no_deseados = '[]'
 
         db.session.commit()
 
