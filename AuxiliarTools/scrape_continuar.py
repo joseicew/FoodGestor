@@ -120,14 +120,14 @@ def procesar_ingredientes(texto):
             idx = texto.rfind('(')
             texto = texto[:idx] + texto[idx+1:]
 
-    # Dividir por coma/punto fuera de paréntesis
+    # Dividir por coma/punto/punto y coma fuera de paréntesis
     partes, actual, nivel = [], [], 0
     for ch in texto:
         if ch == '(':
             nivel += 1; actual.append(ch)
         elif ch == ')':
             nivel -= 1; actual.append(ch)
-        elif ch in (',', '.') and nivel == 0:
+        elif ch in (',', '.', ';') and nivel == 0:
             p = ''.join(actual).strip()
             if p: partes.append(p)
             actual = []
@@ -365,11 +365,15 @@ def guardar_en_bd(datos):
                 fibra=datos['macros'].get('fibra'),
                 sal=datos['macros'].get('sal'),
             )
+            vistos = set()
             for ing_nombre in datos.get('ingredientes', []):
                 ing_nombre = ing_nombre.strip()
-                if not ing_nombre:
+                if not ing_nombre or ing_nombre.lower() in vistos:
                     continue
-                ing = Ingrediente.query.filter_by(nombre=ing_nombre).first()
+                vistos.add(ing_nombre.lower())
+                ing = Ingrediente.query.filter(
+                    db.func.lower(Ingrediente.nombre) == ing_nombre.lower()
+                ).first()
                 if not ing:
                     ing = Ingrediente(nombre=ing_nombre, verificado=False)
                     db.session.add(ing)
@@ -471,6 +475,12 @@ def main():
     print(f"Nuevos fallos añad.:  {nuevos_fallos}")
     print(f"Total fallos acum.:   {len(data_fallos['fallos'])}")
     print("=" * 60)
+
+    if contadores['guardados'] > 0:
+        print("\n[AUTO] Clasificando ingredientes nuevos con Claude...")
+        clasificador = Path(__file__).parent / 'clasificar_ingredientes.py'
+        import subprocess
+        subprocess.run([sys.executable, str(clasificador)], check=False)
 
 if __name__ == '__main__':
     main()

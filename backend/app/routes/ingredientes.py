@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from sqlalchemy.exc import IntegrityError
 from app import db
 from app.models.ingrediente import Ingrediente
 
@@ -117,7 +118,52 @@ def actualizar_ingrediente(ingrediente_id):
         if 'alergenos_categorias' in data and isinstance(data['alergenos_categorias'], list):
             ingrediente.set_alergenos_categorias(data['alergenos_categorias'])
 
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            # Nombre duplicado: hacer merge con el ingrediente existente
+            nombre_nuevo = data.get('nombre', ingrediente.nombre)
+            existente = Ingrediente.query.filter(
+                db.func.lower(Ingrediente.nombre) == nombre_nuevo.lower(),
+                Ingrediente.id != ingrediente_id
+            ).first()
+            if not existente:
+                return jsonify({'error': 'Conflicto de nombre sin duplicado encontrado'}), 409
+
+            # Transferir alimentos del duplicado al existente
+            from sqlalchemy import text
+            db.session.execute(text(
+                "UPDATE alimento_ingrediente SET ingrediente_id = :eid "
+                "WHERE ingrediente_id = :did AND NOT EXISTS ("
+                "  SELECT 1 FROM alimento_ingrediente a2 "
+                "  WHERE a2.alimento_id = alimento_ingrediente.alimento_id AND a2.ingrediente_id = :eid"
+                ")"
+            ), {'eid': existente.id, 'did': ingrediente_id})
+            # Borrar filas que quedarían duplicadas
+            db.session.execute(text(
+                "DELETE FROM alimento_ingrediente WHERE ingrediente_id = :did"
+            ), {'did': ingrediente_id})
+
+            # Actualizar campos del existente con los datos verificados
+            if 'categoria' in data and data['categoria']:
+                existente.categoria = data['categoria']
+            if 'es_aditivo' in data:
+                existente.es_aditivo = data['es_aditivo']
+            if 'notas' in data and data['notas']:
+                existente.notas = data['notas']
+            if 'alergenos_categorias' in data and isinstance(data['alergenos_categorias'], list):
+                existente.set_alergenos_categorias(data['alergenos_categorias'])
+            existente.verificado = True
+
+            db.session.delete(ingrediente)
+            db.session.commit()
+
+            return jsonify({
+                'mensaje': 'Ingrediente duplicado fusionado con el existente',
+                'ingrediente': existente.to_dict(),
+                'fusionado': True
+            }), 200
 
         return jsonify({
             'mensaje': 'Ingrediente actualizado',
