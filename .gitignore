@@ -57,6 +57,10 @@ config.txt
 # One-off scripts
 migrate_*.py
 debug_*.py
+
+# Scraper state (datos de ejecución, no código)
+AuxiliarTools/scrape_fallos.json
+AuxiliarTools/scrape_procesados.json
 .vercel
 
 # Local Netlify folder
