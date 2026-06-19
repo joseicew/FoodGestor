@@ -61,6 +61,9 @@ debug_*.py
 # Scraper state (datos de ejecución, no código)
 AuxiliarTools/scrape_fallos.json
 AuxiliarTools/scrape_procesados.json
+
+# Skills de Claude Code (locales, no van en el repo)
+.claude/skills/
 .vercel
 
 # Local Netlify folder
