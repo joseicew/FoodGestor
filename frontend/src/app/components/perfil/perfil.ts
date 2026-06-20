@@ -54,6 +54,12 @@ export class Perfil implements OnInit {
 
   confirmarLogout = false;
 
+  mostrandoCambioPassword = false;
+  passwordActual = '';
+  nuevaPassword = '';
+  confirmarNuevaPassword = '';
+  cambiandoPassword = false;
+
   // Totales diarios
   totalCalorias: number = 0;
   totalProteinas: number = 0;
@@ -485,6 +491,41 @@ export class Perfil implements OnInit {
       'muy_activo': 'MUY ACTIVO'
     };
     return actividadMap[nivel_actividad] || nivel_actividad.toUpperCase();
+  }
+
+  toggleCambioPassword(): void {
+    this.mostrandoCambioPassword = !this.mostrandoCambioPassword;
+    if (!this.mostrandoCambioPassword) {
+      this.passwordActual = '';
+      this.nuevaPassword = '';
+      this.confirmarNuevaPassword = '';
+    }
+  }
+
+  cambiarPassword(): void {
+    if (this.nuevaPassword !== this.confirmarNuevaPassword) {
+      this.flash.mostrar('Las contraseñas nuevas no coinciden', 'error');
+      return;
+    }
+    if (this.nuevaPassword.length < 6) {
+      this.flash.mostrar('La nueva contraseña debe tener al menos 6 caracteres', 'error');
+      return;
+    }
+    this.cambiandoPassword = true;
+    this.authService.cambiarPassword(this.passwordActual, this.nuevaPassword).subscribe({
+      next: () => {
+        this.cambiandoPassword = false;
+        this.mostrandoCambioPassword = false;
+        this.passwordActual = '';
+        this.nuevaPassword = '';
+        this.confirmarNuevaPassword = '';
+        this.flash.mostrar('Contraseña actualizada correctamente', 'exito');
+      },
+      error: (err) => {
+        this.cambiandoPassword = false;
+        this.flash.mostrar(err.error?.error || 'Error al cambiar la contraseña', 'error');
+      }
+    });
   }
 
   abrirLogout(): void { this.confirmarLogout = true; }

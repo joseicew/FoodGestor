@@ -39,6 +39,13 @@
 
 .alimento-card.con-alergias:hover { background: #ffcdd2; border-color: #e53935; }
 
+.alimento-card.sin-caracteristicas-negativas {
+  border: 3px solid #4CAF50;
+  background: #f1f8f1;
+}
+
+.alimento-card.sin-caracteristicas-negativas:hover { background: #c8e6c9; border-color: #388E3C; }
+
 .alimento-nombre { font-weight: 600; font-size: 14px; color: #2d2d2d; }
 .alimento-categoria { font-size: 12px; color: #999; }
 

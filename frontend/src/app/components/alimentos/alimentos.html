@@ -41,6 +41,9 @@
       <app-alimento-lista
         [alimentos]="obtenerFavoritos()"
         [favoritosFijos]="true"
+        [resaltarAlergias]="true"
+        [tieneAlergia]="tieneAlergiaUsuario"
+        [tieneIngNoDeseado]="tieneIngNoDeseadoUsuario"
         textoVacio="No hay favoritos aún. ⭐ Marca productos para acceso rápido"
         (seleccionar)="abrirDetalle($event, false)"
         (toggleFavorito)="toggleFavorito($event.alimento)">
@@ -69,6 +72,9 @@
 
       <app-alimento-lista
         [alimentos]="alimentosFiltrados"
+        [resaltarAlergias]="true"
+        [tieneAlergia]="tieneAlergiaUsuario"
+        [tieneIngNoDeseado]="tieneIngNoDeseadoUsuario"
         (seleccionar)="abrirDetalle($event, true)"
         (toggleFavorito)="toggleFavorito($event.alimento)">
       </app-alimento-lista>

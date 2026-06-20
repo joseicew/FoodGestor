@@ -9,11 +9,13 @@ import { RegistroComponent } from './components/registro/registro';
 import { OnboardingComponent } from './components/onboarding/onboarding';
 import { AuthGuard } from './guards/auth.guard';
 import { StatsComponent } from './components/stats/stats';
+import { ResetPasswordComponent } from './components/reset-password/reset-password';
 
 export const routes: Routes = [
   // Rutas públicas
   { path: 'login', component: LoginComponent },
   { path: 'registro', component: RegistroComponent },
+  { path: 'resetear-password', component: ResetPasswordComponent },
 
   // Rutas protegidas
   { path: 'onboarding', component: OnboardingComponent, canActivate: [AuthGuard] },

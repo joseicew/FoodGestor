@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 from datetime import timedelta
 import os
 import logging
@@ -16,6 +17,7 @@ except Exception as e:
     logging.warning(f"No .env file found or couldn't load: {e}")
 db = SQLAlchemy()
 jwt = JWTManager()
+mail = Mail()
 
 def create_app():
     app = Flask(__name__)
@@ -45,8 +47,17 @@ def create_app():
     # Token expira en 30 días (2592000 segundos) - suficiente para un uso normal sin reloguear constantemente
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=30)
 
+    # Configurar email (Gmail SMTP)
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
+
     # Inicializar extensiones
     db.init_app(app)
+    mail.init_app(app)
     CORS(app,
          origins="*",
          allow_headers=["Content-Type", "Authorization"],
@@ -125,6 +136,14 @@ def _migrar_columnas():
         if 'ingredientes_no_deseados' not in columnas:
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE usuario ADD COLUMN ingredientes_no_deseados TEXT DEFAULT '[]'"))
+                conn.commit()
+        if 'reset_token' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE usuario ADD COLUMN reset_token VARCHAR(100)'))
+                conn.commit()
+        if 'reset_token_expiry' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE usuario ADD COLUMN reset_token_expiry TIMESTAMP'))
                 conn.commit()
     except Exception as e:
         logging.error(f"Error migrating usuario table: {e}")

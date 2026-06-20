@@ -1,9 +1,12 @@
 from flask import Blueprint, request, jsonify
-from app import db
+from app import db, mail
 from app.models.usuario import Usuario
 from app.models.peso_historico import PesoHistorico
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from datetime import date, timedelta
+from flask_mail import Message
+from datetime import date, datetime, timedelta
+import secrets
+import os
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -252,6 +255,110 @@ def registrar_peso():
 
         db.session.commit()
         return jsonify(registro.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+def _enviar_email_reset(email, token):
+    frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:4200')
+    link = f"{frontend_url}/resetear-password?token={token}"
+    try:
+        msg = Message(
+            subject='Recuperar contraseña — FoodGestor',
+            recipients=[email],
+            html=f"""
+            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+              <h2 style="color:#5A7A0F">FoodGestor</h2>
+              <p>Recibimos una solicitud para restablecer tu contraseña.</p>
+              <p>Haz clic en el botón para crear una nueva contraseña (válido 1 hora):</p>
+              <a href="{link}"
+                 style="display:inline-block;background:#A4C639;color:#fff;padding:12px 24px;
+                        border-radius:8px;text-decoration:none;font-weight:600;margin:16px 0">
+                Restablecer contraseña
+              </a>
+              <p style="color:#999;font-size:12px">Si no solicitaste esto, ignora este email.</p>
+            </div>
+            """
+        )
+        mail.send(msg)
+    except Exception as e:
+        import logging
+        logging.warning(f"Error enviando email de reset: {e}")
+
+
+@auth_bp.route('/solicitar-reset', methods=['POST'])
+def solicitar_reset():
+    try:
+        data = request.get_json()
+        email = (data.get('email') or '').strip()
+        if not email:
+            return jsonify({'error': 'Email requerido'}), 400
+
+        usuario = Usuario.query.filter_by(email=email).first()
+        if usuario:
+            token = secrets.token_urlsafe(32)
+            usuario.reset_token = token
+            usuario.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
+            db.session.commit()
+            _enviar_email_reset(email, token)
+
+        # Siempre responder igual (no revelar si el email existe)
+        return jsonify({'mensaje': 'Si el email está registrado recibirás un enlace de recuperación'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route('/resetear-password', methods=['POST'])
+def resetear_password():
+    try:
+        data = request.get_json()
+        token = (data.get('token') or '').strip()
+        nueva_password = data.get('nueva_password', '')
+
+        if not token or not nueva_password:
+            return jsonify({'error': 'Token y nueva contraseña son requeridos'}), 400
+        if len(nueva_password) < 6:
+            return jsonify({'error': 'La contraseña debe tener al menos 6 caracteres'}), 400
+
+        usuario = Usuario.query.filter_by(reset_token=token).first()
+        if not usuario or not usuario.reset_token_expiry or usuario.reset_token_expiry < datetime.utcnow():
+            return jsonify({'error': 'El enlace es inválido o ha expirado'}), 400
+
+        usuario.set_password(nueva_password)
+        usuario.reset_token = None
+        usuario.reset_token_expiry = None
+        db.session.commit()
+        return jsonify({'mensaje': 'Contraseña actualizada correctamente'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route('/cambiar-password', methods=['PUT'])
+@jwt_required()
+def cambiar_password():
+    try:
+        usuario_id = get_jwt_identity()
+        usuario = Usuario.query.get(usuario_id)
+        if not usuario:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
+
+        data = request.get_json()
+        password_actual = data.get('password_actual', '')
+        nueva_password = data.get('nueva_password', '')
+
+        if not password_actual or not nueva_password:
+            return jsonify({'error': 'Contraseña actual y nueva son requeridas'}), 400
+        if not usuario.check_password(password_actual):
+            return jsonify({'error': 'La contraseña actual es incorrecta'}), 401
+        if len(nueva_password) < 6:
+            return jsonify({'error': 'La nueva contraseña debe tener al menos 6 caracteres'}), 400
+
+        usuario.set_password(nueva_password)
+        db.session.commit()
+        return jsonify({'mensaje': 'Contraseña actualizada correctamente'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

@@ -314,3 +314,24 @@
 .modal-actions .btn-primary {
   margin: 0;
 }
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #A4C639;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.link-btn:hover:not(:disabled) {
+  color: #8AB821;
+  text-decoration: underline;
+}
+
+.link-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

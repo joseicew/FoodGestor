@@ -42,6 +42,10 @@ class Usuario(db.Model):
     raciones = db.relationship('Racion', backref='usuario', lazy='select')
     comidas_diarias = db.relationship('ComidaDiaria', backref='usuario', lazy='select')
 
+    # Reset de contraseña
+    reset_token = db.Column(db.String(100), nullable=True)
+    reset_token_expiry = db.Column(db.DateTime, nullable=True)
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

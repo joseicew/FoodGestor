@@ -23,6 +23,11 @@ export class LoginComponent implements OnInit {
   emailNoExiste: string = '';
   mostrarModalPasswordIncorrecto: boolean = false;
 
+  mostrarModalOlvidePassword: boolean = false;
+  emailReset: string = '';
+  cargandoReset: boolean = false;
+  resetEnviado: boolean = false;
+
   constructor(
     private authService: AuthService,
     private syncService: SyncService,
@@ -138,6 +143,34 @@ export class LoginComponent implements OnInit {
     this.cerrarModalEmailNoExiste();
     this.email = '';
     this.password = '';
+  }
+
+  abrirOlvidePassword(): void {
+    this.emailReset = this.email;
+    this.resetEnviado = false;
+    this.mostrarModalOlvidePassword = true;
+  }
+
+  cerrarOlvidePassword(): void {
+    this.mostrarModalOlvidePassword = false;
+    this.emailReset = '';
+    this.resetEnviado = false;
+  }
+
+  enviarReset(): void {
+    const emailLimpio = this.emailReset.trim();
+    if (!emailLimpio) return;
+    this.cargandoReset = true;
+    this.authService.solicitarReset(emailLimpio).subscribe({
+      next: () => {
+        this.cargandoReset = false;
+        this.resetEnviado = true;
+      },
+      error: () => {
+        this.cargandoReset = false;
+        this.resetEnviado = true; // Igual mostramos éxito por seguridad
+      }
+    });
   }
 
 }

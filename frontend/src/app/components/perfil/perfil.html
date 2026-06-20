@@ -411,6 +411,62 @@
           </button>
         </div>
       </form>
+
+      <!-- CAMBIAR CONTRASEÑA -->
+      <div class="form-section cambiar-password-section">
+        <div class="cambiar-password-header" (click)="toggleCambioPassword()">
+          <h3>Cambiar contraseña</h3>
+          <span class="toggle-icon">{{ mostrandoCambioPassword ? '▲' : '▼' }}</span>
+        </div>
+
+        @if (mostrandoCambioPassword) {
+          <div class="cambiar-password-form">
+            <div class="form-group">
+              <label>Contraseña actual</label>
+              <input
+                type="password"
+                [(ngModel)]="passwordActual"
+                name="passwordActual"
+                placeholder="Tu contraseña actual"
+                [disabled]="cambiandoPassword"
+              />
+            </div>
+            <div class="form-group">
+              <label>Nueva contraseña</label>
+              <input
+                type="password"
+                [(ngModel)]="nuevaPassword"
+                name="nuevaPassword"
+                placeholder="Mínimo 6 caracteres"
+                [disabled]="cambiandoPassword"
+              />
+            </div>
+            <div class="form-group">
+              <label>Confirmar nueva contraseña</label>
+              <input
+                type="password"
+                [(ngModel)]="confirmarNuevaPassword"
+                name="confirmarNuevaPassword"
+                placeholder="Repite la nueva contraseña"
+                [disabled]="cambiandoPassword"
+              />
+            </div>
+            <button
+              type="button"
+              class="btn-cambiar-password"
+              (click)="cambiarPassword()"
+              [disabled]="cambiandoPassword || !passwordActual || !nuevaPassword || !confirmarNuevaPassword"
+            >
+              @if (cambiandoPassword) {
+                <span class="spinner"></span>
+                Guardando...
+              } @else {
+                Cambiar contraseña
+              }
+            </button>
+          </div>
+        }
+      </div>
     </div>
   }
 

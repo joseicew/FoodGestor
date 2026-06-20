@@ -159,6 +159,30 @@ export class AuthService {
   }
 
   /**
+   * Solicita un email de recuperación de contraseña
+   */
+  solicitarReset(email: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/solicitar-reset`, { email });
+  }
+
+  /**
+   * Restablece la contraseña usando el token del email
+   */
+  resetearPassword(token: string, nueva_password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/resetear-password`, { token, nueva_password });
+  }
+
+  /**
+   * Cambia la contraseña estando autenticado
+   */
+  cambiarPassword(password_actual: string, nueva_password: string): Observable<any> {
+    const token = this.obtenerToken();
+    let headers = new HttpHeaders();
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return this.http.put<any>(`${this.apiUrl}/cambiar-password`, { password_actual, nueva_password }, { headers });
+  }
+
+  /**
    * Guarda el token en localStorage
    */
   private guardarToken(token: string): void {

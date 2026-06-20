@@ -38,6 +38,22 @@ DELAY_BASE  = 3          # segundos mínimos entre requests
 FALLOS_FILE     = Path(__file__).parent / 'scrape_fallos.json'
 PROCESADOS_FILE = Path(__file__).parent / 'scrape_procesados.json'
 
+KEYWORDS_NO_ALIMENTARIO = {
+    # Higiene y cuidado personal
+    'limpieza', 'higiene', 'drogueria', 'droguería',
+    'cuidado facial', 'cuidado corporal', 'cuidado personal',
+    'cuidado del cabello',
+    'bazar', 'papeleria', 'papelería', 'farmacia', 'parafarmacia',
+    # Maquillaje
+    'maquillaje',
+    # Bebé (pañales/toallitas — no alimentario; la comida bebé tiene otra categoría)
+    'toallitas y pa',
+    # Decoración no comestible
+    'velas y decorac',
+    # Mascotas
+    'mascotas',
+}
+
 CATEGORIAS_VALIDAS = [
     'Carnes y Aves', 'Pescados y Mariscos', 'Lácteos y Huevos',
     'Frutas', 'Verduras y Hortalizas', 'Cereales y Derivados',
@@ -252,12 +268,12 @@ def obtener_datos_api(product_id):
         resp.raise_for_status()
         data = resp.json()
         nombre = data.get('slug', '').replace('-', ' ').title()
-        marca  = data.get('brand', 'Sin marca')
+        marca  = data.get('brand') or 'Sin marca'
         ean    = data.get('ean', '')
         photos = data.get('photos', [])
         imgs = []
-        if len(photos) > 1: imgs.append(photos[1].get('regular', ''))
-        if len(photos) > 0: imgs.append(photos[0].get('regular', ''))
+        if len(photos) > 1: imgs.append(photos[1].get('zoom', '') or photos[1].get('regular', ''))
+        if len(photos) > 0: imgs.append(photos[0].get('zoom', '') or photos[0].get('regular', ''))
         return {'id': product_id, 'nombre': nombre, 'marca': marca,
                 'ean': ean, 'imagen_urls': imgs, 'raw': data}
     except Exception as e:
@@ -279,6 +295,30 @@ def descargar_imagen(url):
         return None
 
 # ── Procesado ──────────────────────────────────────────────────────────────
+
+def _nombres_categorias(cats):
+    """Extrae todos los nombres de categoría en todos los niveles del árbol."""
+    nombres = []
+    for cat in cats:
+        if not isinstance(cat, dict):
+            nombres.append(str(cat).lower())
+            continue
+        nombres.append(cat.get('name', '').lower())
+        # Recursivo: subcategorías anidadas
+        nombres.extend(_nombres_categorias(cat.get('categories', [])))
+    return nombres
+
+
+def es_no_alimentario(datos_api):
+    """Devuelve True si el producto es de droguería/higiene/no alimentario."""
+    raw = datos_api['raw']
+    nombres = _nombres_categorias(raw.get('categories', []))
+    for nombre_cat in nombres:
+        for kw in KEYWORDS_NO_ALIMENTARIO:
+            if kw in nombre_cat:
+                return True
+    return False
+
 
 def procesar_producto(datos_api):
     raw  = datos_api['raw']
@@ -314,7 +354,7 @@ def procesar_producto(datos_api):
         try:
             res = procesar_datos_completos(img, 'image/jpeg')
             if res:
-                m = res.get('macros', {})
+                m = res.get('macros') or {}
                 if all(m.get(k) is not None for k in ('calorias', 'proteinas', 'grasas', 'hidratos_carbono')):
                     print(f"ok ({m['calorias']} kcal)")
                     macros = m
@@ -387,12 +427,92 @@ def guardar_en_bd(datos):
             print(f"    [ERROR] BD: {e}")
             return False
 
+# ── Reintentos ─────────────────────────────────────────────────────────────
+
+def reintento_fallos(delay_entre=60):
+    data_fallos, _ = cargar_fallos()
+    fallos = data_fallos.get('fallos', [])
+
+    if not fallos:
+        print("[INFO] No hay fallos registrados.")
+        return
+
+    ids_procesados = cargar_procesados()
+    total = len(fallos)
+    print("=" * 60)
+    print(f"[REINTENTOS] {total} fallos a reintentar ({delay_entre}s entre cada uno)")
+    print("=" * 60)
+
+    guardados = 0
+    aun_fallos = []
+
+    for i, fallo in enumerate(fallos):
+        pid = fallo['product_id']
+        nombre_prev = fallo.get('nombre', 'desconocido')
+        print(f"\n[{i+1}/{total}] Reintentando ID {pid}: {nombre_prev[:45]}")
+
+        datos_api = obtener_datos_api(pid)
+        if not datos_api:
+            print("    [FALLO] Error API — manteniendo en fallos")
+            aun_fallos.append(fallo)
+        elif ean_en_bd(datos_api['ean']):
+            print(f"    [SKIP] Ya en BD — eliminado de fallos")
+            marcar_procesado(pid, ids_procesados)
+        else:
+            datos = procesar_producto(datos_api)
+            if datos and guardar_en_bd(datos):
+                print(f"    [OK] Guardado en BD")
+                guardados += 1
+                marcar_procesado(pid, ids_procesados)
+            else:
+                print(f"    [FALLO] Sin macros/error BD — manteniendo en fallos")
+                aun_fallos.append(fallo)
+
+        # Persiste estado intermedio: ya fallados + los que quedan por intentar
+        data_fallos['fallos'] = aun_fallos + fallos[i+1:]
+        FALLOS_FILE.write_text(
+            json.dumps(data_fallos, indent=2, ensure_ascii=False), encoding='utf-8'
+        )
+
+        if i + 1 < total:
+            print(f"    [WAIT] {delay_entre}s...", end='', flush=True)
+            time.sleep(delay_entre)
+            print(" ok")
+
+    # Estado final
+    data_fallos['fallos'] = aun_fallos
+    FALLOS_FILE.write_text(
+        json.dumps(data_fallos, indent=2, ensure_ascii=False), encoding='utf-8'
+    )
+
+    print("\n" + "=" * 60)
+    print("[RESUMEN REINTENTOS]")
+    print("=" * 60)
+    print(f"Guardados:         {guardados}/{total}")
+    print(f"Siguen fallando:   {len(aun_fallos)}")
+    print("=" * 60)
+
+    if guardados > 0:
+        print("\n[AUTO] Clasificando ingredientes nuevos con Claude...")
+        clasificador = Path(__file__).parent / 'clasificar_ingredientes.py'
+        import subprocess
+        subprocess.run([sys.executable, str(clasificador)], check=False)
+
+
 # ── Main ───────────────────────────────────────────────────────────────────
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--n', type=int, default=30, help='Número de productos a procesar')
+    parser.add_argument('--reintentar', action='store_true',
+                        help='Reintentar productos fallados (60s entre intentos)')
+    parser.add_argument('--delay', type=int, default=60,
+                        help='Segundos de espera entre reintentos (default: 60)')
     args = parser.parse_args()
+
+    if args.reintentar:
+        reintento_fallos(delay_entre=args.delay)
+        return
     MAX = args.n
 
     print("=" * 60)
@@ -431,6 +551,13 @@ def main():
             continue
 
         nombre = datos_api['nombre']
+
+        # ¿Droguería / no alimentario? Descartar sin OCR
+        if es_no_alimentario(datos_api):
+            print(f"[SKIP] droguería/no alimentario — {nombre[:40]}")
+            marcar_procesado(pid, ids_procesados)
+            esperar()
+            continue
 
         # ¿Ya está en BD? (salvaguarda para primeras ejecuciones sin procesados.json)
         if ean_en_bd(datos_api['ean']):
