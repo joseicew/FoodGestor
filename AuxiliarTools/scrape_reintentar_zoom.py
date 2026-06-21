@@ -4,9 +4,11 @@ Reintenta los fallos 'Sin macros' usando imágenes zoom (3600x3600).
 Filtra los no-alimentarios antes de intentar OCR.
 """
 
-import os, sys, json, time, random, argparse
+import os, sys, json, time, random, argparse, warnings
 from datetime import datetime
 from pathlib import Path
+
+warnings.filterwarnings('ignore')  # silencia SAWarning de SQLAlchemy
 
 import requests
 
@@ -126,65 +128,91 @@ def main():
             uniq.append(x)
     candidatos = uniq[:args.n]
 
-    print('=' * 60)
-    print(f'[REINTENTO ZOOM] {len(candidatos)} candidatos (máx {args.n})')
-    print('=' * 60)
+    ts = datetime.now().strftime('%H:%M:%S')
+    print('=' * 65)
+    print(f'[{ts}] REINTENTO ZOOM - {len(candidatos)} pendientes (max {args.n})')
+    print('=' * 65)
 
     guardados = 0
     skipped_no_alim = 0
     sin_macros = 0
     errores = 0
+    ean_duplicados = 0
+    RESUMEN_CADA = 25  # línea de resumen cada N productos
+
+    def log_resumen(i):
+        restantes = len(candidatos) - i
+        ts = datetime.now().strftime('%H:%M:%S')
+        print(
+            f'\n[{ts}] -- Progreso {i}/{len(candidatos)} --'
+            f'  OK={guardados}'
+            f'  descartados={skipped_no_alim}'
+            f'  sin_macros={sin_macros}'
+            f'  errores={errores}'
+            f'  restantes={restantes}\n'
+        )
 
     for i, item in enumerate(candidatos, 1):
         pid    = item['product_id']
         nombre = item.get('nombre', pid)
-        print(f'\n[{i}/{len(candidatos)}] [{pid}] {nombre[:50]}')
+
+        # Cabecera compacta por producto
+        print(f'[{i}/{len(candidatos)}] {nombre[:55]}', end=' ', flush=True)
 
         datos_api = obtener_datos_api_zoom(pid)
         if not datos_api:
+            print('-> ERROR API')
             errores += 1
             esperar()
+            if i % RESUMEN_CADA == 0:
+                log_resumen(i)
             continue
 
         # Filtro no-alimentario
         if es_no_alimentario(datos_api):
-            print(f'  [SKIP] no alimentario')
+            cat = datos_api['raw'].get('categories', [{}])
+            cat_nombre = cat[0].get('name', '?') if cat and isinstance(cat[0], dict) else '?'
+            print(f'-> DESCARTADO (no-alim: {cat_nombre})')
             anotar_fallo_definitivo(pid, nombre, 'No alimentario (filtrado)')
             guardar_procesado(pid, procesados)
             skipped_no_alim += 1
             esperar()
+            if i % RESUMEN_CADA == 0:
+                log_resumen(i)
             continue
 
         # EAN ya en BD
         with app.app_context():
             if datos_api['ean'] and ean_en_bd(datos_api['ean']):
-                print(f'  [SKIP] EAN ya en BD')
+                print(f'-> SKIP (EAN duplicado)')
                 quitar_de_fallos(pid)
                 guardar_procesado(pid, procesados)
+                ean_duplicados += 1
                 esperar()
+                if i % RESUMEN_CADA == 0:
+                    log_resumen(i)
                 continue
 
-        # OCR con zoom — solo procesar_macros (1 llamada en lugar de 3)
+        # OCR con zoom
+        print('-> OCR...', end=' ', flush=True)
         macros = None
         for idx, url in enumerate(datos_api['imagen_urls'], 1):
             if not url:
                 continue
-            print(f'  Imagen [{idx}] OCR zoom...', end=' ', flush=True)
             img = descargar_imagen(url)
             if not img:
-                print('sin imagen')
+                print(f'[img{idx}: sin imagen]', end=' ', flush=True)
                 continue
             try:
                 m = procesar_macros(img, 'image/jpeg') or {}
                 if all(m.get(k) is not None for k in ('calorias', 'proteinas', 'grasas', 'hidratos_carbono')):
-                    print(f'ok ({m["calorias"]} kcal)')
                     macros = m
                     datos_api['macros_ocr'] = m
                     break
                 else:
-                    print('macros incompletas')
+                    print(f'[img{idx}: incompleto]', end=' ', flush=True)
             except Exception as e:
-                print(f'error: {e}')
+                print(f'[img{idx}: error OCR]', end=' ', flush=True)
 
         # Fallback macros API
         if not macros:
@@ -202,14 +230,16 @@ def main():
                         'fibra':    nutr.get('fiber'),
                         'sal':      nutr.get('sodium') or nutr.get('salt'),
                     }
-                    print(f'  [FALLBACK API] {kcal} kcal')
+                    print(f'[fallback API {kcal}kcal]', end=' ', flush=True)
 
         if not macros:
-            print('  [FALLO] sin macros definitivo')
+            print('-> SIN MACROS')
             anotar_fallo_definitivo(pid, nombre, 'Sin macros definitivo (zoom)')
             guardar_procesado(pid, procesados)
             sin_macros += 1
             esperar()
+            if i % RESUMEN_CADA == 0:
+                log_resumen(i)
             continue
 
         # Guardar en BD
@@ -237,22 +267,23 @@ def main():
         try:
             with app.app_context():
                 guardar_en_bd(datos)
-            print(f'  [OK] guardado')
+            print(f'-> OK ({macros["calorias"]} kcal)')
             quitar_de_fallos(pid)
             guardar_procesado(pid, procesados)
             guardados += 1
         except Exception as e:
-            print(f'  [ERROR BD] {e}')
+            print(f'-> ERROR BD: {e}')
             errores += 1
 
-        if i % 20 == 0:
-            print(f'\n--- Progreso: {guardados} guardados, {skipped_no_alim} no-alim, {sin_macros} sin macros, {errores} errores ---\n')
+        if i % RESUMEN_CADA == 0:
+            log_resumen(i)
 
         esperar()
 
-    print('\n' + '=' * 60)
-    print(f'[FIN] Guardados: {guardados} | No-alim filtrados: {skipped_no_alim} | Sin macros: {sin_macros} | Errores: {errores}')
-    print('=' * 60)
+    ts = datetime.now().strftime('%H:%M:%S')
+    print('\n' + '=' * 65)
+    print(f'[{ts}] FIN - guardados={guardados} | no-alim={skipped_no_alim} | sin_macros={sin_macros} | errores={errores} | ean_dup={ean_duplicados}')
+    print('=' * 65)
 
 
 if __name__ == '__main__':
