@@ -40,6 +40,8 @@ export class Alimentos implements OnInit {
   alimentoDetalle: any = null;
   detalleEditable = false;
 
+  cargando = false;
+
   // Verificación de ingredientes
   ingredientesAVerificar: any[] = [];
   totalIngredientesVerificar = 0;
@@ -81,12 +83,15 @@ export class Alimentos implements OnInit {
         this.alimentos = cached;
         this.buscarAlimento();
         this.cdr.detectChanges();
+      } else {
+        this.cargando = true;
       }
     }
 
     // Refrescar desde servidor en background — silencioso si no hubo cambios
     this.alimentosService.obtenerAlimentos().subscribe({
       next: (data) => {
+        this.cargando = false;
         if (this.cacheService.hanCambiadoAlimentos(data)) {
           this.alimentos = data;
           this.cacheService.guardarAlimentos(data);
@@ -95,6 +100,7 @@ export class Alimentos implements OnInit {
         }
       },
       error: () => {
+        this.cargando = false;
         if (this.alimentos.length === 0) {
           this.flash.mostrar('Error al conectar con el servidor', 'error');
         }

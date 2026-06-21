@@ -134,9 +134,15 @@
           <span class="caloria-label">📉 Con Déficit (15%)
             <span class="caloria-ahorro">(-{{ (usuario.getd_calculada - usuario.limites_calorias) | number : '1.0-0' }} kcal)</span>
           </span>
-          <span class="caloria-valor">
-            {{ usuario.limites_calorias | number : '1.0-0' }} kcal
+          <span class="caloria-valor">{{ usuario.limites_calorias | number : '1.0-0' }} kcal</span>
+        </div>
+      }
+      @if (usuario.objetivo === 'ganar_musculo') {
+        <div class="caloria-item superavit">
+          <span class="caloria-label">📈 Con Superávit (10%)
+            <span class="caloria-ganancia">(+{{ (usuario.limites_calorias - usuario.getd_calculada) | number : '1.0-0' }} kcal)</span>
           </span>
+          <span class="caloria-valor">{{ usuario.limites_calorias | number : '1.0-0' }} kcal</span>
         </div>
       }
     </div>
@@ -401,6 +407,9 @@
         </div>
 
         <div class="form-actions">
+          <button type="button" class="btn-abrir-password" (click)="abrirCambiarPassword()" [disabled]="cargando">
+            🔑 Cambiar contraseña
+          </button>
           <button type="submit" class="btn-guardar" [disabled]="cargando">
             @if (cargando) {
               <span class="spinner"></span>
@@ -411,61 +420,65 @@
           </button>
         </div>
       </form>
+    </div>
+  }
 
-      <!-- CAMBIAR CONTRASEÑA -->
-      <div class="form-section cambiar-password-section">
-        <div class="cambiar-password-header" (click)="toggleCambioPassword()">
-          <h3>Cambiar contraseña</h3>
-          <span class="toggle-icon">{{ mostrandoCambioPassword ? '▲' : '▼' }}</span>
+  <!-- Modal: Cambiar contraseña -->
+  @if (mostrandoCambioPassword) {
+    <div class="modal-overlay" (click)="cerrarCambiarPassword()">
+      <div class="password-modal" (click)="$event.stopPropagation()">
+        <button class="password-modal-close" (click)="cerrarCambiarPassword()">✕</button>
+        <h3>🔑 Cambiar contraseña</h3>
+
+        <div class="form-group">
+          <label>Contraseña actual</label>
+          <input
+            type="password"
+            [(ngModel)]="passwordActual"
+            name="passwordActual"
+            placeholder="Tu contraseña actual"
+            [disabled]="cambiandoPassword"
+          />
+        </div>
+        <div class="form-group">
+          <label>Nueva contraseña</label>
+          <input
+            type="password"
+            [(ngModel)]="nuevaPassword"
+            name="nuevaPassword"
+            placeholder="Mínimo 6 caracteres"
+            [disabled]="cambiandoPassword"
+          />
+        </div>
+        <div class="form-group">
+          <label>Confirmar nueva contraseña</label>
+          <input
+            type="password"
+            [(ngModel)]="confirmarNuevaPassword"
+            name="confirmarNuevaPassword"
+            placeholder="Repite la nueva contraseña"
+            [disabled]="cambiandoPassword"
+          />
         </div>
 
-        @if (mostrandoCambioPassword) {
-          <div class="cambiar-password-form">
-            <div class="form-group">
-              <label>Contraseña actual</label>
-              <input
-                type="password"
-                [(ngModel)]="passwordActual"
-                name="passwordActual"
-                placeholder="Tu contraseña actual"
-                [disabled]="cambiandoPassword"
-              />
-            </div>
-            <div class="form-group">
-              <label>Nueva contraseña</label>
-              <input
-                type="password"
-                [(ngModel)]="nuevaPassword"
-                name="nuevaPassword"
-                placeholder="Mínimo 6 caracteres"
-                [disabled]="cambiandoPassword"
-              />
-            </div>
-            <div class="form-group">
-              <label>Confirmar nueva contraseña</label>
-              <input
-                type="password"
-                [(ngModel)]="confirmarNuevaPassword"
-                name="confirmarNuevaPassword"
-                placeholder="Repite la nueva contraseña"
-                [disabled]="cambiandoPassword"
-              />
-            </div>
-            <button
-              type="button"
-              class="btn-cambiar-password"
-              (click)="cambiarPassword()"
-              [disabled]="cambiandoPassword || !passwordActual || !nuevaPassword || !confirmarNuevaPassword"
-            >
-              @if (cambiandoPassword) {
-                <span class="spinner"></span>
-                Guardando...
-              } @else {
-                Cambiar contraseña
-              }
-            </button>
-          </div>
-        }
+        <div class="password-modal-actions">
+          <button type="button" class="btn-cancel" (click)="cerrarCambiarPassword()" [disabled]="cambiandoPassword">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn-cambiar-password"
+            (click)="cambiarPassword()"
+            [disabled]="cambiandoPassword || !passwordActual || !nuevaPassword || !confirmarNuevaPassword"
+          >
+            @if (cambiandoPassword) {
+              <span class="spinner"></span>
+              Guardando...
+            } @else {
+              Cambiar contraseña
+            }
+          </button>
+        </div>
       </div>
     </div>
   }

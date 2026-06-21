@@ -197,9 +197,15 @@
   background: rgba(244, 67, 54, 0.05);
 }
 
-.caloria-label  { font-size: 12px; color: #666; font-weight: 500; }
-.caloria-valor  { font-size: 16px; font-weight: 700; color: #2d2d2d; }
-.caloria-ahorro { font-size: 10px; color: #f44336; font-weight: 600; margin-left: 4px; }
+.caloria-item.superavit {
+  border-left-color: #2196F3;
+  background: rgba(33, 150, 243, 0.05);
+}
+
+.caloria-label    { font-size: 12px; color: #666; font-weight: 500; }
+.caloria-valor    { font-size: 16px; font-weight: 700; color: #2d2d2d; }
+.caloria-ahorro   { font-size: 10px; color: #f44336; font-weight: 600; margin-left: 4px; }
+.caloria-ganancia { font-size: 10px; color: #2196F3; font-weight: 600; margin-left: 4px; }
 
 /* ── Modal confirmación (local — usa .modal-overlay global) ── */
 .modal-content {
@@ -712,41 +718,86 @@
   text-align: center;
 }
 
-/* Cambiar contraseña */
-.cambiar-password-section {
-  border-top: 1px dashed #e0e0e0;
-  padding-top: 12px;
+/* ── Botón abrir cambio de contraseña ── */
+.btn-abrir-password {
+  width: 80%;
+  max-width: 300px;
+  padding: 10px 16px;
+  margin: 0 auto;
+  background: #f3f4ff;
+  color: #667eea;
+  border: 1.5px solid #667eea;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-abrir-password:hover:not(:disabled) {
+  background: #e8eaff;
+  transform: translateY(-1px);
+}
+
+.btn-abrir-password:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Modal cambiar contraseña ── */
+.password-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  position: relative;
+  animation: slideUp 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.password-modal h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2d2d2d;
+  text-align: center;
+}
+
+.password-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.password-modal-close:hover {
+  background: #f0f0f0;
+  color: #555;
+}
+
+.password-modal-actions {
+  display: flex;
+  gap: 10px;
   margin-top: 4px;
 }
 
-.cambiar-password-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  user-select: none;
-}
-
-.cambiar-password-header h3 {
-  font-size: 13px;
-  font-weight: 600;
-  color: #667eea;
-  margin: 0;
-}
-
-.toggle-icon {
-  font-size: 11px;
-  color: #999;
-}
-
-.cambiar-password-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
-}
-
 .btn-cambiar-password {
+  flex: 1;
   padding: 10px 16px;
   background: linear-gradient(135deg, #667eea 0%, #5a6fd6 100%);
   color: #fff;

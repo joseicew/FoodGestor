@@ -493,13 +493,18 @@ export class Perfil implements OnInit {
     return actividadMap[nivel_actividad] || nivel_actividad.toUpperCase();
   }
 
-  toggleCambioPassword(): void {
-    this.mostrandoCambioPassword = !this.mostrandoCambioPassword;
-    if (!this.mostrandoCambioPassword) {
-      this.passwordActual = '';
-      this.nuevaPassword = '';
-      this.confirmarNuevaPassword = '';
-    }
+  abrirCambiarPassword(): void {
+    this.passwordActual = '';
+    this.nuevaPassword = '';
+    this.confirmarNuevaPassword = '';
+    this.mostrandoCambioPassword = true;
+  }
+
+  cerrarCambiarPassword(): void {
+    this.mostrandoCambioPassword = false;
+    this.passwordActual = '';
+    this.nuevaPassword = '';
+    this.confirmarNuevaPassword = '';
   }
 
   cambiarPassword(): void {
@@ -515,10 +520,7 @@ export class Perfil implements OnInit {
     this.authService.cambiarPassword(this.passwordActual, this.nuevaPassword).subscribe({
       next: () => {
         this.cambiandoPassword = false;
-        this.mostrandoCambioPassword = false;
-        this.passwordActual = '';
-        this.nuevaPassword = '';
-        this.confirmarNuevaPassword = '';
+        this.cerrarCambiarPassword();
         this.flash.mostrar('Contraseña actualizada correctamente', 'exito');
       },
       error: (err) => {

@@ -11,6 +11,15 @@
 
   <app-mensaje-flash />
 
+  @if (cargando) {
+    <div class="barra-carga-contenedor">
+      <div class="barra-carga-riel">
+        <div class="barra-carga-progreso"></div>
+      </div>
+      <p class="barra-carga-texto">Cargando alimentos...</p>
+    </div>
+  }
+
   <!-- ═══════════════ PANEL BUSCAR ═══════════════ -->
   @if (activePanel === 'buscar') {
     <div class="tab-panel">

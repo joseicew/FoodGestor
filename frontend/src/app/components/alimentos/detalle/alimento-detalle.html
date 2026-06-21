@@ -231,45 +231,45 @@
 <!-- Editor de Macronutrientes -->
 @if (mostrarEditorMacros && detalle) {
   <div class="popup-overlay" (click)="cerrarEditorMacros()">
-    <div class="popup-box" (click)="$event.stopPropagation()" style="max-width: 450px;">
+    <div class="popup-box" (click)="$event.stopPropagation()" style="width: min(520px, 94vw); max-width: 94vw;">
       <div class="popup-header">
         <h2>Editar Macronutrientes</h2>
         <button class="popup-close" (click)="cerrarEditorMacros()">✕</button>
       </div>
 
       <div class="popup-content">
-        <form style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🔥 Calorías (kcal)</label>
-            <input type="number" [(ngModel)]="detalle.calorias" name="calorias" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+        <form class="macros-edit-form">
+          <div class="macros-edit-field">
+            <label>🔥 Calorías (kcal)</label>
+            <input type="number" [(ngModel)]="detalle.calorias" name="calorias" />
           </div>
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">💪 Proteínas (g)</label>
-            <input type="number" [(ngModel)]="detalle.proteinas" name="proteinas" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          <div class="macros-edit-field">
+            <label>💪 Proteínas (g)</label>
+            <input type="number" [(ngModel)]="detalle.proteinas" name="proteinas" />
           </div>
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🌾 Carbohidratos (g)</label>
-            <input type="number" [(ngModel)]="detalle.hidratos_carbono" name="hidratos_carbono" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          <div class="macros-edit-field">
+            <label>🌾 Carbohidratos (g)</label>
+            <input type="number" [(ngModel)]="detalle.hidratos_carbono" name="hidratos_carbono" />
           </div>
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🧈 Grasas (g)</label>
-            <input type="number" [(ngModel)]="detalle.grasas" name="grasas" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          <div class="macros-edit-field">
+            <label>🧈 Grasas (g)</label>
+            <input type="number" [(ngModel)]="detalle.grasas" name="grasas" />
           </div>
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🔗 Grasas Saturadas (g)</label>
-            <input type="number" [(ngModel)]="detalle.grasas_saturadas" name="grasas_saturadas" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          <div class="macros-edit-field">
+            <label>🔗 Grasas Saturadas (g)</label>
+            <input type="number" [(ngModel)]="detalle.grasas_saturadas" name="grasas_saturadas" />
           </div>
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🍬 Azúcares (g)</label>
-            <input type="number" [(ngModel)]="detalle.azucares" name="azucares" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          <div class="macros-edit-field">
+            <label>🍬 Azúcares (g)</label>
+            <input type="number" [(ngModel)]="detalle.azucares" name="azucares" />
           </div>
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🌿 Fibra (g)</label>
-            <input type="number" [(ngModel)]="detalle.fibra" name="fibra" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          <div class="macros-edit-field">
+            <label>🌿 Fibra (g)</label>
+            <input type="number" [(ngModel)]="detalle.fibra" name="fibra" />
           </div>
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase;">🧂 Sal (g)</label>
-            <input type="number" [(ngModel)]="detalle.sal" name="sal" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+          <div class="macros-edit-field">
+            <label>🧂 Sal (g)</label>
+            <input type="number" [(ngModel)]="detalle.sal" name="sal" />
           </div>
         </form>
       </div>
