@@ -40,9 +40,13 @@ jobs:
         working-directory: frontend
         run: npx cap sync ios
 
-      - name: Install CocoaPods
+      - name: Resolve Swift Package dependencies
         working-directory: frontend/ios/App
-        run: pod install --repo-update
+        run: |
+          xcodebuild \
+            -resolvePackageDependencies \
+            -workspace App.xcworkspace \
+            -scheme App
 
       - name: Build IPA (sin firmar)
         working-directory: frontend/ios/App
