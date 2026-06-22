@@ -45,14 +45,14 @@ jobs:
         run: |
           xcodebuild \
             -resolvePackageDependencies \
-            -workspace App.xcworkspace \
+            -project App.xcodeproj \
             -scheme App
 
       - name: Build IPA (sin firmar)
         working-directory: frontend/ios/App
         run: |
           xcodebuild \
-            -workspace App.xcworkspace \
+            -project App.xcodeproj \
             -scheme App \
             -configuration Release \
             -destination generic/platform=iOS \
