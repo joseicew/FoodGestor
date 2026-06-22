@@ -6,9 +6,7 @@
       <p class="subtitle">Tu asistente nutricional</p>
     </div>
 
-    @if (mensaje) {
-      <div class="mensaje" [class.error]="mensajeTipo === 'error'">{{ mensaje }}</div>
-    }
+    <app-mensaje-flash />
 
     <form (ngSubmit)="login()" class="form">
       <div class="form-group">
@@ -47,11 +45,68 @@
 
     <div class="footer">
       <p>
+        <button class="link-btn" (click)="abrirOlvidePassword()" [disabled]="cargando">
+          ¿Olvidaste tu contraseña?
+        </button>
+      </p>
+      <p>
         ¿No tienes cuenta?
         <a routerLink="/registro" [class.disabled]="cargando">Crear cuenta</a>
       </p>
     </div>
   </div>
+
+  <!-- Modal: Olvidé mi contraseña -->
+  @if (mostrarModalOlvidePassword) {
+    <div class="modal-overlay" (click)="cerrarOlvidePassword()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Recuperar contraseña</h2>
+          <button class="btn-close" (click)="cerrarOlvidePassword()">✕</button>
+        </div>
+
+        @if (resetEnviado) {
+          <div class="modal-body">
+            <p style="color:#2e7d32;font-weight:500">
+              Si el email está registrado, recibirás un enlace en tu bandeja de entrada.
+            </p>
+            <p style="font-size:12px;color:#999">Revisa también la carpeta de spam.</p>
+          </div>
+          <div class="modal-actions">
+            <button class="btn-primary" (click)="cerrarOlvidePassword()">Entendido</button>
+          </div>
+        } @else {
+          <div class="modal-body">
+            <p>Escribe tu email y te enviaremos un enlace para crear una nueva contraseña.</p>
+            <div class="form-group" style="margin-top:12px">
+              <label for="emailReset">Email</label>
+              <input
+                type="email"
+                id="emailReset"
+                [(ngModel)]="emailReset"
+                name="emailReset"
+                placeholder="tu@email.com"
+                [disabled]="cargandoReset"
+              />
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn-secondary" (click)="cerrarOlvidePassword()" [disabled]="cargandoReset">
+              Cancelar
+            </button>
+            <button class="btn-primary" (click)="enviarReset()" [disabled]="cargandoReset || !emailReset.trim()">
+              @if (cargandoReset) {
+                <span class="spinner"></span>
+                Enviando...
+              } @else {
+                Enviar enlace
+              }
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
 
   <!-- Modal: Email no existe -->
   @if (mostrarModalEmailNoExiste) {

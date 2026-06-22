@@ -5,9 +5,7 @@
       <p class="subtitle">Crea tu cuenta</p>
     </div>
 
-    @if (mensaje) {
-      <div class="mensaje" [class.error]="mensajeTipo === 'error'">{{ mensaje }}</div>
-    }
+    <app-mensaje-flash />
 
     <form (ngSubmit)="registro()" class="form">
       <div class="form-group">

@@ -1,26 +1,32 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { AuthService } from '../../services/auth';
 import { SyncService } from '../../services/sync';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, MensajeFlash],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
 export class LoginComponent implements OnInit {
+  @ViewChild(MensajeFlash) flash!: MensajeFlash;
+
   email: string = '';
   password: string = '';
   cargando: boolean = false;
-  mensaje: string = '';
-  mensajeTipo: 'error' | 'exito' = 'error';
   mostrarModalEmailNoExiste: boolean = false;
   emailNoExiste: string = '';
   mostrarModalPasswordIncorrecto: boolean = false;
+
+  mostrarModalOlvidePassword: boolean = false;
+  emailReset: string = '';
+  cargandoReset: boolean = false;
+  resetEnviado: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -42,20 +48,20 @@ export class LoginComponent implements OnInit {
 
     // Validación de email
     if (!emailLimpio) {
-      this.mostrarMensaje('Por favor ingresa tu email', 'error');
+      this.flash.mostrar('Por favor ingresa tu email', 'error');
       return;
     }
 
     // Validación de contraseña
     if (!passwordLimpia) {
-      this.mostrarMensaje('Por favor ingresa tu contraseña', 'error');
+      this.flash.mostrar('Por favor ingresa tu contraseña', 'error');
       return;
     }
 
     // Validar formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailLimpio)) {
-      this.mostrarMensaje('Email inválido (debe contener @ y un dominio)', 'error');
+      this.flash.mostrar('Email inválido (debe contener @ y un dominio)', 'error');
       return;
     }
 
@@ -103,15 +109,15 @@ export class LoginComponent implements OnInit {
           this.emailNoExiste = this.email.trim();
           this.mostrarModalEmailNoExiste = true;
           this.cdr.detectChanges();
-          this.mostrarMensaje('📧 ' + mensaje, 'error');
+          this.flash.mostrar('📧 ' + mensaje, 'error');
         } else if (esContraseñaIncorrecta) {
           // Limpiar contraseña pero mantener email
           this.password = '';
           this.mostrarModalPasswordIncorrecto = true;
           this.cdr.detectChanges();
-          this.mostrarMensaje('🔐 Contraseña incorrecta', 'error');
+          this.flash.mostrar('🔐 Contraseña incorrecta', 'error');
         } else {
-          this.mostrarMensaje(mensaje, 'error');
+          this.flash.mostrar(mensaje, 'error');
         }
       }
     });
@@ -139,11 +145,32 @@ export class LoginComponent implements OnInit {
     this.password = '';
   }
 
-  private mostrarMensaje(texto: string, tipo: 'error' | 'exito'): void {
-    this.mensaje = texto;
-    this.mensajeTipo = tipo;
-    setTimeout(() => {
-      this.mensaje = '';
-    }, 4000);
+  abrirOlvidePassword(): void {
+    this.emailReset = this.email;
+    this.resetEnviado = false;
+    this.mostrarModalOlvidePassword = true;
   }
+
+  cerrarOlvidePassword(): void {
+    this.mostrarModalOlvidePassword = false;
+    this.emailReset = '';
+    this.resetEnviado = false;
+  }
+
+  enviarReset(): void {
+    const emailLimpio = this.emailReset.trim();
+    if (!emailLimpio) return;
+    this.cargandoReset = true;
+    this.authService.solicitarReset(emailLimpio).subscribe({
+      next: () => {
+        this.cargandoReset = false;
+        this.resetEnviado = true;
+      },
+      error: () => {
+        this.cargandoReset = false;
+        this.resetEnviado = true; // Igual mostramos éxito por seguridad
+      }
+    });
+  }
+
 }

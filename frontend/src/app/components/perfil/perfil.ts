@@ -1,27 +1,27 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { AuthService } from '../../services/auth';
 import { SessionService } from '../../services/session';
 import { CalendarioService } from '../../services/calendario';
 import { AutoSyncService } from '../../services/auto-sync';
 import { AllergensService } from '../../services/allergens';
+import { IngredientesService } from '../../services/ingredientes';
 
 @Component({
   selector: 'app-perfil',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MensajeFlash],
   templateUrl: './perfil.html',
   styleUrl: './perfil.css',
 })
 export class Perfil implements OnInit {
+  @ViewChild(MensajeFlash) flash!: MensajeFlash;
+
   usuario: any = {};
   editando: boolean = false;
   cargando: boolean = false;
-  mensaje: string = '';
-  mensajeTipo: 'error' | 'exito' = 'error';
-  confirmarLogout: boolean = false;
-
   // Datos en edición
   nombreCompleto: string = '';
   edad: number | null = null;
@@ -42,10 +42,23 @@ export class Perfil implements OnInit {
   alergenos_disponibles: string[] = [];
   alergenos_seleccionados: string[] = [];
 
+  // Ingredientes no deseados
+  ingredientes_no_deseados: number[] = [];
+  busquedaIngNoDeseado: string = '';
+  todosIngredientes: any[] = [];
+
   // Valores calculados para mostrar en tiempo real
   tmb_calculada_temp: number | null = null;
   getd_mantenimiento_temp: number | null = null;  // GETD sin déficit
   tdee_calculada_temp: number | null = null;      // GETD con déficit/superávit
+
+  confirmarLogout = false;
+
+  mostrandoCambioPassword = false;
+  passwordActual = '';
+  nuevaPassword = '';
+  confirmarNuevaPassword = '';
+  cambiandoPassword = false;
 
   // Totales diarios
   totalCalorias: number = 0;
@@ -61,7 +74,8 @@ export class Perfil implements OnInit {
     private sessionService: SessionService,
     private calendarioService: CalendarioService,
     private autoSyncService: AutoSyncService,
-    private allergensService: AllergensService
+    private allergensService: AllergensService,
+    private ingredientesService: IngredientesService
   ) {}
 
   ngOnInit(): void {
@@ -81,6 +95,18 @@ export class Perfil implements OnInit {
     this.cargarAlergenos();
     this.cargarPerfil();
     this.cargarTotalesDelDia();
+
+    // Precargar ingredientes para poder mostrar sus nombres en la vista
+    if (!this.ingredientesService.estaCargado()) {
+      this.ingredientesService.cargarTodosLosIngredientes().subscribe({
+        next: () => {
+          this.todosIngredientes = this.ingredientesService.obtenerIngredientesCacheados();
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.todosIngredientes = this.ingredientesService.obtenerIngredientesCacheados();
+    }
 
     // Iniciar verificación periódica de cambios
     this.autoSyncService.iniciarVerificacionPeriodica();
@@ -110,6 +136,7 @@ export class Perfil implements OnInit {
       this.peso = this.usuario.peso;
       this.altura = this.usuario.altura;
       this.alergenos_seleccionados = this.usuario.alergenos_seleccionados || [];
+      this.ingredientes_no_deseados = this.usuario.ingredientes_no_deseados || [];
       this.cdr.markForCheck();
       return;
     }
@@ -123,6 +150,7 @@ export class Perfil implements OnInit {
         this.peso = this.usuario.peso;
         this.altura = this.usuario.altura;
         this.alergenos_seleccionados = this.usuario.alergenos_seleccionados || [];
+        this.ingredientes_no_deseados = this.usuario.ingredientes_no_deseados || [];
         this.cdr.markForCheck();
       },
       error: (error) => {
@@ -137,7 +165,7 @@ export class Perfil implements OnInit {
         }
 
         const mensaje = error.error?.error || error.message || 'Error al cargar el perfil';
-        this.mostrarMensaje(mensaje, 'error');
+        this.flash.mostrar(mensaje, 'error');
       }
     });
   }
@@ -195,8 +223,20 @@ export class Perfil implements OnInit {
         this.limites_carbohidratos = this.usuario.limites_carbohidratos || 250;
         this.limites_azucares = this.usuario.limites_azucares || 62;
         this.alergenos_seleccionados = [...(this.usuario.alergenos_seleccionados || [])];
+        this.ingredientes_no_deseados = [...(this.usuario.ingredientes_no_deseados || [])];
+        this.busquedaIngNoDeseado = '';
 
-        console.log('Alergenos cargados en edición:', this.alergenos_seleccionados);
+        // Cargar ingredientes para el selector
+        if (!this.ingredientesService.estaCargado()) {
+          this.ingredientesService.cargarTodosLosIngredientes().subscribe({
+            next: () => {
+              this.todosIngredientes = this.ingredientesService.obtenerIngredientesCacheados();
+              this.cdr.detectChanges();
+            }
+          });
+        } else {
+          this.todosIngredientes = this.ingredientesService.obtenerIngredientesCacheados();
+        }
 
         // Limpiar preview de calorías
         this.tmb_calculada_temp = 0;
@@ -228,6 +268,8 @@ export class Perfil implements OnInit {
     this.limites_carbohidratos = this.usuario.limites_carbohidratos || null;
     this.limites_azucares = this.usuario.limites_azucares || null;
     this.alergenos_seleccionados = [...(this.usuario.alergenos_seleccionados || [])];
+    this.ingredientes_no_deseados = [...(this.usuario.ingredientes_no_deseados || [])];
+    this.busquedaIngNoDeseado = '';
   }
 
   recalcularBases(): void {
@@ -236,7 +278,7 @@ export class Perfil implements OnInit {
      * Basándose en peso, altura, sexo, edad, nivel_actividad y objetivo
      */
     if (!this.peso || !this.altura || !this.edad) {
-      this.mostrarMensaje('Faltan datos: Peso, Altura y Edad son requeridos', 'error');
+      this.flash.mostrar('Faltan datos: Peso, Altura y Edad son requeridos', 'error');
       return;
     }
 
@@ -304,10 +346,10 @@ export class Perfil implements OnInit {
       const azucares_g = azucares_kcal / 4;
       this.limites_azucares = Math.round(azucares_g * 10) / 10;
 
-      this.mostrarMensaje('✓ Bases recalculadas correctamente', 'exito');
+      this.flash.mostrar('✓ Bases recalculadas correctamente', 'exito');
       this.cdr.markForCheck();
     } catch (error) {
-      this.mostrarMensaje('Error al recalcular bases', 'error');
+      this.flash.mostrar('Error al recalcular bases', 'error');
       console.error('Error en recalcularBases:', error);
     }
   }
@@ -315,22 +357,22 @@ export class Perfil implements OnInit {
   guardarCambios(): void {
     // Validaciones
     if (!this.nombreCompleto.trim()) {
-      this.mostrarMensaje('El nombre completo es requerido', 'error');
+      this.flash.mostrar('El nombre completo es requerido', 'error');
       return;
     }
 
     if (!this.peso || this.peso < 25 || this.peso > 500) {
-      this.mostrarMensaje('El peso debe estar entre 25 y 500 kg', 'error');
+      this.flash.mostrar('El peso debe estar entre 25 y 500 kg', 'error');
       return;
     }
 
     if (!this.altura || this.altura < 100 || this.altura > 300) {
-      this.mostrarMensaje('La altura debe estar entre 100 y 300 cm', 'error');
+      this.flash.mostrar('La altura debe estar entre 100 y 300 cm', 'error');
       return;
     }
 
     if (!this.limites_calorias || this.limites_calorias < 500 || this.limites_calorias > 10000) {
-      this.mostrarMensaje('Las calorías deben estar entre 500 y 10000', 'error');
+      this.flash.mostrar('Las calorías deben estar entre 500 y 10000', 'error');
       return;
     }
 
@@ -347,7 +389,8 @@ export class Perfil implements OnInit {
       limites_grasas: this.limites_grasas,
       limites_carbohidratos: this.limites_carbohidratos,
       limites_azucares: this.limites_azucares,
-      alergenos_seleccionados: this.alergenos_seleccionados
+      alergenos_seleccionados: this.alergenos_seleccionados,
+      ingredientes_no_deseados: this.ingredientes_no_deseados
     };
 
     this.authService.actualizarPerfil(datosActualizados).subscribe({
@@ -370,13 +413,14 @@ export class Perfil implements OnInit {
           limites_azucares: response.limites_azucares || 62,
           tmb_calculada: response.tmb_calculada || 0,
           tdee_calculada: response.tdee_calculada || 0,
-          alergenos_seleccionados: response.alergenos_seleccionados || []
+          alergenos_seleccionados: response.alergenos_seleccionados || [],
+          ingredientes_no_deseados: response.ingredientes_no_deseados || []
         });
         // Guardar en sesión para futuras cargas
         this.sessionService.guardarPerfil(this.usuario);
         this.editando = false;
         this.cargando = false;
-        this.mostrarMensaje('✓ Perfil actualizado', 'exito');
+        this.flash.mostrar('✓ Perfil actualizado', 'exito');
         // Recargar totales si cambió algo relevante
         this.cargarTotalesDelDia();
         // Forzar detección de cambios
@@ -385,23 +429,35 @@ export class Perfil implements OnInit {
       error: (error) => {
         this.cargando = false;
         const mensaje = error.error?.error || 'Error al actualizar el perfil';
-        this.mostrarMensaje(mensaje, 'error');
+        this.flash.mostrar(mensaje, 'error');
       }
     });
   }
 
-  logout(): void {
-    this.confirmarLogout = false;
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  // ── Ingredientes no deseados ──
+
+  get ingredientesFiltrados(): any[] {
+    const termino = this.busquedaIngNoDeseado.trim().toLowerCase();
+    if (termino.length < 2) return [];
+    return this.todosIngredientes
+      .filter(i => !this.ingredientes_no_deseados.includes(i.id) && i.nombre.toLowerCase().includes(termino))
+      .slice(0, 10);
   }
 
-  abrirConfirmacionLogout(): void {
-    this.confirmarLogout = true;
+  agregarIngNoDeseado(ing: any): void {
+    if (!this.ingredientes_no_deseados.includes(ing.id)) {
+      this.ingredientes_no_deseados = [...this.ingredientes_no_deseados, ing.id];
+    }
+    this.busquedaIngNoDeseado = '';
   }
 
-  cerrarConfirmacionLogout(): void {
-    this.confirmarLogout = false;
+  quitarIngNoDeseado(id: number): void {
+    this.ingredientes_no_deseados = this.ingredientes_no_deseados.filter(i => i !== id);
+  }
+
+  nombreIngrediente(id: number): string {
+    const ing = this.todosIngredientes.find(i => i.id === id);
+    return ing ? ing.nombre : `#${id}`;
   }
 
   obtenerDiasSemana(nivel_actividad: string): string {
@@ -437,11 +493,50 @@ export class Perfil implements OnInit {
     return actividadMap[nivel_actividad] || nivel_actividad.toUpperCase();
   }
 
-  private mostrarMensaje(texto: string, tipo: 'error' | 'exito'): void {
-    this.mensaje = texto;
-    this.mensajeTipo = tipo;
-    setTimeout(() => {
-      this.mensaje = '';
-    }, 4000);
+  abrirCambiarPassword(): void {
+    this.passwordActual = '';
+    this.nuevaPassword = '';
+    this.confirmarNuevaPassword = '';
+    this.mostrandoCambioPassword = true;
   }
+
+  cerrarCambiarPassword(): void {
+    this.mostrandoCambioPassword = false;
+    this.passwordActual = '';
+    this.nuevaPassword = '';
+    this.confirmarNuevaPassword = '';
+  }
+
+  cambiarPassword(): void {
+    if (this.nuevaPassword !== this.confirmarNuevaPassword) {
+      this.flash.mostrar('Las contraseñas nuevas no coinciden', 'error');
+      return;
+    }
+    if (this.nuevaPassword.length < 6) {
+      this.flash.mostrar('La nueva contraseña debe tener al menos 6 caracteres', 'error');
+      return;
+    }
+    this.cambiandoPassword = true;
+    this.authService.cambiarPassword(this.passwordActual, this.nuevaPassword).subscribe({
+      next: () => {
+        this.cambiandoPassword = false;
+        this.cerrarCambiarPassword();
+        this.flash.mostrar('Contraseña actualizada correctamente', 'exito');
+      },
+      error: (err) => {
+        this.cambiandoPassword = false;
+        this.flash.mostrar(err.error?.error || 'Error al cambiar la contraseña', 'error');
+      }
+    });
+  }
+
+  abrirLogout(): void { this.confirmarLogout = true; }
+  cerrarLogout(): void { this.confirmarLogout = false; }
+
+  hacerLogout(): void {
+    this.confirmarLogout = false;
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
 }

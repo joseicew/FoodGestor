@@ -36,10 +36,15 @@ class Usuario(db.Model):
 
     # Alergias e intolerancias
     alergenos_seleccionados = db.Column(db.Text, default='[]')  # JSON array de alergenos seleccionados
+    ingredientes_no_deseados = db.Column(db.Text, default='[]')  # JSON array de IDs de ingredientes no deseados
 
     # Relaciones inversas
     raciones = db.relationship('Racion', backref='usuario', lazy='select')
     comidas_diarias = db.relationship('ComidaDiaria', backref='usuario', lazy='select')
+
+    # Reset de contraseña
+    reset_token = db.Column(db.String(100), nullable=True)
+    reset_token_expiry = db.Column(db.DateTime, nullable=True)
 
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -166,6 +171,12 @@ class Usuario(db.Model):
         except:
             alergenos = []
 
+        ing_no_deseados = []
+        try:
+            ing_no_deseados = json.loads(self.ingredientes_no_deseados) if self.ingredientes_no_deseados else []
+        except:
+            ing_no_deseados = []
+
         return {
             'id': self.id,
             'email': self.email,
@@ -177,6 +188,7 @@ class Usuario(db.Model):
             'nivel_actividad': self.nivel_actividad,
             'objetivo': self.objetivo,
             'alergenos_seleccionados': alergenos,
+            'ingredientes_no_deseados': ing_no_deseados,
             # Límites nutricionales
             'limites_calorias': self.limites_calorias,
             'limites_proteinas': self.limites_proteinas,

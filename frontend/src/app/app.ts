@@ -16,7 +16,6 @@ export class App implements OnInit {
   authService = inject(AuthService);
   themeService = inject(ThemeService);
   syncStatusService = inject(SyncStatusService);
-
   syncStatus$!: Observable<SyncStatus>;
 
   ngOnInit(): void {

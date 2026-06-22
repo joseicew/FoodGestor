@@ -1,9 +1,5 @@
 .perfil-container {
   padding: 0px;
-  padding-bottom: 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
 /* .header h1 → global styles.css */
@@ -11,20 +7,63 @@
 /* .spinner, @keyframes spin → global styles.css */
 /* .modal-overlay → global styles.css */
 
-.header-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 3px;
+.header {
+  padding: 0;
+  text-align: center;
 }
 
-.header-icon {
-  font-size: 1.6rem;
+.btn-logout {
+  position: fixed;
+  top: calc(max(env(safe-area-inset-top), 16px) - 6px);
+  right: 14px;
+  z-index: 200;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: #f44336;
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.35);
+  transition: all 0.2s;
 }
+.btn-logout:hover {
+  background: #d32f2f;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.45);
+}
+
+.logout-modal {
+  background: var(--bg-surface);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 320px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+.logout-modal h3 { margin: 0 0 8px; font-size: 18px; color: var(--text-primary); }
+.logout-modal p { margin: 0 0 20px; font-size: 14px; color: var(--text-secondary); }
+.logout-modal-actions { display: flex; gap: 12px; }
+.logout-modal-actions button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-cancel { background: var(--bg-secondary); color: var(--text-primary); }
+.btn-cancel:hover { filter: brightness(0.95); }
+.btn-confirm { background: #f44336; color: #fff; }
+.btn-confirm:hover { background: #d32f2f; }
 
 .fecha { font-size: 13px; color: #999; margin-top: 2px; }
 
@@ -68,10 +107,13 @@
   border: 3px solid #e8e8e8;
   border-radius: 16px;
   padding: 10px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+
+.coming-soon-card { margin-bottom: 10px; }
 
 .info-section h2 { margin: 0 0 4px 0; font-size: 1.2rem; color: #2d2d2d; }
 .email { color: #999; font-size: 13px; margin: 0; }
@@ -104,6 +146,17 @@
 }
 
 .dato-valor-inline { font-size: 15px; font-weight: 600; color: #2d2d2d; flex: 1; }
+
+.dato-valor-inline.dato-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.dato-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.dato-tag.alergia { background: #fff3cd; color: #856404; }
+.dato-tag.no-deseado { background: #fde8e8; color: #b91c1c; }
 
 .dato-label { display: block; font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
 .dato-valor { display: block; font-size: 16px; font-weight: 600; color: #2d2d2d; }
@@ -144,30 +197,15 @@
   background: rgba(244, 67, 54, 0.05);
 }
 
-.caloria-label  { font-size: 12px; color: #666; font-weight: 500; }
-.caloria-valor  { font-size: 16px; font-weight: 700; color: #2d2d2d; }
-.caloria-ahorro { font-size: 10px; color: #f44336; font-weight: 600; margin-left: 4px; }
-
-/* ── Logout ── */
-.logout-section { display: flex; justify-content: center; padding: 24px 0; margin-top: 20px; }
-
-.btn-logout {
-  padding: 12px 24px;
-  background: #f44336;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+.caloria-item.superavit {
+  border-left-color: #2196F3;
+  background: rgba(33, 150, 243, 0.05);
 }
 
-.btn-logout:hover {
-  background: #d32f2f;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
-}
+.caloria-label    { font-size: 12px; color: #666; font-weight: 500; }
+.caloria-valor    { font-size: 16px; font-weight: 700; color: #2d2d2d; }
+.caloria-ahorro   { font-size: 10px; color: #f44336; font-weight: 600; margin-left: 4px; }
+.caloria-ganancia { font-size: 10px; color: #2196F3; font-weight: 600; margin-left: 4px; }
 
 /* ── Modal confirmación (local — usa .modal-overlay global) ── */
 .modal-content {
@@ -568,4 +606,219 @@
 .alergeno-checkbox input[type="checkbox"]:checked + label {
   color: #4CAF50;
   font-weight: 600;
+}
+
+/* ── Ingredientes no deseados ── */
+.ing-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ing-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff0f0;
+  border: 1px solid #ffb3b3;
+  color: #c0392b;
+  border-radius: 20px;
+  padding: 4px 10px 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ing-tag-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #c0392b;
+  font-size: 11px;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.ing-tag-remove:hover {
+  opacity: 1;
+}
+
+.ing-buscador {
+  position: relative;
+}
+
+.ing-search-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fafafa;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.ing-search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: #fff;
+}
+
+.ing-resultados {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 100;
+  overflow: hidden;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.ing-resultado-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.15s;
+}
+
+.ing-resultado-item:hover {
+  background: #f3f4ff;
+  color: #667eea;
+}
+
+.ing-categoria {
+  font-size: 11px;
+  color: #999;
+  background: #f0f0f0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.ing-sin-resultados {
+  font-size: 13px;
+  color: #999;
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ── Botón abrir cambio de contraseña ── */
+.btn-abrir-password {
+  width: 80%;
+  max-width: 300px;
+  padding: 10px 16px;
+  margin: 0 auto;
+  background: #f3f4ff;
+  color: #667eea;
+  border: 1.5px solid #667eea;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-abrir-password:hover:not(:disabled) {
+  background: #e8eaff;
+  transform: translateY(-1px);
+}
+
+.btn-abrir-password:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Modal cambiar contraseña ── */
+.password-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  position: relative;
+  animation: slideUp 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.password-modal h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2d2d2d;
+  text-align: center;
+}
+
+.password-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.password-modal-close:hover {
+  background: #f0f0f0;
+  color: #555;
+}
+
+.password-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-cambiar-password {
+  flex: 1;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #5a6fd6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-cambiar-password:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-cambiar-password:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

@@ -35,6 +35,24 @@ export class AlimentosService {
     return this.http.get<any>(`${API}/${id}`, this.getHeaders());
   }
 
+  buscarPorCodigoBarras(codigo: string): Observable<any[]> {
+    return this.http.get<{ alimentos: any[] }>(`${API}/?codigo_barras=${encodeURIComponent(codigo)}`, this.getHeaders()).pipe(
+      map(response => response.alimentos || [])
+    );
+  }
+
+  verificarDuplicado(payload: any): Observable<any> {
+    return this.http.post<any>(`${API}/duplicado`, payload, this.getHeaders());
+  }
+
+  verificarSimilares(payload: any): Observable<any> {
+    return this.http.post<any>(`${API}/similar`, payload, this.getHeaders());
+  }
+
+  crearIngrediente(nombre: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/api/ingredientes/`, { nombre, verificado: false }, this.getHeaders());
+  }
+
   crearAlimento(formData: FormData): Observable<any> {
     return this.http.post<any>(`${API}/`, formData, this.getHeaders());
   }

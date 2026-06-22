@@ -1,0 +1,32 @@
+<div class="busqueda-alimento-wrapper">
+  <div class="ba-search">
+    <input type="text"
+           [(ngModel)]="termino"
+           (ngModelChange)="filtrar()"
+           placeholder="🔍 Filtrar por nombre..." />
+  </div>
+
+  @if (filtrados.length > 0 || (termino.trim() && filtrados.length === 0)) {
+    <div class="ba-lista">
+      @if (filtrados.length === 0) {
+        <p class="ba-sin-resultados">Sin resultados</p>
+      }
+      @for (alimento of filtrados; track alimento.id) {
+        <button class="ba-fila" (click)="seleccionar.emit(alimento)" [class.favorito]="alimento.favorito">
+          @if (alimento.favorito) {
+            <span class="ba-star">⭐</span>
+          }
+          <span class="ba-nombre">{{ alimento.nombre }}</span>
+          @if (alimento.marca) {
+            <span class="ba-marca">· {{ alimento.marca }}</span>
+          }
+          @if (alimento.peso_unidad && alimento.nombre_unidad) {
+            <span class="ba-unidad">{{ alimento.nombre_unidad }}</span>
+          } @else if (alimento.calorias) {
+            <span class="ba-kcal">{{ alimento.calorias }} kcal</span>
+          }
+        </button>
+      }
+    </div>
+  }
+</div>

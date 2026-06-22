@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 from datetime import timedelta
 import os
 import logging
@@ -16,6 +17,7 @@ except Exception as e:
     logging.warning(f"No .env file found or couldn't load: {e}")
 db = SQLAlchemy()
 jwt = JWTManager()
+mail = Mail()
 
 def create_app():
     app = Flask(__name__)
@@ -29,13 +31,15 @@ def create_app():
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Connection pooling para PostgreSQL
+    # Connection pooling para PostgreSQL (Neon.tech hiberna tras ~5 min de inactividad)
     if database_url and 'postgresql' in database_url:
         app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
             'pool_pre_ping': True,
             'pool_size': 3,
-            'pool_recycle': 3600,
-            'max_overflow': 0,
+            'pool_recycle': 300,       # reciclar cada 5 min (igual que el auto-pause de Neon)
+            'pool_timeout': 20,        # fallar en 20s (antes del timeout de Gunicorn de 30s)
+            'max_overflow': 2,
+            'connect_args': {'connect_timeout': 10},  # TCP: desistir en 10s si Neon no responde
         }
 
     # Configurar JWT
@@ -43,15 +47,43 @@ def create_app():
     # Token expira en 30 días (2592000 segundos) - suficiente para un uso normal sin reloguear constantemente
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=30)
 
+    # Configurar email (Gmail SMTP)
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
+
     # Inicializar extensiones
     db.init_app(app)
+    mail.init_app(app)
     CORS(app,
          origins="*",
          allow_headers=["Content-Type", "Authorization"],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
          supports_credentials=False)
     jwt.init_app(app)
-    
+
+    # OPTIONS preflight: responder 200 antes de que @jwt_required() lo intercepte
+    @app.before_request
+    def handle_options():
+        if request.method == 'OPTIONS':
+            return '', 200
+
+    # Error handler global: garantiza que los errores no capturados devuelvan JSON (no HTML)
+    @app.errorhandler(Exception)
+    def handle_unhandled_exception(e):
+        logging.error(f'Unhandled exception: {e}', exc_info=True)
+        try:
+            db.session.remove()
+        except Exception:
+            pass
+        return jsonify({'error': str(e)}), 500
+
+    # Importar modelos para que SQLAlchemy cree las tablas
+    from app.models.peso_historico import PesoHistorico  # noqa: F401
+
     # Registrar blueprints
     from app.routes.auth import auth_bp
     from app.routes.alimentos import alimentos_bp
@@ -100,6 +132,18 @@ def _migrar_columnas():
         if 'alergenos_seleccionados' not in columnas:
             with db.engine.connect() as conn:
                 conn.execute(text("ALTER TABLE usuario ADD COLUMN alergenos_seleccionados TEXT DEFAULT '[]'"))
+                conn.commit()
+        if 'ingredientes_no_deseados' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE usuario ADD COLUMN ingredientes_no_deseados TEXT DEFAULT '[]'"))
+                conn.commit()
+        if 'reset_token' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE usuario ADD COLUMN reset_token VARCHAR(100)'))
+                conn.commit()
+        if 'reset_token_expiry' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE usuario ADD COLUMN reset_token_expiry TIMESTAMP'))
                 conn.commit()
     except Exception as e:
         logging.error(f"Error migrating usuario table: {e}")

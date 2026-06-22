@@ -88,11 +88,9 @@ class ComidaDiaria(db.Model):
         # Sumar totales de raciones
         for racion in self.raciones:
             cantidad = self.get_cantidad_racion(racion.id)
-            # Las raciones ya tienen totales calculados
-            if hasattr(racion, 'totales'):
-                for key in totales:
-                    if key in racion.totales:
-                        totales[key] += racion.totales.get(key, 0) * (cantidad / 100)
+            racion_totales = racion.to_dict().get('totales', {})
+            for key in totales:
+                totales[key] += racion_totales.get(key, 0) * cantidad
 
         # Sumar totales de alimentos
         for alimento in self.alimentos:
@@ -123,22 +121,8 @@ class ComidaDiaria(db.Model):
             'tipo_comida': self.tipo_comida,
             'raciones': [
                 {
-                    'id': r.id,
-                    'nombre': r.nombre,
-                    'descripcion': r.descripcion,
+                    **r.to_dict(),
                     'cantidad': self.get_cantidad_racion(r.id),
-                    'alimentos': [
-                        {
-                            'id': ali.id,
-                            'nombre': ali.nombre,
-                            'marca': ali.marca,
-                            'calorias': ali.calorias,
-                            'proteinas': ali.proteinas,
-                            'grasas': ali.grasas,
-                            'hidratos_carbono': ali.hidratos_carbono
-                        }
-                        for ali in (r.alimentos if hasattr(r, 'alimentos') else [])
-                    ]
                 }
                 for r in self.raciones
             ],

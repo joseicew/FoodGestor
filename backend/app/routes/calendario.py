@@ -4,7 +4,7 @@ from app import db
 from app.models.comida_diaria import ComidaDiaria, comida_raciones, comida_alimentos
 from app.models.racion import Racion
 from app.models.alimento import Alimento
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from sqlalchemy import select
 
 calendario_bp = Blueprint('calendario', __name__, url_prefix='/api/calendario')
@@ -108,6 +108,35 @@ def calcular_porcentajes(totales_diarios, limites_base):
         else:
             porcentajes[key] = 0
     return porcentajes
+
+
+@calendario_bp.route('/', methods=['GET'], strict_slashes=False)
+@jwt_required()
+def obtener_todos():
+    """Devuelve todas las entradas de ComidaDiaria del usuario (para sincronización)"""
+    try:
+        usuario_id = int(get_jwt_identity())
+        comidas = ComidaDiaria.query.filter_by(usuario_id=usuario_id).all()
+        return jsonify([c.to_dict() for c in comidas]), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@calendario_bp.route('/sync/diff', methods=['POST'])
+@jwt_required()
+def sync_diff():
+    """Devuelve si el recuento del servidor difiere del cliente"""
+    try:
+        usuario_id = int(get_jwt_identity())
+        count_cliente = request.json.get('count', 0)
+        count_servidor = ComidaDiaria.query.filter_by(usuario_id=usuario_id).count()
+        return jsonify({
+            'hay_cambios': count_servidor != count_cliente,
+            'count_servidor': count_servidor,
+            'count_cliente': count_cliente
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @calendario_bp.route('/<fecha>', methods=['GET'])
@@ -216,7 +245,7 @@ def agregar_alimento(fecha, tipo_comida):
             return jsonify({'error': 'alimento_id es requerido'}), 400
 
         fecha_obj = datetime.strptime(fecha, '%Y-%m-%d').date()
-        alimento = Alimento.query.filter_by(id=alimento_id, usuario_id=usuario_id).first()
+        alimento = Alimento.query.get(alimento_id)
 
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
@@ -264,8 +293,9 @@ def agregar_alimento(fecha, tipo_comida):
     except ValueError:
         return jsonify({'error': 'Formato de fecha inválido (use YYYY-MM-DD)'}), 400
     except Exception as e:
+        import traceback
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
 
 
 @calendario_bp.route('/<fecha>/<tipo_comida>/raciones/<int:racion_id>', methods=['DELETE'])
@@ -416,25 +446,39 @@ def actualizar_cantidad_alimento(fecha, tipo_comida, alimento_id):
         return jsonify({'error': str(e)}), 500
 
 
-@calendario_bp.route('/sync/diff', methods=['POST'])
+@calendario_bp.route('/stats', methods=['GET'])
 @jwt_required()
-def verificar_cambios_calendario():
-    """Verifica si hay cambios en el calendario del usuario desde la última carga"""
+def obtener_stats():
+    """Devuelve calorías y macros totales por día para los últimos N días"""
     try:
-        usuario_id = int(get_jwt_identity())
-        data = request.get_json() or {}
-        cliente_count = data.get('count', 0)
+        from app.models.usuario import Usuario
+        identity = get_jwt_identity()
+        usuario_id = int(identity) if identity is not None else None
+        if not usuario_id:
+            return jsonify({'error': 'No autenticado'}), 401
+        dias = int(request.args.get('dias', 30))
+        hoy = date.today()
+        resultado = []
 
-        # Contar entradas de calendario actuales en el servidor para este usuario
-        total_calendario = ComidaDiaria.query.filter_by(usuario_id=usuario_id).count()
+        usuario = Usuario.query.get(usuario_id)
+        objetivo_kcal = usuario.limites_calorias if usuario else 2500
 
-        # Si la cantidad cambió, hay cambios
-        hay_cambios = cliente_count != total_calendario
+        for i in range(dias - 1, -1, -1):
+            fecha = hoy - timedelta(days=i)
+            fecha_str = fecha.isoformat()
+            comidas = obtener_dia_completo(fecha_str, usuario_id)
+            totales = calcular_totales_diarios(comidas) if comidas else {}
+            resultado.append({
+                'fecha': fecha_str,
+                'calorias': round(totales.get('calorias', 0), 1),
+                'proteinas': round(totales.get('proteinas', 0), 1),
+                'grasas': round(totales.get('grasas', 0), 1),
+                'hidratos': round(totales.get('hidratos_carbono', 0), 1),
+            })
 
         return jsonify({
-            'hay_cambios': hay_cambios,
-            'count_servidor': total_calendario,
-            'count_cliente': cliente_count
+            'dias': resultado,
+            'objetivo_kcal': objetivo_kcal
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

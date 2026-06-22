@@ -1,0 +1,76 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'URL del backend (ej: http://100.x.x.x:5000)'
+        required: true
+        default: 'http://TU_IP_TAILSCALE:5000'
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Set API URL
+        working-directory: frontend
+        run: |
+          sed -i '' "s|http://TU_IP_AQUI:5000|${{ github.event.inputs.api_url }}|g" src/environments/environment.prod.ts
+
+      - name: Build Angular (production)
+        working-directory: frontend
+        run: npm run build -- --configuration=production
+
+      - name: Sync Capacitor
+        working-directory: frontend
+        run: npx cap sync ios
+
+      - name: Install CocoaPods
+        working-directory: frontend/ios/App
+        run: pod install --repo-update
+
+      - name: Build IPA (sin firmar)
+        working-directory: frontend/ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination generic/platform=iOS \
+            -archivePath $RUNNER_TEMP/FoodGestor.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE=""
+
+      - name: Exportar IPA
+        run: |
+          mkdir -p $RUNNER_TEMP/ipa
+          xcodebuild \
+            -exportArchive \
+            -archivePath $RUNNER_TEMP/FoodGestor.xcarchive \
+            -exportPath $RUNNER_TEMP/ipa \
+            -exportOptionsPlist frontend/ios/ExportOptions.plist \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: FoodGestor-iOS
+          path: ${{ runner.temp }}/ipa/*.ipa
+          retention-days: 7

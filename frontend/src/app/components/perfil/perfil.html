@@ -1,18 +1,12 @@
 <div class="perfil-container">
   @if (!editando) {
     <div class="header">
-      <div class="header-title">
-        <span class="header-icon">👤</span>
-        <h1>{{ usuario.nombre_completo }}</h1>
-      </div>
+      <h1>👤 {{ usuario.nombre_completo }}</h1>
+      <button class="btn-logout" (click)="abrirLogout()" title="Cerrar sesión">🚪</button>
     </div>
   }
 
-  @if (mensaje) {
-    <div class="mensaje" [class.error]="mensajeTipo === 'error'">
-      {{ mensaje }}
-    </div>
-  }
+  <app-mensaje-flash />
 
   @if (!editando) {
     <!-- VISTA NORMAL -->
@@ -98,6 +92,30 @@
         <div class="dato-label-inline">Objetivo</div>
         <div class="dato-valor-inline">{{ formatearObjetivo(usuario.objetivo) }}</div>
       </div>
+
+      <!-- Alergias -->
+      @if (alergenos_seleccionados.length > 0) {
+        <div class="dato-inline-row">
+          <div class="dato-label-inline">⚠️ Alergias</div>
+          <div class="dato-valor-inline dato-tags">
+            @for (a of alergenos_seleccionados; track a) {
+              <span class="dato-tag alergia">{{ a }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Ingredientes no deseados -->
+      @if (ingredientes_no_deseados.length > 0) {
+        <div class="dato-inline-row">
+          <div class="dato-label-inline">🚫 Evitar</div>
+          <div class="dato-valor-inline dato-tags">
+            @for (id of ingredientes_no_deseados; track id) {
+              <span class="dato-tag no-deseado">{{ nombreIngrediente(id) }}</span>
+            }
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Explicación de calorías -->
@@ -116,36 +134,19 @@
           <span class="caloria-label">📉 Con Déficit (15%)
             <span class="caloria-ahorro">(-{{ (usuario.getd_calculada - usuario.limites_calorias) | number : '1.0-0' }} kcal)</span>
           </span>
-          <span class="caloria-valor">
-            {{ usuario.limites_calorias | number : '1.0-0' }} kcal
+          <span class="caloria-valor">{{ usuario.limites_calorias | number : '1.0-0' }} kcal</span>
+        </div>
+      }
+      @if (usuario.objetivo === 'ganar_musculo') {
+        <div class="caloria-item superavit">
+          <span class="caloria-label">📈 Con Superávit (10%)
+            <span class="caloria-ganancia">(+{{ (usuario.limites_calorias - usuario.getd_calculada) | number : '1.0-0' }} kcal)</span>
           </span>
+          <span class="caloria-valor">{{ usuario.limites_calorias | number : '1.0-0' }} kcal</span>
         </div>
       }
     </div>
 
-    <div class="coming-soon-card">
-      <p>🚧 Historial y estadísticas próximamente</p>
-    </div>
-
-    <!-- LOGOUT -->
-    <div class="logout-section">
-      <button class="btn-logout" (click)="abrirConfirmacionLogout()" title="Cerrar sesión">
-        🚪 Cerrar sesión
-      </button>
-    </div>
-
-    @if (confirmarLogout) {
-      <div class="modal-overlay" (click)="cerrarConfirmacionLogout()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <h3>¿Cerrar sesión?</h3>
-          <p>¿Estás seguro de que quieres cerrar sesión?</p>
-          <div class="modal-actions">
-            <button class="btn-confirm" (click)="logout()">✓ Sí, cerrar sesión</button>
-            <button class="btn-cancel" (click)="cerrarConfirmacionLogout()">✕ Cancelar</button>
-          </div>
-        </div>
-      </div>
-    }
   } @else {
     <!-- VISTA DE EDICIÓN -->
     <div class="perfil-edicion-card">
@@ -244,6 +245,54 @@
                 />
                 <label [for]="'alergeno-' + alergeno">{{ alergeno }}</label>
               </div>
+            }
+          </div>
+        </div>
+
+        <!-- INGREDIENTES NO DESEADOS -->
+        <div class="form-section">
+          <h3>🚫 Ingredientes No Deseados</h3>
+          <p class="form-hint">Busca ingredientes que quieras evitar. Los alimentos que los contengan se marcarán.</p>
+
+          <!-- Tags de ingredientes ya seleccionados -->
+          @if (ingredientes_no_deseados.length > 0) {
+            <div class="ing-tags">
+              @for (id of ingredientes_no_deseados; track id) {
+                <span class="ing-tag">
+                  {{ nombreIngrediente(id) }}
+                  <button type="button" class="ing-tag-remove" (click)="quitarIngNoDeseado(id)" [disabled]="cargando">✕</button>
+                </span>
+              }
+            </div>
+          }
+
+          <!-- Buscador -->
+          <div class="ing-buscador">
+            <input
+              type="text"
+              class="ing-search-input"
+              [(ngModel)]="busquedaIngNoDeseado"
+              name="busquedaIngNoDeseado"
+              placeholder="Buscar ingrediente..."
+              [disabled]="cargando"
+              autocomplete="off"
+            />
+
+            @if (ingredientesFiltrados.length > 0) {
+              <div class="ing-resultados">
+                @for (ing of ingredientesFiltrados; track ing.id) {
+                  <button type="button" class="ing-resultado-item" (click)="agregarIngNoDeseado(ing)">
+                    {{ ing.nombre }}
+                    @if (ing.categoria) {
+                      <span class="ing-categoria">{{ ing.categoria }}</span>
+                    }
+                  </button>
+                }
+              </div>
+            }
+
+            @if (busquedaIngNoDeseado.trim().length >= 2 && ingredientesFiltrados.length === 0) {
+              <p class="ing-sin-resultados">Sin resultados para "{{ busquedaIngNoDeseado }}"</p>
             }
           </div>
         </div>
@@ -358,6 +407,9 @@
         </div>
 
         <div class="form-actions">
+          <button type="button" class="btn-abrir-password" (click)="abrirCambiarPassword()" [disabled]="cargando">
+            🔑 Cambiar contraseña
+          </button>
           <button type="submit" class="btn-guardar" [disabled]="cargando">
             @if (cargando) {
               <span class="spinner"></span>
@@ -368,6 +420,80 @@
           </button>
         </div>
       </form>
+    </div>
+  }
+
+  <!-- Modal: Cambiar contraseña -->
+  @if (mostrandoCambioPassword) {
+    <div class="modal-overlay" (click)="cerrarCambiarPassword()">
+      <div class="password-modal" (click)="$event.stopPropagation()">
+        <button class="password-modal-close" (click)="cerrarCambiarPassword()">✕</button>
+        <h3>🔑 Cambiar contraseña</h3>
+
+        <div class="form-group">
+          <label>Contraseña actual</label>
+          <input
+            type="password"
+            [(ngModel)]="passwordActual"
+            name="passwordActual"
+            placeholder="Tu contraseña actual"
+            [disabled]="cambiandoPassword"
+          />
+        </div>
+        <div class="form-group">
+          <label>Nueva contraseña</label>
+          <input
+            type="password"
+            [(ngModel)]="nuevaPassword"
+            name="nuevaPassword"
+            placeholder="Mínimo 6 caracteres"
+            [disabled]="cambiandoPassword"
+          />
+        </div>
+        <div class="form-group">
+          <label>Confirmar nueva contraseña</label>
+          <input
+            type="password"
+            [(ngModel)]="confirmarNuevaPassword"
+            name="confirmarNuevaPassword"
+            placeholder="Repite la nueva contraseña"
+            [disabled]="cambiandoPassword"
+          />
+        </div>
+
+        <div class="password-modal-actions">
+          <button type="button" class="btn-cancel" (click)="cerrarCambiarPassword()" [disabled]="cambiandoPassword">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn-cambiar-password"
+            (click)="cambiarPassword()"
+            [disabled]="cambiandoPassword || !passwordActual || !nuevaPassword || !confirmarNuevaPassword"
+          >
+            @if (cambiandoPassword) {
+              <span class="spinner"></span>
+              Guardando...
+            } @else {
+              Cambiar contraseña
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal logout -->
+  @if (confirmarLogout) {
+    <div class="modal-overlay" (click)="cerrarLogout()">
+      <div class="logout-modal" (click)="$event.stopPropagation()">
+        <h3>¿Cerrar sesión?</h3>
+        <p>Se cerrará tu sesión actual.</p>
+        <div class="logout-modal-actions">
+          <button class="btn-cancel" (click)="cerrarLogout()">Cancelar</button>
+          <button class="btn-confirm" (click)="hacerLogout()">Cerrar sesión</button>
+        </div>
+      </div>
     </div>
   }
 </div>

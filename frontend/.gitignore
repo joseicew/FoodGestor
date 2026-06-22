@@ -42,3 +42,10 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Capacitor - ignorar build artifacts pero mantener proyecto iOS
+ios/App/Pods/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/DerivedData/
+ios/.DS_Store

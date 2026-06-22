@@ -1,0 +1,40 @@
+<div class="stats-container">
+  <div class="header">
+    <h1>📊 Estadísticas</h1>
+  </div>
+
+  <!-- Registro de peso -->
+  <div class="peso-card">
+    <div class="peso-actual">
+      <span class="peso-label">Peso actual</span>
+      <span class="peso-valor">{{ pesoActual ?? '—' }} <small>kg</small></span>
+    </div>
+    <div class="peso-form">
+      <input type="number" [(ngModel)]="nuevoPeso" step="0.1" min="20" max="300" placeholder="Ej: 75.5" />
+      <button class="btn-guardar-peso" (click)="guardarPeso()" [disabled]="guardandoPeso || !nuevoPeso">
+        {{ guardandoPeso ? '…' : '✓ Registrar' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Selector de rango -->
+  <div class="rango-selector">
+    @for (d of [7, 14, 30, 60]; track d) {
+      <button class="btn-rango" [class.active]="dias === d" (click)="cambiarDias(d)">{{ d }}d</button>
+    }
+  </div>
+
+  <!-- Gráfica -->
+  <div class="grafica-wrapper">
+    @if (cargando) {
+      <div class="loading">Cargando datos…</div>
+    } @else {
+      <canvas #graficaCanvas></canvas>
+    }
+  </div>
+
+  <!-- Leyenda objetivo -->
+  @if (!cargando && objetivoKcal > 0) {
+    <p class="objetivo-texto">Objetivo diario: <strong>{{ objetivoKcal | number:'1.0-0' }} kcal</strong></p>
+  }
+</div>

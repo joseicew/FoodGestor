@@ -21,10 +21,10 @@ html, body {
   line-height: 1.5;
 }
 
-/* Safe area for iPhone notch */
-html {
-  padding-top: max(env(safe-area-inset-top), 16px);
-}
+/* Safe area for iPhone notch:
+   se aplica en .app-container (height:100dvh, border-box) para que el
+   padding quede DENTRO del alto del viewport y no provoque scroll de página.
+   Antes estaba en `html`, que al sumarse a height:100%/100dvh desbordaba ~16px. */
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
@@ -206,17 +206,24 @@ body.dark-mode {
   text-align: center;
 }
 
-/* ── Flash Messages ── */
+/* ── Flash Messages (flotante, fijo en la parte superior) ── */
 .mensaje {
+  position: fixed;
+  top: calc(max(env(safe-area-inset-top), 16px) + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 440px;
   padding: var(--space-md);
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-md);
   background: var(--success-light);
   color: var(--success);
   font-size: var(--font-small);
   font-weight: var(--font-weight-semibold);
   border-left: 4px solid var(--success);
   animation: slideDown 0.3s ease-out;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .mensaje.error {
@@ -515,6 +522,17 @@ button {
 .modal-close:hover {
   color: var(--text-primary);
   background: var(--bg-secondary);
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 16px;
+  width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 /* ── Empty States ── */

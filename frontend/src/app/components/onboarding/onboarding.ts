@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { AuthService } from '../../services/auth';
 import { AllergensService } from '../../services/allergens';
 
@@ -15,11 +16,12 @@ interface LimitesCalculados {
 @Component({
   selector: 'app-onboarding',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MensajeFlash],
   templateUrl: './onboarding.html',
   styleUrl: './onboarding.css'
 })
 export class OnboardingComponent implements OnInit {
+  @ViewChild(MensajeFlash) flash!: MensajeFlash;
   // Datos del formulario
   nombreCompleto: string = '';
   edad: number | null = null;
@@ -32,8 +34,6 @@ export class OnboardingComponent implements OnInit {
 
   // Estado
   cargando: boolean = false;
-  mensaje: string = '';
-  mensajeTipo: 'error' | 'exito' = 'error';
   cargandoAlergenos: boolean = true;
 
   // Límites calculados
@@ -171,27 +171,27 @@ export class OnboardingComponent implements OnInit {
    */
   validar(): boolean {
     if (!this.nombreCompleto.trim()) {
-      this.mostrarMensaje('El nombre completo es requerido', 'error');
+      this.flash.mostrar('El nombre completo es requerido', 'error');
       return false;
     }
 
     if (!this.edad || this.edad < 13 || this.edad > 120) {
-      this.mostrarMensaje('La edad debe estar entre 13 y 120 años', 'error');
+      this.flash.mostrar('La edad debe estar entre 13 y 120 años', 'error');
       return false;
     }
 
     if (!this.altura || this.altura < 100 || this.altura > 300) {
-      this.mostrarMensaje('La altura debe estar entre 100 y 300 cm', 'error');
+      this.flash.mostrar('La altura debe estar entre 100 y 300 cm', 'error');
       return false;
     }
 
     if (!this.peso || this.peso < 25 || this.peso > 500) {
-      this.mostrarMensaje('El peso debe estar entre 25 y 500 kg', 'error');
+      this.flash.mostrar('El peso debe estar entre 25 y 500 kg', 'error');
       return false;
     }
 
     if (!this.limitesCalculados) {
-      this.mostrarMensaje('Error al calcular los límites', 'error');
+      this.flash.mostrar('Error al calcular los límites', 'error');
       return false;
     }
 
@@ -207,7 +207,7 @@ export class OnboardingComponent implements OnInit {
     }
 
     if (!this.limitesCalculados) {
-      this.mostrarMensaje('Error al calcular los límites', 'error');
+      this.flash.mostrar('Error al calcular los límites', 'error');
       return;
     }
 
@@ -236,7 +236,7 @@ export class OnboardingComponent implements OnInit {
       error: (error) => {
         this.cargando = false;
         const mensaje = error.error?.error || 'Error al completar el onboarding';
-        this.mostrarMensaje(mensaje, 'error');
+        this.flash.mostrar(mensaje, 'error');
       }
     });
   }
@@ -264,11 +264,4 @@ export class OnboardingComponent implements OnInit {
     }
   }
 
-  private mostrarMensaje(texto: string, tipo: 'error' | 'exito'): void {
-    this.mensaje = texto;
-    this.mensajeTipo = tipo;
-    setTimeout(() => {
-      this.mensaje = '';
-    }, 4000);
-  }
 }

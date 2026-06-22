@@ -152,16 +152,28 @@ def procesar_ingredientes(image_data: bytes, content_type: str) -> list[str]:
                         '1. Si hay múltiples idiomas/secciones, BUSCA LA SECCIÓN QUE EMPIEZA CON "ES:" o "ES " (Español).\n'
                         '2. Extrae SOLO los ingredientes de la sección ES (Español). Ignora COMPLETAMENTE todas las demás secciones (FR, DE, PT, IT, EN, etc.).\n'
                         '3. Si NO encuentras "ES:", busca una sección marcada con "INGREDIENTES" en español.\n'
-                        '4. Limpia cada ingrediente: elimina números de referencia, símbolos, paréntesis innecesarios.\n'
-                        '5. Devuelve SOLO un array JSON con los nombres en español, en minúsculas, sin números ni símbolos.\n'
-                        'Sin explicaciones, solo el JSON. Ejemplo: ["harina de trigo", "azúcar", "sal"]'
+                        '4. Cada ingrediente individual debe ser un elemento separado del array. Los separadores pueden ser coma (,), punto y coma (;) o punto (.).\n'
+                        '5. Limpia cada ingrediente: elimina números de referencia, porcentajes, símbolos y paréntesis innecesarios.\n'
+                        '6. Devuelve SOLO un array JSON con los nombres en español, en minúsculas, sin números ni símbolos.\n'
+                        'Sin explicaciones, solo el JSON. Ejemplo: ["harina de trigo", "azúcar", "sal", "levadura"]'
                     )
                 }
             ]
         }]
     )
 
-    return _extraer_json(message.content[0].text.strip(), 'array')
+    raw = _extraer_json(message.content[0].text.strip(), 'array')
+    # Post-proceso: si algún elemento contiene ';', dividirlo en subelementos
+    resultado = []
+    for item in raw:
+        if ';' in str(item):
+            for sub in str(item).split(';'):
+                sub = sub.strip()
+                if sub:
+                    resultado.append(sub)
+        else:
+            resultado.append(item)
+    return resultado
 
 
 def procesar_codigo_barras(image_data: bytes, content_type: str) -> str:

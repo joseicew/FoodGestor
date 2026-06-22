@@ -6,11 +6,7 @@
       <p class="subtitle">Completa tu perfil</p>
     </div>
 
-    @if (mensaje) {
-      <div class="mensaje" [class.error]="mensajeTipo === 'error'">
-        {{ mensaje }}
-      </div>
-    }
+    <app-mensaje-flash />
 
     <form (ngSubmit)="completarOnboarding()" class="form">
       <!-- Nombre Completo -->
