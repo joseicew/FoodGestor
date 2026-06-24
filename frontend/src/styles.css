@@ -95,44 +95,6 @@ input[type="number"]::-webkit-outer-spin-button {
   --font-weight-bold:    700;
 }
 
-/* Dark Theme */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Neutral (Dark) */
-    --text-primary:     #FFFFFF;
-    --text-secondary:   #B0B0B0;
-    --text-tertiary:    #808080;
-    --text-light:       #606060;
-    --text-label:       #E0E0E0;
-    --bg-surface:       #1B2514;
-    --bg-secondary:     #2A3A1F;
-    --bg-tertiary:      #384B28;
-    --border-color:     #4A5A38;
-    --border-light:     #384B28;
-    --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-md:        0 8px 24px rgba(0, 0, 0, 0.5);
-    --shadow-lg:        0 16px 32px rgba(0, 0, 0, 0.6);
-  }
-}
-
-/* Manual Dark Mode Toggle */
-body.dark-mode {
-  /* Neutral (Dark) */
-  --text-primary:     #FFFFFF;
-  --text-secondary:   #B0B0B0;
-  --text-tertiary:    #808080;
-  --text-light:       #606060;
-  --text-label:       #E0E0E0;
-  --bg-surface:       #1B2514;
-  --bg-secondary:     #2A3A1F;
-  --bg-tertiary:      #384B28;
-  --border-color:     #4A5A38;
-  --border-light:     #384B28;
-  --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md:        0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-lg:        0 16px 32px rgba(0, 0, 0, 0.6);
-}
-
 /* ── Animaciones ── */
 @keyframes fadeIn {
   from { opacity: 0; }

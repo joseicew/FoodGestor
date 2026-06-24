@@ -8,8 +8,7 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  /* Safe area del notch: dentro de los 100dvh (border-box) para no desbordar. */
-  padding-top: max(env(safe-area-inset-top), 16px);
+  width: 100%;
   max-width: 480px;
   margin: 0 auto;
   background: var(--bg-surface);
@@ -19,8 +18,12 @@
 
 .content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  /* Safe area del notch dentro del propio .content: así el elemento ocupa
+     todo el alto del .app-container y el contenido interior respeta el notch. */
+  padding-top: max(env(safe-area-inset-top), 16px);
   padding-bottom: 70px;
 }
 

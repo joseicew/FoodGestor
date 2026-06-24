@@ -1,11 +1,13 @@
 .login-container {
+  position: fixed;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100%;
-  width: 100%;
   background: linear-gradient(135deg, #6B9117 0%, #5A7A0F 100%);
-  padding: 16px;
+  /* Padding con safe-area: la tarjeta no queda bajo el notch ni el home indicator */
+  padding: max(env(safe-area-inset-top), 16px) 16px max(env(safe-area-inset-bottom), 16px);
+  overflow-y: auto;
 }
 
 .login-box {
