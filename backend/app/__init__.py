@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
+from werkzeug.exceptions import HTTPException
 from datetime import timedelta
 import os
 import logging
@@ -74,6 +75,9 @@ def create_app():
     # Error handler global: garantiza que los errores no capturados devuelvan JSON (no HTML)
     @app.errorhandler(Exception)
     def handle_unhandled_exception(e):
+        # Respetar el código HTTP original (404, 405, 401, ...) sin convertirlo en 500
+        if isinstance(e, HTTPException):
+            return jsonify({'error': e.description}), e.code
         logging.error(f'Unhandled exception: {e}', exc_info=True)
         try:
             db.session.remove()
