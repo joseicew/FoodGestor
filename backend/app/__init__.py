@@ -4,9 +4,26 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from werkzeug.exceptions import HTTPException
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 from datetime import timedelta
+import sqlite3
 import os
 import logging
+
+
+# Ajustes de concurrencia para SQLite: WAL permite lecturas en paralelo a una
+# escritura, y busy_timeout hace que una conexión espere el bloqueo en vez de
+# fallar con "database is locked" (evita los 500 intermitentes al cargar varias
+# peticiones a la vez, p.ej. al cambiar de pestaña).
+@event.listens_for(Engine, "connect")
+def _set_sqlite_pragma(dbapi_connection, connection_record):
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA busy_timeout=30000")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.close()
 
 # Cargar .env desde la carpeta backend (si existe)
 try:
@@ -41,6 +58,15 @@ def create_app():
             'pool_timeout': 20,        # fallar en 20s (antes del timeout de Gunicorn de 30s)
             'max_overflow': 2,
             'connect_args': {'connect_timeout': 10},  # TCP: desistir en 10s si Neon no responde
+        }
+    else:
+        # SQLite local: permitir uso desde varios hilos (servidor con threads) y
+        # esperar hasta 30s a que se libere un bloqueo en vez de fallar al instante.
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'connect_args': {
+                'check_same_thread': False,
+                'timeout': 30,
+            },
         }
 
     # Configurar JWT
@@ -118,6 +144,20 @@ def create_app():
             # Crear tablas basado en los modelos definidos
             db.create_all()
             _migrar_columnas()
+
+            # Activar WAL de forma persistente en SQLite (lecturas concurrentes a
+            # una escritura). Se hace sobre la conexión cruda (fuera de transacción),
+            # porque PRAGMA journal_mode=WAL dentro de una transacción no surte efecto.
+            if 'postgresql' not in (database_url or ''):
+                raw = db.engine.raw_connection()
+                try:
+                    cur = raw.cursor()
+                    cur.execute('PRAGMA journal_mode=WAL')
+                    modo = cur.fetchone()
+                    cur.close()
+                    logging.warning(f"SQLite journal_mode = {modo[0] if modo else '?'}")
+                finally:
+                    raw.close()
         except Exception as e:
             logging.error(f"Error creating tables or migrating: {e}")
             # No fallar la app si hay error en migraciones
