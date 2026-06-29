@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.orm import selectinload
 import json
 import os
 from datetime import datetime
@@ -188,10 +189,14 @@ def obtener_alimentos():
         # Permitir filtrado por código de barras
         codigo_barras = request.args.get('codigo_barras', '').strip()
 
+        # Eager-load de ingredientes (selectinload) para evitar el N+1:
+        # sin esto, to_dict() lanzaba una consulta por cada alimento (~2300+).
+        query = Alimento.query.options(selectinload(Alimento.ingredientes))
+
         if codigo_barras:
-            alimentos = Alimento.query.filter(Alimento.codigo_barras == codigo_barras).all()
+            alimentos = query.filter(Alimento.codigo_barras == codigo_barras).all()
         else:
-            alimentos = Alimento.query.all()
+            alimentos = query.all()
 
         return jsonify({'alimentos': [a.to_dict() for a in alimentos]}), 200
     except Exception as e:

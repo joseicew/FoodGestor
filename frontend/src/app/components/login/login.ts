@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { timeout } from 'rxjs/operators';
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { AuthService } from '../../services/auth';
 import { SyncService } from '../../services/sync';
@@ -141,15 +142,17 @@ export class LoginComponent implements OnInit, OnDestroy {
         // Mostrar overlay animado mientras se cargan los datos del backend
         this.iniciarAnimacionCarga();
 
-        // Cargar datos iniciales (alimentos, raciones, calendario)
-        this.syncService.cargarDatosIniciales().subscribe({
+        // Cargar datos iniciales (alimentos, raciones, calendario).
+        // timeout: si tarda demasiado, navegamos igualmente y cada pantalla
+        // cargará sus propios datos (evita que el overlay se quede colgado).
+        this.syncService.cargarDatosIniciales().pipe(timeout(15000)).subscribe({
           next: () => {
             console.log('✓ Redirigiendo a /perfil...');
             this.completarYNavegar();
           },
           error: (err) => {
-            console.error('⚠️ Error cargando datos iniciales, pero continuando:', err);
-            // Continuar a perfil incluso si hay error (la barra igual se completa)
+            console.error('⚠️ Error/timeout cargando datos iniciales, continuando:', err);
+            // Continuar a perfil incluso si hay error o timeout (la barra se completa)
             this.completarYNavegar();
           }
         });
