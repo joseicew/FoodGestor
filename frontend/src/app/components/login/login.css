@@ -293,7 +293,7 @@
 
 @keyframes slideUp {
   from {
-    transform: translateY(20px);
+    transform: translateY(8px);
     opacity: 0;
   }
   to {
