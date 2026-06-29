@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -13,12 +13,25 @@ import { SyncService } from '../../services/sync';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   @ViewChild(MensajeFlash) flash!: MensajeFlash;
 
   email: string = '';
   password: string = '';
   cargando: boolean = false;
+
+  // Overlay de carga de datos iniciales tras el login
+  cargandoDatos: boolean = false;
+  progresoCarga: number = 0;
+  mensajeCargaIndex: number = 0;
+  readonly mensajesCarga: string[] = [
+    '🥗 Recolectando tus alimentos...',
+    '🥘 Cargando tus raciones...',
+    '🧂 Preparando los ingredientes...',
+    '📅 Sincronizando tu calendario...',
+    '✨ Casi listo...'
+  ];
+  private intervaloCarga: any = null;
   mostrarModalEmailNoExiste: boolean = false;
   emailNoExiste: string = '';
   mostrarModalPasswordIncorrecto: boolean = false;
@@ -39,6 +52,58 @@ export class LoginComponent implements OnInit {
     // Si ya está autenticado, redirigir al perfil
     if (this.authService.estaAutenticado()) {
       this.router.navigate(['/perfil']);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.detenerAnimacionCarga();
+  }
+
+  get mensajeCargaActual(): string {
+    return this.mensajesCarga[this.mensajeCargaIndex];
+  }
+
+  private iniciarAnimacionCarga(): void {
+    this.cargandoDatos = true;
+    this.progresoCarga = 0;
+    this.mensajeCargaIndex = 0;
+    this.cdr.detectChanges();
+    this.intervaloCarga = setInterval(() => {
+      // Avanzar de forma asintótica hacia el 90%: rápido al principio y cada vez
+      // más lento. Refleja el tiempo de espera real sin llegar a 100 antes de hora.
+      if (this.progresoCarga < 90) {
+        this.progresoCarga = Math.min(90, this.progresoCarga + Math.max(0.6, (90 - this.progresoCarga) * 0.07));
+      }
+      // El mensaje avanza ligado al progreso real de la barra
+      this.mensajeCargaIndex = Math.min(
+        this.mensajesCarga.length - 1,
+        Math.floor((this.progresoCarga / 90) * this.mensajesCarga.length)
+      );
+      this.cdr.detectChanges();
+    }, 130);
+  }
+
+  // Completa la barra al 100% cuando los datos reales han cargado, la deja ver
+  // un instante y entonces navega al perfil.
+  private completarYNavegar(): void {
+    if (this.intervaloCarga) {
+      clearInterval(this.intervaloCarga);
+      this.intervaloCarga = null;
+    }
+    this.progresoCarga = 100;
+    this.mensajeCargaIndex = this.mensajesCarga.length - 1;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.cargandoDatos = false;
+      this.router.navigate(['/perfil']);
+    }, 350);
+  }
+
+  private detenerAnimacionCarga(): void {
+    this.cargandoDatos = false;
+    if (this.intervaloCarga) {
+      clearInterval(this.intervaloCarga);
+      this.intervaloCarga = null;
     }
   }
 
@@ -73,16 +138,19 @@ export class LoginComponent implements OnInit {
         console.log('✓ Token disponible:', !!this.authService.obtenerToken());
         console.log('🔄 Cargando datos iniciales...');
 
+        // Mostrar overlay animado mientras se cargan los datos del backend
+        this.iniciarAnimacionCarga();
+
         // Cargar datos iniciales (alimentos, raciones, calendario)
         this.syncService.cargarDatosIniciales().subscribe({
           next: () => {
             console.log('✓ Redirigiendo a /perfil...');
-            this.router.navigate(['/perfil']);
+            this.completarYNavegar();
           },
           error: (err) => {
             console.error('⚠️ Error cargando datos iniciales, pero continuando:', err);
-            // Continuar a perfil incluso si hay error
-            this.router.navigate(['/perfil']);
+            // Continuar a perfil incluso si hay error (la barra igual se completa)
+            this.completarYNavegar();
           }
         });
       },

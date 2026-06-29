@@ -56,6 +56,20 @@
     </div>
   </div>
 
+  <!-- Overlay de carga de datos iniciales tras el login -->
+  @if (cargandoDatos) {
+    <div class="carga-overlay">
+      <div class="carga-box">
+        <div class="carga-spinner"></div>
+        <p class="carga-mensaje">{{ mensajeCargaActual }}</p>
+        <div class="carga-barra-riel">
+          <div class="carga-barra-progreso" [style.width.%]="progresoCarga"></div>
+        </div>
+        <p class="carga-sub">{{ progresoCarga | number : '1.0-0' }}%</p>
+      </div>
+    </div>
+  }
+
   <!-- Modal: Olvidé mi contraseña -->
   @if (mostrarModalOlvidePassword) {
     <div class="modal-overlay" (click)="cerrarOlvidePassword()">

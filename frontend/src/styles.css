@@ -33,7 +33,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 /* ── Design System v1.0 with Dark Mode ── */
 
-/* Light Theme (Default) */
+/* Tema oscuro (único, por defecto) */
 :root {
   /* Colores Principales */
   --primary:          #A4C639;
@@ -53,20 +53,20 @@ input[type="number"]::-webkit-outer-spin-button {
   --error-light:      #FFE5E0;
   --info:             #007AFF;
 
-  /* Neutral (Light) */
-  --text-primary:     #000000;
-  --text-secondary:   #666666;
-  --text-tertiary:    #999999;
-  --text-light:       #CCCCCC;
-  --text-label:       #333333;
-  --bg-surface:       #F8FBEF;
-  --bg-secondary:     #F0F5E8;
-  --bg-tertiary:      #E8F0DD;
-  --border-color:     #E0E8D0;
-  --border-light:     #F0F5E8;
-  --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md:        0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-lg:        0 16px 32px rgba(0, 0, 0, 0.16);
+  /* Neutral (oscuro) */
+  --text-primary:     #FFFFFF;
+  --text-secondary:   #B0B0B0;
+  --text-tertiary:    #808080;
+  --text-light:       #606060;
+  --text-label:       #E0E0E0;
+  --bg-surface:       #1B2514;
+  --bg-secondary:     #2A3A1F;
+  --bg-tertiary:      #384B28;
+  --border-color:     #4A5A38;
+  --border-light:     #384B28;
+  --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md:        0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg:        0 16px 32px rgba(0, 0, 0, 0.6);
 
   /* Espaciado */
   --space-xs:         4px;
