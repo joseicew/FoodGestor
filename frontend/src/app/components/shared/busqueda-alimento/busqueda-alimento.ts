@@ -24,22 +24,30 @@ export class BusquedaAlimentoComponent implements OnChanges {
     }
   }
 
+  /** minúsculas + sin tildes, para comparar ignorando acentos */
+  private normalizar(s: string): string {
+    return (s || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+  }
+
   filtrar() {
     let lista = this.excluirIds.length > 0
       ? this.alimentos.filter(a => !this.excluirIds.includes(a.id))
       : this.alimentos;
 
-    if (!this.termino.trim()) {
+    const t = this.normalizar(this.termino.trim());
+
+    if (!t) {
       this.filtrados = this.mostrarTodos ? this.sortFavoritos(lista) : [];
       return;
     }
 
-    const t = this.termino.toLowerCase();
+    // Cada palabra debe aparecer (tipo %like% AND) en nombre, marca o código de barras
+    const palabras = t.split(/\s+/).filter(Boolean);
     this.filtrados = this.sortFavoritos(
-      lista.filter(a =>
-        a.nombre?.toLowerCase().includes(t) ||
-        a.marca?.toLowerCase().includes(t)
-      )
+      lista.filter(a => {
+        const texto = this.normalizar(`${a.nombre || ''} ${a.marca || ''} ${a.codigo_barras || ''}`);
+        return palabras.every(p => texto.includes(p));
+      })
     );
   }
 

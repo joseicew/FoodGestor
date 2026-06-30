@@ -12,12 +12,13 @@ import { Chart, registerables } from 'chart.js';
 import { ModalCantidadAlimentoComponent } from '../shared/modal-cantidad-alimento/modal-cantidad-alimento';
 import { BusquedaAlimentoComponent } from '../shared/busqueda-alimento/busqueda-alimento';
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
+import { PageHeaderComponent } from '../shared/page-header/page-header';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-raciones',
-  imports: [CommonModule, FormsModule, ModalCantidadAlimentoComponent, BusquedaAlimentoComponent, MensajeFlash],
+  imports: [CommonModule, FormsModule, ModalCantidadAlimentoComponent, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent],
   templateUrl: './raciones.html',
   styleUrl: './raciones.css',
 })

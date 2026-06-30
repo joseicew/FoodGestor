@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
+import { PageHeaderComponent } from '../shared/page-header/page-header';
 import { AuthService } from '../../services/auth';
 import { SessionService } from '../../services/session';
 import { CalendarioService } from '../../services/calendario';
@@ -12,7 +13,7 @@ import { IngredientesService } from '../../services/ingredientes';
 
 @Component({
   selector: 'app-perfil',
-  imports: [CommonModule, FormsModule, MensajeFlash],
+  imports: [CommonModule, FormsModule, MensajeFlash, PageHeaderComponent],
   templateUrl: './perfil.html',
   styleUrl: './perfil.css',
 })

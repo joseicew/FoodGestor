@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
+import { PageHeaderComponent } from '../shared/page-header/page-header';
 import { AlimentosService } from '../../services/alimentos';
 import { IngredientesService } from '../../services/ingredientes';
 import { AuthService } from '../../services/auth';
@@ -15,7 +16,7 @@ import { AlimentoDetalle, CATEGORIAS } from './detalle/alimento-detalle';
 @Component({
   selector: 'app-alimentos',
   standalone: true,
-  imports: [CommonModule, FormsModule, AlimentoFiltros, AlimentoLista, AlimentoDetalle, MensajeFlash],
+  imports: [CommonModule, FormsModule, AlimentoFiltros, AlimentoLista, AlimentoDetalle, MensajeFlash, PageHeaderComponent],
   templateUrl: './alimentos.html',
   styleUrl: './alimentos.css',
 })

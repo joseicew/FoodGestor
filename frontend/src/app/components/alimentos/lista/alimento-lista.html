@@ -9,24 +9,31 @@
          [class.con-no-deseados]="tieneIngNoDeseado(alimento)"
          [class.sin-caracteristicas-negativas]="resaltarAlergias && !tieneAlergia(alimento) && !tieneIngNoDeseado(alimento)"
          (click)="onSeleccionar(alimento)">
-      <div style="flex: 1;">
-        <div style="margin-bottom: 4px;">
-          <span class="alimento-nombre">{{ alimento.nombre }} - {{ alimento.marca }}</span>
-        </div>
-        @if (alimento.codigo_barras) {
-          <span class="alimento-barcode" style="display: block; font-size: 12px;">📱 {{ alimento.codigo_barras }}</span>
+
+      <div class="alimento-top">
+        <span class="alimento-nombre">{{ alimento.nombre }}</span>
+        @if (alimento.categoria) {
+          <span class="categoria-badge">{{ alimento.categoria }}</span>
         }
-        <span class="alimento-categoria" style="font-size: 11px; color: #999; opacity: 0.7;">
-          {{ alimento.categoria }}
-        </span>
       </div>
-      <button class="btn-favorito"
-              [class.favorito]="favoritosFijos || alimento.favorito"
-              (click)="onToggleFavorito(alimento, $event)"
-              title="Favorito"
-              style="margin-left: 8px; flex-shrink: 0;">
-        {{ (favoritosFijos || alimento.favorito) ? '⭐' : '☆' }}
-      </button>
+
+      @if (alimento.marca) {
+        <span class="alimento-marca">{{ alimento.marca }}</span>
+      }
+
+      <div class="alimento-bottom">
+        @if (alimento.codigo_barras) {
+          <span class="alimento-barcode">{{ alimento.codigo_barras }}</span>
+        } @else {
+          <span></span>
+        }
+        <button class="btn-favorito"
+                [class.favorito]="favoritosFijos || alimento.favorito"
+                (click)="onToggleFavorito(alimento, $event)"
+                title="Favorito">
+          {{ (favoritosFijos || alimento.favorito) ? '⭐' : '☆' }}
+        </button>
+      </div>
     </div>
   }
 </div>

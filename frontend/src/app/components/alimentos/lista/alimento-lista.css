@@ -13,13 +13,47 @@
 .alimento-card {
   background: #f9f9f9;
   border: 1px solid #eee;
-  border-radius: 40px;
-  padding: 10px;
-  padding-right: 50px;
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.alimento-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.categoria-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2e7d32;
+  background: #e8f5e9;
+  padding: 3px 9px;
+  border-radius: 10px;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.alimento-marca {
+  font-size: 13px;
+  color: #777;
+}
+
+.alimento-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: relative;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #ececec;
+  min-height: 24px;
 }
 
 .alimento-card.clickable { cursor: pointer; }
@@ -46,34 +80,33 @@
 
 .alimento-card.sin-caracteristicas-negativas:hover { background: #c8e6c9; border-color: #388E3C; }
 
-.alimento-nombre { font-weight: 600; font-size: 14px; color: #2d2d2d; }
-.alimento-categoria { font-size: 12px; color: #999; }
+.alimento-nombre { font-weight: 600; font-size: 15px; color: #2d2d2d; line-height: 1.25; }
 
 .alimento-barcode {
-  font-size: 11px;
+  font-size: 12px;
   color: #1976d2;
   background: #e3f2fd;
   padding: 2px 8px;
   border-radius: 4px;
   width: fit-content;
   font-weight: 500;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  letter-spacing: 0.3px;
 }
 
 .btn-favorito {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
   background: none;
   border: none;
   font-size: 20px;
   cursor: pointer;
-  padding: 8px;
+  padding: 2px 4px;
   transition: transform 0.2s;
   opacity: 0.6;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
-.btn-favorito:hover { opacity: 1; transform: translateY(-50%) scale(1.2); }
+.btn-favorito:hover { opacity: 1; transform: scale(1.2); }
 .btn-favorito.favorito { opacity: 1; color: #FFC107; }
 
 .empty-state {

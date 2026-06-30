@@ -6,17 +6,44 @@
   min-height: 0;
 }
 
-.header { flex-shrink: 0; }
-
-.btn-volver {
-  padding: 6px 12px;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
+.header {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 10px 56px;
 }
+
+.header h1 {
+  font-size: 20px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Flecha atrás flotante (mismo espíritu que el FAB de la app) */
+.btn-volver {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  left: 12px;
+  z-index: 900;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.4);
+  transition: all 0.2s;
+}
+
+.btn-volver:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5); }
+.btn-volver:active { transform: scale(0.96); }
 
 .mensaje { flex-shrink: 0; z-index: 998; }
 

@@ -5,13 +5,14 @@ import { Router } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import { StatsService } from '../../services/stats';
 import { AuthService } from '../../services/auth';
+import { PageHeaderComponent } from '../shared/page-header/page-header';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-stats',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PageHeaderComponent],
   templateUrl: './stats.html',
   styleUrl: './stats.css'
 })

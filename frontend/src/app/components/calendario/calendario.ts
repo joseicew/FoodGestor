@@ -11,10 +11,11 @@ import { CacheService } from '../../services/cache';
 import { AllergensService } from '../../services/allergens';
 import { BusquedaAlimentoComponent } from '../shared/busqueda-alimento/busqueda-alimento';
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
+import { PageHeaderComponent } from '../shared/page-header/page-header';
 
 @Component({
   selector: 'app-calendario',
-  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent, MensajeFlash],
+  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent],
   templateUrl: './calendario.html',
   styleUrl: './calendario.css'
 })

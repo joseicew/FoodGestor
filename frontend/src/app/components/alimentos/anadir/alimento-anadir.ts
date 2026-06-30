@@ -7,6 +7,7 @@ import { AlimentosService } from '../../../services/alimentos';
 import { IngredientesService } from '../../../services/ingredientes';
 import { AiVisionService } from '../../../services/ai-vision';
 import { OcrAsyncService } from '../../../services/ocr-async';
+import { comprimirImagen, fileADataURL } from '../../../utils/imagen';
 import { CATEGORIAS, UNIDADES_COMUNES } from '../detalle/alimento-detalle';
 
 type OcrEstado = 'idle' | 'preparando' | 'analizando' | 'listo' | 'error';
@@ -103,13 +104,15 @@ export class AlimentoAnadir implements OnInit {
 
   // ── OCR foto completa ──
   async procesarImagenOCR(event: any) {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const original = event.target.files?.[0];
+    if (!original) return;
 
     this.cargandoOCR = true;
     this.cdr.detectChanges();
 
     try {
+      // Reescalar para no agotar la memoria del WebView (cerraba la app)
+      const file = await comprimirImagen(original);
       const datos = await this.aiVision.procesarImagenCompleta(file);
 
       const tieneNombre = datos.nombre && datos.nombre.trim();
@@ -165,26 +168,25 @@ export class AlimentoAnadir implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input.files?.[0]) return;
 
-    this.fotoIngredientesFile = input.files[0];
+    const file = await comprimirImagen(input.files[0]);
+    this.fotoIngredientesFile = file;
     this.ingredientesExtraidos = [];
     this.ocrIngredientesEstado = 'idle';
     this.cdr.detectChanges();
     await this.esperar(100);
     this.ocrIngredientesEstado = 'preparando';
 
-    const reader = new FileReader();
-    reader.onload = (e) => this.fotoIngredientesPreview = e.target?.result as string;
-    reader.readAsDataURL(input.files[0]);
+    this.fotoIngredientesPreview = await fileADataURL(file);
 
     await this.esperar(300);
     this.ocrIngredientesEstado = 'analizando';
 
     try {
       if (this.usarOcrAsincrono) {
-        const jobId = await this.ocrAsync.iniciarOcrIngredientes(input.files[0]);
+        const jobId = await this.ocrAsync.iniciarOcrIngredientes(file);
         this.ingredientesExtraidos = await this.ocrAsync.esperarResultado(jobId, () => this.cdr.detectChanges());
       } else {
-        this.ingredientesExtraidos = await this.aiVision.procesarImagenIngredientes(input.files[0]);
+        this.ingredientesExtraidos = await this.aiVision.procesarImagenIngredientes(file);
       }
       this.ocrIngredientesEstado = 'listo';
     } catch (e: any) {
@@ -199,7 +201,8 @@ export class AlimentoAnadir implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input.files?.[0]) return;
 
-    this.fotoCodigoFile = input.files[0];
+    const file = await comprimirImagen(input.files[0]);
+    this.fotoCodigoFile = file;
     this.ocrCodigoEstado = 'preparando';
     this.codigoRellenado = false;
 
@@ -209,10 +212,10 @@ export class AlimentoAnadir implements OnInit {
     try {
       let codigo;
       if (this.usarOcrAsincrono) {
-        const jobId = await this.ocrAsync.iniciarOcrCodigoBarras(input.files[0]);
+        const jobId = await this.ocrAsync.iniciarOcrCodigoBarras(file);
         codigo = await this.ocrAsync.esperarResultado(jobId, () => this.cdr.detectChanges());
       } else {
-        codigo = await this.aiVision.procesarImagenCodigoBarras(input.files[0]);
+        codigo = await this.aiVision.procesarImagenCodigoBarras(file);
       }
 
       this.nuevoAlimento.codigo_barras = codigo;
@@ -232,16 +235,15 @@ export class AlimentoAnadir implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input.files?.[0]) return;
 
-    this.fotoMacrosFile = input.files[0];
+    const file = await comprimirImagen(input.files[0]);
+    this.fotoMacrosFile = file;
     this.macrosRellenados = false;
     this.ocrMacrosEstado = 'idle';
     this.cdr.detectChanges();
     await this.esperar(100);
     this.ocrMacrosEstado = 'preparando';
 
-    const reader = new FileReader();
-    reader.onload = (e) => this.fotoMacrosPreview = e.target?.result as string;
-    reader.readAsDataURL(input.files[0]);
+    this.fotoMacrosPreview = await fileADataURL(file);
 
     await this.esperar(300);
     this.ocrMacrosEstado = 'analizando';
@@ -249,10 +251,10 @@ export class AlimentoAnadir implements OnInit {
     try {
       let macros;
       if (this.usarOcrAsincrono) {
-        const jobId = await this.ocrAsync.iniciarOcrMacros(input.files[0]);
+        const jobId = await this.ocrAsync.iniciarOcrMacros(file);
         macros = await this.ocrAsync.esperarResultado(jobId, () => this.cdr.detectChanges());
       } else {
-        macros = await this.aiVision.procesarImagenMacros(input.files[0]);
+        macros = await this.aiVision.procesarImagenMacros(file);
       }
 
       this.nuevoAlimento.calorias = macros.calorias ?? this.nuevoAlimento.calorias;

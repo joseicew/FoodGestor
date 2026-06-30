@@ -1,4 +1,5 @@
 import { bootstrapApplication } from '@angular/platform-browser';
+import { Capacitor } from '@capacitor/core';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
 import { environment } from './environments/environment';
@@ -17,8 +18,18 @@ if (environment.production) {
 bootstrapApplication(App, appConfig)
   .catch((err) => console.error(err));
 
-// Registrar Service Worker para PWA
-if ('serviceWorker' in navigator) {
+// Service Worker:
+// - En la app NATIVA (Capacitor/iOS) NO se registra. Un SW sobre el esquema
+//   capacitor:// interceptando fetches provoca cuelgues y respuestas 503 al
+//   reabrir la app (WKWebView). Además desregistramos cualquiera ya instalado.
+// - En web/PWA sí se registra para soporte offline.
+if (Capacitor.isNativePlatform()) {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations()
+      .then((regs) => regs.forEach((r) => r.unregister()))
+      .catch(() => {});
+  }
+} else if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js', { scope: '/' })
     .then((reg) => {
       console.log('✅ Service Worker registrado:', reg);

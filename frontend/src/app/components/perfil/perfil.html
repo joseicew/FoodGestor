@@ -1,9 +1,7 @@
 <div class="perfil-container">
   @if (!editando) {
-    <div class="header">
-      <h1>👤 {{ usuario.nombre_completo }}</h1>
-      <button class="btn-logout" (click)="abrirLogout()" title="Cerrar sesión">🚪</button>
-    </div>
+    <app-page-header [titulo]="'👤 ' + usuario.nombre_completo" />
+    <button class="btn-logout" (click)="abrirLogout()" title="Cerrar sesión">🚪</button>
   }
 
   <app-mensaje-flash />
