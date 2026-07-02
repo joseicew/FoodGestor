@@ -124,6 +124,32 @@
   cursor: not-allowed;
 }
 
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 46px;
+}
+
+.btn-ver-password {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 6px;
+  opacity: 0.75;
+}
+
+.btn-ver-password:hover { opacity: 1; }
+
 .btn-primary {
   padding: 12px 16px;
   background: linear-gradient(135deg, #A4C639 0%, #8AB821 100%);

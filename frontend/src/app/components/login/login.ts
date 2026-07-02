@@ -19,6 +19,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   email: string = '';
   password: string = '';
+  mostrarPassword: boolean = false;
   cargando: boolean = false;
 
   // Overlay de carga de datos iniciales tras el login
@@ -53,6 +54,13 @@ export class LoginComponent implements OnInit, OnDestroy {
     // Si ya está autenticado, redirigir al perfil
     if (this.authService.estaAutenticado()) {
       this.router.navigate(['/perfil']);
+      return;
+    }
+    // Prerellenar el email del último inicio de sesión (la contraseña la gestiona
+    // el llavero del sistema vía autocomplete, no la guardamos nosotros)
+    const ultimoEmail = localStorage.getItem('ultimo_email');
+    if (ultimoEmail) {
+      this.email = ultimoEmail;
     }
   }
 
@@ -137,6 +145,9 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (response) => {
         console.log('✓ Login exitoso, respuesta:', response);
         console.log('✓ Token disponible:', !!this.authService.obtenerToken());
+
+        // Recordar el email para el próximo inicio de sesión
+        localStorage.setItem('ultimo_email', emailLimpio);
         console.log('🔄 Cargando datos iniciales...');
 
         // Mostrar overlay animado mientras se cargan los datos del backend

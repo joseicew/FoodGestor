@@ -29,6 +29,10 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>FoodGestor usa la cámara para escanear etiquetas y códigos de barras de los alimentos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FoodGestor accede a tus fotos para leer etiquetas y códigos de barras de los alimentos.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
