@@ -3,11 +3,11 @@
   flex-direction: column;
   gap: 6px;
   background: #445935;
-  border-radius: 40px;
+  border-radius: 16px;
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  /* padding-right: 8px; */
+  padding: 8px;
 }
 
 .alimento-card {
