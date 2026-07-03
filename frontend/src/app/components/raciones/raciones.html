@@ -77,7 +77,7 @@
             <span class="spinner" style="font-size:18px; flex-shrink:0;"></span>
           }
         </div>
-        <button class="btn-volver" (click)="volverALista()" title="Volver">↖️</button>
+        <button class="btn-volver" (click)="volverALista()" title="Volver" aria-label="Volver">←</button>
       </div>
 
       <!-- Sección de Alimentos -->
@@ -175,6 +175,13 @@
         <div class="chart-section">
           <h3>Distribución de Calorías por Macronutriente</h3>
           <canvas #macrosChart></canvas>
+          <div class="chart-gramos">
+            <div class="chart-gramo"><span class="chart-gramo-dot" style="background:#FF6384"></span>Proteínas <strong>{{ racionSeleccionada.totales.proteinas | number:'1.1-1' }}g</strong></div>
+            <div class="chart-gramo"><span class="chart-gramo-dot" style="background:#36A2EB"></span>Hidratos <strong>{{ racionSeleccionada.totales.hidratos_carbono | number:'1.1-1' }}g</strong></div>
+            <div class="chart-gramo"><span class="chart-gramo-dot" style="background:#FFCE56"></span>Grasas <strong>{{ racionSeleccionada.totales.grasas | number:'1.1-1' }}g</strong></div>
+            <div class="chart-gramo"><span class="chart-gramo-dot" style="background:#FF9F40"></span>Azúcares <strong>{{ racionSeleccionada.totales.azucares | number:'1.1-1' }}g</strong></div>
+            <div class="chart-gramo"><span class="chart-gramo-dot" style="background:#90EE90"></span>Fibra <strong>{{ racionSeleccionada.totales.fibra | number:'1.1-1' }}g</strong></div>
+          </div>
         </div>
       </div>
   }

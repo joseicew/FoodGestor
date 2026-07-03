@@ -80,28 +80,28 @@
             <h3 style="margin: 0; display: inline;">📊 Macronutrientes (por 100g)</h3>
           </div>
           <div class="macros-grid">
-            @if (detalle.calorias != null && detalle.calorias !== '') {
+            @if (detalle.calorias != null && detalle.calorias !== '' && detalle.calorias != 0) {
               <div class="macro-item"><span class="macro-icon">🔥</span><span class="macro-label">Calorías</span><span class="macro-valor">{{ detalle.calorias }} kcal</span></div>
             }
-            @if (detalle.proteinas != null && detalle.proteinas !== '') {
+            @if (detalle.proteinas != null && detalle.proteinas !== '' && detalle.proteinas != 0) {
               <div class="macro-item"><span class="macro-icon">💪</span><span class="macro-label">Proteínas</span><span class="macro-valor">{{ detalle.proteinas }}g</span></div>
             }
-            @if (detalle.hidratos_carbono != null && detalle.hidratos_carbono !== '') {
+            @if (detalle.hidratos_carbono != null && detalle.hidratos_carbono !== '' && detalle.hidratos_carbono != 0) {
               <div class="macro-item"><span class="macro-icon">🌾</span><span class="macro-label">Carbohidratos</span><span class="macro-valor">{{ detalle.hidratos_carbono }}g</span></div>
             }
-            @if (detalle.grasas != null && detalle.grasas !== '') {
+            @if (detalle.grasas != null && detalle.grasas !== '' && detalle.grasas != 0) {
               <div class="macro-item"><span class="macro-icon">🧈</span><span class="macro-label">Grasas</span><span class="macro-valor">{{ detalle.grasas }}g</span></div>
             }
-            @if (detalle.grasas_saturadas != null && detalle.grasas_saturadas !== '') {
+            @if (detalle.grasas_saturadas != null && detalle.grasas_saturadas !== '' && detalle.grasas_saturadas != 0) {
               <div class="macro-item"><span class="macro-icon">🔗</span><span class="macro-label">Grasas Sat.</span><span class="macro-valor">{{ detalle.grasas_saturadas }}g</span></div>
             }
-            @if (detalle.azucares != null && detalle.azucares !== '') {
+            @if (detalle.azucares != null && detalle.azucares !== '' && detalle.azucares != 0) {
               <div class="macro-item"><span class="macro-icon">🍬</span><span class="macro-label">Azúcares</span><span class="macro-valor">{{ detalle.azucares }}g</span></div>
             }
-            @if (detalle.fibra != null && detalle.fibra !== '') {
+            @if (detalle.fibra != null && detalle.fibra !== '' && detalle.fibra != 0) {
               <div class="macro-item"><span class="macro-icon">🌿</span><span class="macro-label">Fibra</span><span class="macro-valor">{{ detalle.fibra }}g</span></div>
             }
-            @if (detalle.sal != null && detalle.sal !== '') {
+            @if (detalle.sal != null && detalle.sal !== '' && detalle.sal != 0) {
               <div class="macro-item"><span class="macro-icon">🧂</span><span class="macro-label">Sal</span><span class="macro-valor">{{ detalle.sal }}g</span></div>
             }
           </div>

@@ -172,9 +172,14 @@ export class Perfil implements OnInit {
   }
 
   cargarTotalesDelDia(): void {
-    // Obtener fecha actual en formato YYYY-MM-DD
+    // Fecha actual en formato YYYY-MM-DD usando la hora LOCAL (igual que el
+    // calendario). Con toISOString() se usaba UTC, lo que en España podía pedir
+    // otro día y hacer que los macros no coincidieran con el calendario.
     const hoy = new Date();
-    const fechaStr = hoy.toISOString().split('T')[0];
+    const anio = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoy.getDate()).padStart(2, '0');
+    const fechaStr = `${anio}-${mes}-${dia}`;
 
     this.calendarioService.obtenerDia(fechaStr).subscribe({
       next: (response) => {
@@ -186,7 +191,7 @@ export class Perfil implements OnInit {
           this.totalProteinas = Math.round(response.totales_diarios.proteinas * 10) / 10;
           this.totalCarbohidratos = Math.round(response.totales_diarios.carbohidratos * 10) / 10 || Math.round(response.totales_diarios.hidratos_carbono * 10) / 10 || 0;
           this.totalGrasas = Math.round(response.totales_diarios.grasas * 10) / 10;
-          this.totalAzucares = Math.round(response.totales_diarios.azucares || 0);
+          this.totalAzucares = Math.round((response.totales_diarios.azucares || 0) * 10) / 10;
 
           this.cdr.markForCheck();
         }

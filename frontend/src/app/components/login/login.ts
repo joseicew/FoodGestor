@@ -174,6 +174,12 @@ export class LoginComponent implements OnInit, OnDestroy {
         console.error('  Status:', error.status);
         console.error('  Mensaje:', error.error);
 
+        // Backend no disponible / sin conexión: status 0 (error de red) o 5xx
+        if (error.status === 0 || error.status >= 500) {
+          this.flash.mostrar('⚠️ No se puede conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.', 'error');
+          return;
+        }
+
         const mensaje = error.error?.error || error.message || 'Error en el login';
         console.log('Mensaje procesado:', mensaje);
 
