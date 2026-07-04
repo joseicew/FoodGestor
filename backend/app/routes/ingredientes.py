@@ -174,6 +174,23 @@ def actualizar_ingrediente(ingrediente_id):
         return jsonify({'error': str(e)}), 500
 
 
+@ingredientes_bp.route('/<int:ingrediente_id>/alimentos', methods=['GET'])
+def obtener_alimentos_de_ingrediente(ingrediente_id):
+    """Lista los alimentos que tienen este ingrediente asociado"""
+    try:
+        ingrediente = Ingrediente.query.get(ingrediente_id)
+        if not ingrediente:
+            return jsonify({'error': 'Ingrediente no encontrado'}), 404
+
+        alimentos = [
+            {'id': a.id, 'nombre': a.nombre, 'marca': a.marca}
+            for a in ingrediente.alimentos
+        ]
+        return jsonify({'alimentos': alimentos, 'total': len(alimentos)}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @ingredientes_bp.route('/<int:ingrediente_id>', methods=['DELETE'])
 def eliminar_ingrediente(ingrediente_id):
     """Eliminar un ingrediente"""

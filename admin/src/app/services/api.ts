@@ -53,6 +53,17 @@ export class ApiService {
     return this.http.put(`${this.base}/api/ingredientes/${id}`, data);
   }
 
+  eliminarIngrediente(id: number): Observable<any> {
+    return this.http.delete(`${this.base}/api/ingredientes/${id}`);
+  }
+
+  /** Alimentos que tienen este ingrediente asociado */
+  alimentosDeIngrediente(id: number): Observable<{ id: number; nombre: string; marca: string }[]> {
+    return this.http
+      .get<{ alimentos: any[] }>(`${this.base}/api/ingredientes/${id}/alimentos`)
+      .pipe(map((r) => r.alimentos || []));
+  }
+
   /** Categorías oficiales de ingredientes (ALIMENTOS_CATEGORIAS en el backend), las mismas que usa la app móvil */
   listarCategoriasIngredientes(): Observable<string[]> {
     return this.http
