@@ -38,20 +38,6 @@
   box-shadow: 0 4px 12px rgba(244, 67, 54, 0.45);
 }
 
-.btn-admin {
-  width: 100%;
-  padding: 12px 16px;
-  margin-bottom: 12px;
-  background: var(--bg-secondary);
-  color: var(--primary);
-  border: 1.5px solid var(--primary);
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-admin:hover { background: var(--primary); color: #fff; }
 
 .logout-modal {
   background: var(--bg-surface);

@@ -536,8 +536,6 @@ export class Perfil implements OnInit {
     });
   }
 
-  irAAdmin(): void { this.router.navigate(['/admin']); }
-
   abrirLogout(): void { this.confirmarLogout = true; }
   cerrarLogout(): void { this.confirmarLogout = false; }
 
