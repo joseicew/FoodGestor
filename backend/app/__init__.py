@@ -123,6 +123,7 @@ def create_app():
     from app.routes.raciones import raciones_bp
     from app.routes.calendario import calendario_bp
     from app.routes.test_webhook import test_webhook_bp
+    from app.routes.admin import admin_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(alimentos_bp)
     app.register_blueprint(ingredientes_bp)
@@ -131,6 +132,7 @@ def create_app():
     app.register_blueprint(raciones_bp)
     app.register_blueprint(calendario_bp)
     app.register_blueprint(test_webhook_bp)
+    app.register_blueprint(admin_bp)
 
     # Crear tablas y migrar columnas nuevas
     with app.app_context():
@@ -189,8 +191,21 @@ def _migrar_columnas():
             with db.engine.connect() as conn:
                 conn.execute(text('ALTER TABLE usuario ADD COLUMN reset_token_expiry TIMESTAMP'))
                 conn.commit()
+        if 'rol' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE usuario ADD COLUMN rol VARCHAR(20) DEFAULT 'usuario'"))
+                conn.commit()
     except Exception as e:
         logging.error(f"Error migrating usuario table: {e}")
+        pass
+
+    # Sembrar el superadministrador único (joseicew@gmail.com)
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(text("UPDATE usuario SET rol='superadmin' WHERE email='joseicew@gmail.com'"))
+            conn.commit()
+    except Exception as e:
+        logging.error(f"Error asignando superadmin: {e}")
         pass
 
     # Migrar tabla alimento

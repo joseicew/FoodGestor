@@ -11,6 +11,9 @@ class Usuario(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
 
+    # Rol: superadmin | admin | usuario | limitado
+    rol = db.Column(db.String(20), nullable=False, default='usuario')
+
     # Datos personales
     nombre_completo = db.Column(db.String(255), nullable=False, default='Usuario')
     edad = db.Column(db.Integer, default=30)
@@ -180,6 +183,7 @@ class Usuario(db.Model):
         return {
             'id': self.id,
             'email': self.email,
+            'rol': self.rol,
             'nombre_completo': self.nombre_completo,
             'edad': self.edad,
             'sexo': self.sexo,
