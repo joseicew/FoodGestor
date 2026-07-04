@@ -47,10 +47,22 @@ import { ApiService } from '../../services/api';
           <div class="campos">
             <label class="campo full"><span>Nombre</span><input [(ngModel)]="edit.nombre" /></label>
             <label class="campo"><span>Marca</span><input [(ngModel)]="edit.marca" /></label>
-            <label class="campo"><span>Categoría</span><input [(ngModel)]="edit.categoria" list="cats-al" /></label>
+            <label class="campo">
+              <span>Categoría</span>
+              <select [(ngModel)]="edit.categoria">
+                <option value="">-- Seleccionar --</option>
+                @for (c of categorias; track c) { <option [value]="c">{{ c }}</option> }
+              </select>
+            </label>
             <label class="campo"><span>Código de barras</span><input [(ngModel)]="edit.codigo_barras" /></label>
             <label class="campo"><span>Peso unidad (g)</span><input type="number" [(ngModel)]="edit.peso_unidad" /></label>
-            <label class="campo"><span>Nombre unidad</span><input [(ngModel)]="edit.nombre_unidad" /></label>
+            <label class="campo">
+              <span>Nombre unidad</span>
+              <select [(ngModel)]="edit.nombre_unidad">
+                <option value="">Seleccionar</option>
+                @for (u of unidadesComunes; track u) { <option [value]="u">{{ u }}</option> }
+              </select>
+            </label>
             <label class="campo full"><span>Descripción</span><input [(ngModel)]="edit.descripcion" /></label>
           </div>
         </section>
@@ -84,10 +96,6 @@ import { ApiService } from '../../services/api';
         </div>
       </div>
     }
-
-    <datalist id="cats-al">
-      @for (c of categorias; track c) { <option [value]="c"></option> }
-    </datalist>
   `,
   styles: [`
     .page-head { margin-bottom: 16px; }
@@ -154,11 +162,16 @@ export class AlimentosComponent implements OnInit {
     { key: 'hierro', label: 'Hierro (mg)' },
   ];
 
+  // Mismas listas exactas que la app móvil (frontend/.../alimento-detalle.ts)
   readonly categorias = [
     'Carnes y Aves', 'Pescados y Mariscos', 'Lácteos y Huevos', 'Frutas',
     'Verduras y Hortalizas', 'Cereales y Derivados', 'Legumbres', 'Grasas y Aceites',
     'Frutos Secos', 'Bebidas', 'Snacks y Aperitivos', 'Dulces y Repostería',
     'Condimentos y Salsas', 'Platos Preparados', 'Suplementos', 'Otros',
+  ];
+
+  readonly unidadesComunes = [
+    'Bolsa', 'Pieza', 'Rebanada', 'Loncha', 'Lata', 'Bote', 'Botella', 'Barrita', 'Galleta',
   ];
 
   constructor(private api: ApiService) {}

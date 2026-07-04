@@ -52,4 +52,11 @@ export class ApiService {
   actualizarIngrediente(id: number, data: Record<string, any>): Observable<any> {
     return this.http.put(`${this.base}/api/ingredientes/${id}`, data);
   }
+
+  /** Categorías oficiales de ingredientes (ALIMENTOS_CATEGORIAS en el backend), las mismas que usa la app móvil */
+  listarCategoriasIngredientes(): Observable<string[]> {
+    return this.http
+      .get<{ categorias: string[] }>(`${this.base}/api/ingredientes/alimentos-categorias/disponibles`)
+      .pipe(map((r) => r.categorias || []));
+  }
 }

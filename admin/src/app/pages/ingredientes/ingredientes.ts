@@ -46,7 +46,10 @@ import { ApiService } from '../../services/api';
             </label>
             <label class="campo">
               <span>Categoría</span>
-              <input type="text" [(ngModel)]="edit.categoria" list="cats" placeholder="Ej: Cereales y Derivados" />
+              <select [(ngModel)]="edit.categoria">
+                <option value="">-- Seleccionar --</option>
+                @for (c of categorias; track c) { <option [value]="c">{{ c }}</option> }
+              </select>
             </label>
             <label class="campo">
               <span>Descripción</span>
@@ -62,10 +65,6 @@ import { ApiService } from '../../services/api';
         }
       </div>
     }
-
-    <datalist id="cats">
-      @for (c of categorias; track c) { <option [value]="c"></option> }
-    </datalist>
   `,
   styles: [`
     .page-head { margin-bottom: 16px; }
@@ -107,15 +106,17 @@ export class IngredientesComponent implements OnInit {
   mensaje = '';
   esError = false;
 
-  readonly categorias = [
-    'Carnes y Aves', 'Pescados y Mariscos', 'Lácteos y Huevos', 'Frutas',
-    'Verduras y Hortalizas', 'Cereales y Derivados', 'Legumbres', 'Grasas y Aceites',
-    'Frutos Secos', 'Bebidas', 'Aditivos', 'Especias y Condimentos', 'Azúcares y Edulcorantes', 'Otros',
-  ];
+  // Categorías oficiales (ALIMENTOS_CATEGORIAS del backend), las mismas que la app móvil
+  categorias: string[] = [];
 
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
+    this.api.listarCategoriasIngredientes().subscribe({
+      next: (cats) => (this.categorias = cats),
+      error: () => {}
+    });
+
     this.api.listarIngredientes().subscribe({
       next: (data) => {
         this.todos = data.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
