@@ -9,6 +9,10 @@
   @if (!editando) {
     <!-- VISTA NORMAL -->
 
+    @if (usuario.rol === 'admin' || usuario.rol === 'superadmin') {
+      <button class="btn-admin" (click)="irAAdmin()">⚙️ Panel de administración</button>
+    }
+
     <!-- 1. CALORÍAS HOY (PRIMERO) -->
     <div class="perfil-info-card calorias-card-simple">
       <h3>Calorías Hoy</h3>

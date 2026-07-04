@@ -29,6 +29,18 @@ export class IngredientesService {
     return { headers };
   }
 
+  /** Lista todos los ingredientes (fetch directo, sin caché — para el panel admin) */
+  listarIngredientes(): Observable<any[]> {
+    return this.http.get<{ ingredientes: any[] }>(`${API}/`, this.getHeaders()).pipe(
+      map((r) => r.ingredientes || [])
+    );
+  }
+
+  /** Actualiza un ingrediente (categoría, es_aditivo, notas/descripción...) */
+  actualizarIngrediente(id: number, data: any): Observable<any> {
+    return this.http.put(`${API}/${id}`, data, this.getHeaders());
+  }
+
   /**
    * Carga TODOS los ingredientes de una sola vez y los cachea
    */
