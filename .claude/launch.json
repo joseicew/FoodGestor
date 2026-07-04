@@ -13,6 +13,13 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["backend/main.py"],
       "port": 5000
+    },
+    {
+      "name": "admin",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "admin", "--", "--port", "4300"],
+      "port": 4300,
+      "autoPort": false
     }
   ]
 }

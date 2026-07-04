@@ -1,0 +1,10 @@
+import { HttpInterceptorFn } from '@angular/common/http';
+
+/** Añade el token JWT (si existe) a cada petición. */
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const token = localStorage.getItem('admin_token');
+  if (token) {
+    req = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+  }
+  return next(req);
+};
