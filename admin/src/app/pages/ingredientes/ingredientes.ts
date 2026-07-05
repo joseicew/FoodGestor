@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
@@ -169,11 +169,11 @@ export class IngredientesComponent implements OnInit {
   // Categorías oficiales (ALIMENTOS_CATEGORIAS del backend), las mismas que la app móvil
   categorias: string[] = [];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.api.listarCategoriasIngredientes().subscribe({
-      next: (cats) => (this.categorias = cats),
+      next: (cats) => { this.categorias = cats; this.cdr.markForCheck(); },
       error: () => {}
     });
 
@@ -182,6 +182,7 @@ export class IngredientesComponent implements OnInit {
         this.todos = data.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
         this.filtrar();
         this.cargando = false;
+        this.cdr.markForCheck();
       },
       error: () => { this.cargando = false; this.mostrar('Error al cargar ingredientes', true); }
     });
@@ -214,8 +215,8 @@ export class IngredientesComponent implements OnInit {
     this.alimentosAsociados = [];
     this.cargandoAlimentos = true;
     this.api.alimentosDeIngrediente(ing.id).subscribe({
-      next: (alimentos) => { this.alimentosAsociados = alimentos; this.cargandoAlimentos = false; },
-      error: () => { this.cargandoAlimentos = false; }
+      next: (alimentos) => { this.alimentosAsociados = alimentos; this.cargandoAlimentos = false; this.cdr.markForCheck(); },
+      error: () => { this.cargandoAlimentos = false; this.cdr.markForCheck(); }
     });
   }
 
@@ -276,6 +277,7 @@ export class IngredientesComponent implements OnInit {
 
   private mostrar(t: string, e: boolean): void {
     this.mensaje = t; this.esError = e;
-    setTimeout(() => (this.mensaje = ''), 4000);
+    this.cdr.markForCheck();
+    setTimeout(() => { this.mensaje = ''; this.cdr.markForCheck(); }, 4000);
   }
 }

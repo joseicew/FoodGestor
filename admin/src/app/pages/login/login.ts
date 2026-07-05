@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -57,7 +57,7 @@ export class LoginComponent implements OnInit {
   cargando = false;
   error = '';
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     if (this.auth.estaAutenticado()) this.router.navigate(['/panel']);
@@ -74,6 +74,7 @@ export class LoginComponent implements OnInit {
           this.auth.logout();
           this.cargando = false;
           this.error = 'Esta cuenta no tiene acceso al panel de administración.';
+          this.cdr.markForCheck();
         }
       },
       error: (err) => {
@@ -83,6 +84,7 @@ export class LoginComponent implements OnInit {
         } else {
           this.error = err.error?.error || 'Email o contraseña incorrectos.';
         }
+        this.cdr.markForCheck();
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, UsuarioAdmin } from '../../services/api';
@@ -68,12 +68,15 @@ export class UsuariosComponent implements OnInit {
   mensaje = '';
   esError = false;
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(private api: ApiService, private auth: AuthService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.api.listarUsuarios().subscribe({
-      next: (res) => { this.usuarios = res.usuarios; this.cargando = false; },
-      error: (err) => { this.cargando = false; this.mostrar(err.error?.error || 'Error al cargar usuarios', true); }
+      next: (res) => { this.usuarios = res.usuarios; this.cargando = false; this.cdr.markForCheck(); },
+      error: (err) => {
+        this.cargando = false;
+        this.mostrar(err.error?.error || 'Error al cargar usuarios', true);
+      }
     });
   }
 
@@ -93,6 +96,7 @@ export class UsuariosComponent implements OnInit {
 
   private mostrar(t: string, e: boolean): void {
     this.mensaje = t; this.esError = e;
-    setTimeout(() => (this.mensaje = ''), 4000);
+    this.cdr.markForCheck();
+    setTimeout(() => { this.mensaje = ''; this.cdr.markForCheck(); }, 4000);
   }
 }
