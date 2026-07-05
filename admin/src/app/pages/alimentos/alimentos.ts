@@ -28,9 +28,14 @@ import { ApiService } from '../../services/api';
     @if (cargando) {
       <p class="estado">Cargando alimentos...</p>
     } @else {
-      <p class="conteo">{{ filtrados.length }} resultado(s){{ filtrados.length > limite ? ' · mostrando ' + limite : '' }}</p>
+      <div class="paginacion-cabecera">
+        <p class="conteo">{{ filtrados.length }} resultado(s)</p>
+        @if (totalPaginas > 1) {
+          <p class="conteo">Página {{ pagina }} de {{ totalPaginas }}</p>
+        }
+      </div>
       <div class="card lista-card">
-        @for (a of filtrados.slice(0, limite); track a.id) {
+        @for (a of paginaActual(); track a.id) {
           <button class="row" [class.sel]="seleccionado?.id === a.id" (click)="seleccionar(a)">
             <span class="nombre">{{ a.nombre }}<small>{{ a.marca }}</small></span>
             <span class="meta">
@@ -38,8 +43,19 @@ import { ApiService } from '../../services/api';
               @if (a.codigo_barras) { <span class="cod">{{ a.codigo_barras }}</span> }
             </span>
           </button>
+        } @empty {
+          <p class="vacio-lista">Sin resultados</p>
         }
       </div>
+      @if (totalPaginas > 1) {
+        <div class="paginador">
+          <button class="btn" (click)="irAPagina(1)" [disabled]="pagina === 1">« Primera</button>
+          <button class="btn" (click)="irAPagina(pagina - 1)" [disabled]="pagina === 1">‹ Anterior</button>
+          <span class="pagina-info">{{ pagina }} / {{ totalPaginas }}</span>
+          <button class="btn" (click)="irAPagina(pagina + 1)" [disabled]="pagina === totalPaginas">Siguiente ›</button>
+          <button class="btn" (click)="irAPagina(totalPaginas)" [disabled]="pagina === totalPaginas">Última »</button>
+        </div>
+      }
     }
 
     @if (seleccionado) {
@@ -113,7 +129,11 @@ import { ApiService } from '../../services/api';
     .filtros { display: flex; gap: 10px; margin-bottom: 12px; }
     .buscador { flex: 1; }
     .filtros select { min-width: 190px; }
+    .paginacion-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .lista-card { padding: 8px; max-height: 340px; overflow-y: auto; }
+    .vacio-lista { text-align: center; color: var(--text-muted); padding: 24px; margin: 0; }
+    .paginador { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; }
+    .pagina-info { font-size: 13px; color: var(--text-muted); font-weight: 600; padding: 0 6px; }
     .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: none; background: transparent; border-radius: 8px; cursor: pointer; text-align: left; width: 100%; }
     .row:hover { background: var(--surface-2); }
     .row.sel { background: var(--primary-soft); }
@@ -146,7 +166,8 @@ export class AlimentosComponent implements OnInit {
   filtrados: any[] = [];
   termino = '';
   filtroCategoria = '';
-  limite = 100;
+  porPagina = 100;
+  pagina = 1;
   cargando = true;
 
   seleccionado: any = null;
@@ -212,6 +233,20 @@ export class AlimentosComponent implements OnInit {
       const texto = this.norm(`${a.nombre || ''} ${a.marca || ''} ${a.codigo_barras || ''}`);
       return palabras.every((p) => texto.includes(p));
     });
+    this.pagina = 1;
+  }
+
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.filtrados.length / this.porPagina));
+  }
+
+  paginaActual(): any[] {
+    const inicio = (this.pagina - 1) * this.porPagina;
+    return this.filtrados.slice(inicio, inicio + this.porPagina);
+  }
+
+  irAPagina(n: number): void {
+    this.pagina = Math.min(Math.max(1, n), this.totalPaginas);
   }
 
   seleccionar(a: any): void {

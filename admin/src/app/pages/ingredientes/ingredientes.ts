@@ -42,16 +42,16 @@ import { ApiService } from '../../services/api';
               <input type="checkbox" [ngModel]="modoSeleccion" (ngModelChange)="toggleModoSeleccion($event)" />
               Selección múltiple
             </label>
-            <p class="conteo">{{ filtrados.length }} resultado(s){{ filtrados.length > limite ? ' · mostrando ' + limite : '' }}</p>
+            <p class="conteo">{{ filtrados.length }} resultado(s){{ totalPaginas > 1 ? ' · página ' + pagina + ' de ' + totalPaginas : '' }}</p>
           </div>
 
           @if (modoSeleccion) {
             <div class="barra-seleccion">
               <label class="check-todos">
                 <input type="checkbox" [checked]="todosVisiblesSeleccionados()" (change)="toggleSeleccionarTodos()" />
-                Seleccionar todos los visibles
+                Seleccionar todos de esta página
               </label>
-              <span class="sel-count">{{ seleccionIds.size }} seleccionado(s)</span>
+              <span class="sel-count">{{ seleccionIds.size }} seleccionado(s) en total</span>
               <button class="btn btn-danger" (click)="confirmarEliminarMasivo = true" [disabled]="seleccionIds.size === 0 || eliminandoMasivo">
                 Eliminar seleccionados
               </button>
@@ -59,7 +59,7 @@ import { ApiService } from '../../services/api';
           }
 
           <div class="lista">
-            @for (ing of filtrados.slice(0, limite); track ing.id) {
+            @for (ing of paginaActual(); track ing.id) {
               <button class="row" [class.sel]="seleccionado?.id === ing.id" (click)="onClickFila(ing)">
                 @if (modoSeleccion) {
                   <input type="checkbox" class="row-check" [checked]="seleccionIds.has(ing.id)"
@@ -72,8 +72,20 @@ import { ApiService } from '../../services/api';
                   @else { <span class="badge badge-danger">sin categoría</span> }
                 </span>
               </button>
+            } @empty {
+              <p class="vacio-lista">Sin resultados</p>
             }
           </div>
+
+          @if (totalPaginas > 1) {
+            <div class="paginador">
+              <button class="btn" (click)="irAPagina(1)" [disabled]="pagina === 1">« Primera</button>
+              <button class="btn" (click)="irAPagina(pagina - 1)" [disabled]="pagina === 1">‹ Anterior</button>
+              <span class="pagina-info">{{ pagina }} / {{ totalPaginas }}</span>
+              <button class="btn" (click)="irAPagina(pagina + 1)" [disabled]="pagina === totalPaginas">Siguiente ›</button>
+              <button class="btn" (click)="irAPagina(totalPaginas)" [disabled]="pagina === totalPaginas">Última »</button>
+            </div>
+          }
         </div>
 
         @if (seleccionado) {
@@ -205,6 +217,9 @@ import { ApiService } from '../../services/api';
     .confirm-box p { margin: 0; font-size: 13px; color: var(--danger); }
     .confirm-acciones { display: flex; gap: 10px; justify-content: flex-end; }
     .vacio { padding: 24px; color: var(--text-muted); text-align: center; }
+    .vacio-lista { text-align: center; color: var(--text-muted); padding: 24px; margin: 0; }
+    .paginador { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .pagina-info { font-size: 13px; color: var(--text-muted); font-weight: 600; padding: 0 6px; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
     .modal-box { max-width: 420px; width: 100%; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
     .modal-box h3 { font-size: 17px; font-weight: 700; color: var(--danger); }
@@ -218,7 +233,8 @@ export class IngredientesComponent implements OnInit {
   termino = '';
   filtroCategoria = '';
   filtroAditivo = '';
-  limite = 150;
+  porPagina = 150;
+  pagina = 1;
   cargando = true;
 
   seleccionado: any = null;
@@ -276,6 +292,20 @@ export class IngredientesComponent implements OnInit {
       const texto = this.norm(`${ing.nombre || ''} ${ing.categoria || ''}`);
       return palabras.every((p) => texto.includes(p));
     });
+    this.pagina = 1;
+  }
+
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.filtrados.length / this.porPagina));
+  }
+
+  paginaActual(): any[] {
+    const inicio = (this.pagina - 1) * this.porPagina;
+    return this.filtrados.slice(inicio, inicio + this.porPagina);
+  }
+
+  irAPagina(n: number): void {
+    this.pagina = Math.min(Math.max(1, n), this.totalPaginas);
   }
 
   // ── Selección múltiple ──
@@ -298,12 +328,12 @@ export class IngredientesComponent implements OnInit {
   }
 
   todosVisiblesSeleccionados(): boolean {
-    const visibles = this.filtrados.slice(0, this.limite);
+    const visibles = this.paginaActual();
     return visibles.length > 0 && visibles.every((i) => this.seleccionIds.has(i.id));
   }
 
   toggleSeleccionarTodos(): void {
-    const visibles = this.filtrados.slice(0, this.limite);
+    const visibles = this.paginaActual();
     if (this.todosVisiblesSeleccionados()) {
       visibles.forEach((i) => this.seleccionIds.delete(i.id));
     } else {
