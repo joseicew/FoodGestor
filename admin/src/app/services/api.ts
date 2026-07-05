@@ -49,6 +49,17 @@ export class ApiService {
       .pipe(map((r) => r.ingredientes || []));
   }
 
+  obtenerIngrediente(id: number): Observable<any> {
+    return this.http.get(`${this.base}/api/ingredientes/${id}`);
+  }
+
+  /** Busca un ingrediente por nombre exacto (case-insensitive) */
+  buscarIngredientePorNombre(nombre: string): Observable<any | null> {
+    return this.http
+      .get<{ ingredientes: any[] }>(`${this.base}/api/ingredientes/`, { params: { nombre } })
+      .pipe(map((r) => (r.ingredientes && r.ingredientes[0]) || null));
+  }
+
   actualizarIngrediente(id: number, data: Record<string, any>): Observable<any> {
     return this.http.put(`${this.base}/api/ingredientes/${id}`, data);
   }

@@ -2,11 +2,12 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
+import { IngredienteModalComponent, IngredienteModalResultado } from '../../components/ingrediente-modal/ingrediente-modal';
 
 @Component({
   selector: 'app-alimentos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IngredienteModalComponent],
   template: `
     <header class="page-head">
       <h2>Alimentos</h2>
@@ -103,10 +104,14 @@ import { ApiService } from '../../services/api';
           <h4>Ingredientes ({{ edit.ingredientes.length }})</h4>
           <div class="chips">
             @for (ing of edit.ingredientes; track $index) {
-              <span class="chip">{{ ing }} <button (click)="quitarIngrediente($index)">✕</button></span>
+              <span class="chip">
+                <button class="chip-nombre" type="button" (click)="abrirIngrediente(ing)" title="Editar este ingrediente">{{ ing }}</button>
+                <button class="chip-quitar" type="button" (click)="quitarIngrediente($index)" title="Quitar de este alimento">✕</button>
+              </span>
             }
             @if (edit.ingredientes.length === 0) { <span class="sin">Sin ingredientes</span> }
           </div>
+          <p class="chips-ayuda">Haz click en un ingrediente para editarlo directamente.</p>
           <div class="add-ing">
             <input [(ngModel)]="nuevoIngrediente" (keyup.enter)="agregarIngrediente()" placeholder="Añadir ingrediente y Enter" />
             <button class="btn" (click)="agregarIngrediente()">Añadir</button>
@@ -118,6 +123,14 @@ import { ApiService } from '../../services/api';
           <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">{{ guardando ? 'Guardando...' : 'Guardar cambios' }}</button>
         </div>
       </div>
+    }
+
+    @if (ingredienteModalId) {
+      <app-ingrediente-modal
+        [ingredienteId]="ingredienteModalId"
+        (cerrar)="cerrarIngredienteModal()"
+        (cambiado)="onIngredienteCambiado($event)">
+      </app-ingrediente-modal>
     }
   `,
   styles: [`
@@ -151,9 +164,12 @@ import { ApiService } from '../../services/api';
     .campo { display: flex; flex-direction: column; gap: 4px; }
     .campo.full { grid-column: 1 / -1; }
     .campo span { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 16px; padding: 4px 10px; font-size: 13px; }
-    .chip button { border: none; background: none; color: var(--danger); font-size: 12px; cursor: pointer; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+    .chip { display: inline-flex; align-items: center; gap: 2px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 16px; padding: 2px 4px 2px 4px; font-size: 13px; }
+    .chip-nombre { border: none; background: none; color: var(--text); font-size: 13px; cursor: pointer; padding: 2px 4px; border-radius: 12px; }
+    .chip-nombre:hover { background: var(--primary-soft); color: var(--primary-dark); text-decoration: underline; }
+    .chip-quitar { border: none; background: none; color: var(--danger); font-size: 12px; cursor: pointer; padding: 2px 6px; }
+    .chips-ayuda { margin: 0 0 10px; font-size: 12px; color: var(--text-muted); }
     .sin { color: var(--text-muted); font-size: 13px; }
     .add-ing { display: flex; gap: 8px; }
     .add-ing input { flex: 1; }
@@ -174,6 +190,8 @@ export class AlimentosComponent implements OnInit {
   edit: any = { ingredientes: [] };
   nuevoIngrediente = '';
   guardando = false;
+
+  ingredienteModalId: number | null = null;
 
   mensaje = '';
   esError = false;
@@ -264,6 +282,49 @@ export class AlimentosComponent implements OnInit {
 
   quitarIngrediente(i: number): void {
     this.edit.ingredientes.splice(i, 1);
+  }
+
+  // ── Editar un ingrediente directamente desde el alimento ──
+  abrirIngrediente(nombre: string): void {
+    this.api.buscarIngredientePorNombre(nombre).subscribe({
+      next: (ing) => {
+        if (ing) {
+          this.ingredienteModalId = ing.id;
+          this.cdr.markForCheck();
+        } else {
+          this.mostrar(`No se encontró el ingrediente "${nombre}"`, true);
+        }
+      },
+      error: () => this.mostrar('Error al buscar el ingrediente', true)
+    });
+  }
+
+  cerrarIngredienteModal(): void {
+    this.ingredienteModalId = null;
+  }
+
+  onIngredienteCambiado(evento: IngredienteModalResultado): void {
+    const anterior = evento.nombreAnterior;
+    if (!anterior) return;
+    const idx = this.edit.ingredientes.indexOf(anterior);
+    if (idx === -1) return;
+
+    if (evento.tipo === 'eliminado') {
+      this.edit.ingredientes.splice(idx, 1);
+      this.mostrar(`"${anterior}" eliminado y quitado de este alimento`, false);
+      return;
+    }
+
+    const nuevoNombre = evento.ingrediente?.nombre;
+    if (!nuevoNombre || nuevoNombre === anterior) return;
+
+    if (this.edit.ingredientes.includes(nuevoNombre)) {
+      // ya estaba en la lista (p.ej. tras fusionar con otro que el alimento ya tenía): quitar el duplicado
+      this.edit.ingredientes.splice(idx, 1);
+    } else {
+      this.edit.ingredientes[idx] = nuevoNombre;
+    }
+    this.mostrar(`"${anterior}" ahora es "${nuevoNombre}" en este alimento`, false);
   }
 
   guardar(): void {
