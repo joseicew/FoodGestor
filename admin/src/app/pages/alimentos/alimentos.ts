@@ -15,8 +15,15 @@ import { ApiService } from '../../services/api';
 
     @if (mensaje) { <div class="aviso" [class.error]="esError">{{ mensaje }}</div> }
 
-    <input class="buscador" type="text" [(ngModel)]="termino" (ngModelChange)="filtrar()"
-           placeholder="Buscar alimento..." autocomplete="off" />
+    <div class="filtros">
+      <input class="buscador" type="text" [(ngModel)]="termino" (ngModelChange)="filtrar()"
+             placeholder="Buscar alimento..." autocomplete="off" />
+      <select [(ngModel)]="filtroCategoria" (ngModelChange)="filtrar()">
+        <option value="">Todas las categorías</option>
+        <option value="__sin__">Sin categoría</option>
+        @for (c of categorias; track c) { <option [value]="c">{{ c }}</option> }
+      </select>
+    </div>
 
     @if (cargando) {
       <p class="estado">Cargando alimentos...</p>
@@ -103,7 +110,9 @@ import { ApiService } from '../../services/api';
     .page-head p { color: var(--text-muted); margin: 4px 0 0; }
     .estado, .conteo { color: var(--text-muted); font-size: 13px; }
     .aviso { margin-bottom: 14px; }
-    .buscador { width: 100%; margin-bottom: 12px; }
+    .filtros { display: flex; gap: 10px; margin-bottom: 12px; }
+    .buscador { flex: 1; }
+    .filtros select { min-width: 190px; }
     .lista-card { padding: 8px; max-height: 340px; overflow-y: auto; }
     .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: none; background: transparent; border-radius: 8px; cursor: pointer; text-align: left; width: 100%; }
     .row:hover { background: var(--surface-2); }
@@ -136,6 +145,7 @@ export class AlimentosComponent implements OnInit {
   todos: any[] = [];
   filtrados: any[] = [];
   termino = '';
+  filtroCategoria = '';
   limite = 100;
   cargando = true;
 
@@ -194,9 +204,11 @@ export class AlimentosComponent implements OnInit {
 
   filtrar(): void {
     const t = this.norm(this.termino.trim());
-    if (!t) { this.filtrados = this.todos; return; }
     const palabras = t.split(/\s+/).filter(Boolean);
     this.filtrados = this.todos.filter((a) => {
+      if (this.filtroCategoria === '__sin__' && a.categoria) return false;
+      if (this.filtroCategoria && this.filtroCategoria !== '__sin__' && a.categoria !== this.filtroCategoria) return false;
+      if (palabras.length === 0) return true;
       const texto = this.norm(`${a.nombre || ''} ${a.marca || ''} ${a.codigo_barras || ''}`);
       return palabras.every((p) => texto.includes(p));
     });

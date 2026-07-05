@@ -1,6 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { ApiService } from '../../services/api';
 
 @Component({
@@ -10,23 +12,59 @@ import { ApiService } from '../../services/api';
   template: `
     <header class="page-head">
       <h2>Ingredientes</h2>
-      <p>Busca un ingrediente y edítalo: nombre, si es aditivo, su categoría y su descripción.</p>
+      <p>Busca un ingrediente y edítalo: nombre, si es aditivo, su categoría y su descripción. También puedes seleccionar varios para eliminarlos a la vez.</p>
     </header>
 
     @if (mensaje) { <div class="aviso" [class.error]="esError">{{ mensaje }}</div> }
 
-    <input class="buscador" type="text" [(ngModel)]="termino" (ngModelChange)="filtrar()"
-           placeholder="Buscar por nombre o categoría..." autocomplete="off" />
+    <div class="filtros">
+      <input class="buscador" type="text" [(ngModel)]="termino" (ngModelChange)="filtrar()"
+             placeholder="Buscar por nombre o categoría..." autocomplete="off" />
+      <select [(ngModel)]="filtroCategoria" (ngModelChange)="filtrar()">
+        <option value="">Todas las categorías</option>
+        <option value="__sin__">Sin categoría</option>
+        @for (c of categorias; track c) { <option [value]="c">{{ c }}</option> }
+      </select>
+      <select [(ngModel)]="filtroAditivo" (ngModelChange)="filtrar()">
+        <option value="">Aditivo: todos</option>
+        <option value="si">Solo aditivos</option>
+        <option value="no">Sin aditivos</option>
+      </select>
+    </div>
 
     @if (cargando) {
       <p class="estado">Cargando ingredientes...</p>
     } @else {
       <div class="grid">
         <div class="card lista-card">
-          <p class="conteo">{{ filtrados.length }} resultado(s){{ filtrados.length > limite ? ' · mostrando ' + limite : '' }}</p>
+          <div class="lista-cabecera">
+            <label class="check-modo">
+              <input type="checkbox" [ngModel]="modoSeleccion" (ngModelChange)="toggleModoSeleccion($event)" />
+              Selección múltiple
+            </label>
+            <p class="conteo">{{ filtrados.length }} resultado(s){{ filtrados.length > limite ? ' · mostrando ' + limite : '' }}</p>
+          </div>
+
+          @if (modoSeleccion) {
+            <div class="barra-seleccion">
+              <label class="check-todos">
+                <input type="checkbox" [checked]="todosVisiblesSeleccionados()" (change)="toggleSeleccionarTodos()" />
+                Seleccionar todos los visibles
+              </label>
+              <span class="sel-count">{{ seleccionIds.size }} seleccionado(s)</span>
+              <button class="btn btn-danger" (click)="confirmarEliminarMasivo = true" [disabled]="seleccionIds.size === 0 || eliminandoMasivo">
+                Eliminar seleccionados
+              </button>
+            </div>
+          }
+
           <div class="lista">
             @for (ing of filtrados.slice(0, limite); track ing.id) {
-              <button class="row" [class.sel]="seleccionado?.id === ing.id" (click)="seleccionar(ing)">
+              <button class="row" [class.sel]="seleccionado?.id === ing.id" (click)="onClickFila(ing)">
+                @if (modoSeleccion) {
+                  <input type="checkbox" class="row-check" [checked]="seleccionIds.has(ing.id)"
+                         (click)="$event.stopPropagation()" (change)="toggleSeleccion(ing.id)" />
+                }
                 <span class="nombre">{{ ing.nombre }}</span>
                 <span class="badges">
                   @if (ing.es_aditivo) { <span class="badge badge-warning">aditivo</span> }
@@ -110,6 +148,21 @@ import { ApiService } from '../../services/api';
         }
       </div>
     }
+
+    @if (confirmarEliminarMasivo) {
+      <div class="modal-overlay" (click)="confirmarEliminarMasivo = false">
+        <div class="card modal-box" (click)="$event.stopPropagation()">
+          <h3>¿Eliminar {{ seleccionIds.size }} ingrediente(s)?</h3>
+          <p>Esta acción no se puede deshacer. Úsala solo si estás seguro de que son 100% erróneos (duplicados, texto de etiqueta, lotes, etc.).</p>
+          <div class="confirm-acciones">
+            <button class="btn" (click)="confirmarEliminarMasivo = false" [disabled]="eliminandoMasivo">Cancelar</button>
+            <button class="btn btn-danger" (click)="eliminarMasivo()" [disabled]="eliminandoMasivo">
+              {{ eliminandoMasivo ? 'Eliminando...' : 'Sí, eliminar todos' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `,
   styles: [`
     .page-head { margin-bottom: 16px; }
@@ -117,15 +170,23 @@ import { ApiService } from '../../services/api';
     .page-head p { color: var(--text-muted); margin: 4px 0 0; }
     .estado, .conteo { color: var(--text-muted); font-size: 13px; }
     .aviso { margin-bottom: 14px; }
-    .buscador { width: 100%; margin-bottom: 16px; }
+    .filtros { display: flex; gap: 10px; margin-bottom: 16px; }
+    .buscador { flex: 1; }
+    .filtros select { min-width: 180px; }
     .grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
     .lista-card { padding: 12px; }
+    .lista-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 6px; }
+    .check-modo { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
     .conteo { margin: 4px 6px 8px; }
-    .lista { display: flex; flex-direction: column; gap: 3px; max-height: 520px; overflow-y: auto; }
-    .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: none; background: transparent; border-radius: 8px; cursor: pointer; text-align: left; }
+    .barra-seleccion { display: flex; align-items: center; gap: 12px; padding: 8px 6px; margin-bottom: 6px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .check-todos { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+    .sel-count { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+    .lista { display: flex; flex-direction: column; gap: 3px; max-height: 480px; overflow-y: auto; }
+    .row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: none; background: transparent; border-radius: 8px; cursor: pointer; text-align: left; width: 100%; }
     .row:hover { background: var(--surface-2); }
     .row.sel { background: var(--primary-soft); }
-    .nombre { font-weight: 600; }
+    .row-check { flex-shrink: 0; }
+    .nombre { font-weight: 600; flex: 1; }
     .badges { display: flex; gap: 6px; flex-shrink: 0; }
     .editor { padding: 20px; display: flex; flex-direction: column; gap: 14px; position: sticky; top: 20px; }
     .editor h3 { font-size: 17px; font-weight: 700; }
@@ -144,13 +205,19 @@ import { ApiService } from '../../services/api';
     .confirm-box p { margin: 0; font-size: 13px; color: var(--danger); }
     .confirm-acciones { display: flex; gap: 10px; justify-content: flex-end; }
     .vacio { padding: 24px; color: var(--text-muted); text-align: center; }
-    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    .modal-box { max-width: 420px; width: 100%; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+    .modal-box h3 { font-size: 17px; font-weight: 700; color: var(--danger); }
+    .modal-box p { margin: 0; font-size: 14px; color: var(--text-muted); }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .filtros { flex-wrap: wrap; } }
   `]
 })
 export class IngredientesComponent implements OnInit {
   todos: any[] = [];
   filtrados: any[] = [];
   termino = '';
+  filtroCategoria = '';
+  filtroAditivo = '';
   limite = 150;
   cargando = true;
 
@@ -159,6 +226,11 @@ export class IngredientesComponent implements OnInit {
   guardando = false;
   eliminando = false;
   confirmarEliminar = false;
+
+  modoSeleccion = false;
+  seleccionIds = new Set<number>();
+  confirmarEliminarMasivo = false;
+  eliminandoMasivo = false;
 
   alimentosAsociados: { id: number; nombre: string; marca: string }[] = [];
   cargandoAlimentos = false;
@@ -194,11 +266,74 @@ export class IngredientesComponent implements OnInit {
 
   filtrar(): void {
     const t = this.norm(this.termino.trim());
-    if (!t) { this.filtrados = this.todos; return; }
     const palabras = t.split(/\s+/).filter(Boolean);
     this.filtrados = this.todos.filter((ing) => {
+      if (this.filtroCategoria === '__sin__' && ing.categoria) return false;
+      if (this.filtroCategoria && this.filtroCategoria !== '__sin__' && ing.categoria !== this.filtroCategoria) return false;
+      if (this.filtroAditivo === 'si' && !ing.es_aditivo) return false;
+      if (this.filtroAditivo === 'no' && ing.es_aditivo) return false;
+      if (palabras.length === 0) return true;
       const texto = this.norm(`${ing.nombre || ''} ${ing.categoria || ''}`);
       return palabras.every((p) => texto.includes(p));
+    });
+  }
+
+  // ── Selección múltiple ──
+  toggleModoSeleccion(activo: boolean): void {
+    this.modoSeleccion = activo;
+    if (!activo) this.seleccionIds.clear();
+  }
+
+  onClickFila(ing: any): void {
+    if (this.modoSeleccion) {
+      this.toggleSeleccion(ing.id);
+    } else {
+      this.seleccionar(ing);
+    }
+  }
+
+  toggleSeleccion(id: number): void {
+    if (this.seleccionIds.has(id)) this.seleccionIds.delete(id);
+    else this.seleccionIds.add(id);
+  }
+
+  todosVisiblesSeleccionados(): boolean {
+    const visibles = this.filtrados.slice(0, this.limite);
+    return visibles.length > 0 && visibles.every((i) => this.seleccionIds.has(i.id));
+  }
+
+  toggleSeleccionarTodos(): void {
+    const visibles = this.filtrados.slice(0, this.limite);
+    if (this.todosVisiblesSeleccionados()) {
+      visibles.forEach((i) => this.seleccionIds.delete(i.id));
+    } else {
+      visibles.forEach((i) => this.seleccionIds.add(i.id));
+    }
+  }
+
+  eliminarMasivo(): void {
+    if (this.seleccionIds.size === 0) return;
+    this.eliminandoMasivo = true;
+    const ids = Array.from(this.seleccionIds);
+    forkJoin(
+      ids.map((id) =>
+        this.api.eliminarIngrediente(id).pipe(
+          map(() => ({ id, ok: true })),
+          catchError(() => of({ id, ok: false }))
+        )
+      )
+    ).subscribe((resultados) => {
+      const okIds = resultados.filter((r) => r.ok).map((r) => r.id);
+      const fallidos = resultados.filter((r) => !r.ok).length;
+      this.todos = this.todos.filter((i) => !okIds.includes(i.id));
+      this.seleccionIds.clear();
+      this.filtrar();
+      this.eliminandoMasivo = false;
+      this.confirmarEliminarMasivo = false;
+      const msg = fallidos > 0
+        ? `${okIds.length} eliminado(s), ${fallidos} con error`
+        : `${okIds.length} ingrediente(s) eliminado(s)`;
+      this.mostrar(msg, fallidos > 0);
     });
   }
 
