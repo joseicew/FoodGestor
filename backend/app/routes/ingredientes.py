@@ -1,9 +1,28 @@
 from flask import Blueprint, request, jsonify
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from app import db
 from app.models.ingrediente import Ingrediente
 
 ingredientes_bp = Blueprint('ingredientes', __name__, url_prefix='/api/ingredientes')
+
+
+def _transferir_alimentos(origen_id, destino_id):
+    """
+    Reasigna las filas alimento_ingrediente del ingrediente `origen_id` al
+    `destino_id`, evitando duplicados si un alimento ya tiene ambos vinculados.
+    """
+    db.session.execute(text(
+        "UPDATE alimento_ingrediente SET ingrediente_id = :eid "
+        "WHERE ingrediente_id = :did AND NOT EXISTS ("
+        "  SELECT 1 FROM alimento_ingrediente a2 "
+        "  WHERE a2.alimento_id = alimento_ingrediente.alimento_id AND a2.ingrediente_id = :eid"
+        ")"
+    ), {'eid': destino_id, 'did': origen_id})
+    # Borrar filas que quedarían duplicadas (el alimento ya tenía el destino)
+    db.session.execute(text(
+        "DELETE FROM alimento_ingrediente WHERE ingrediente_id = :did"
+    ), {'did': origen_id})
 
 
 @ingredientes_bp.route('/', methods=['GET'])
@@ -132,18 +151,7 @@ def actualizar_ingrediente(ingrediente_id):
                 return jsonify({'error': 'Conflicto de nombre sin duplicado encontrado'}), 409
 
             # Transferir alimentos del duplicado al existente
-            from sqlalchemy import text
-            db.session.execute(text(
-                "UPDATE alimento_ingrediente SET ingrediente_id = :eid "
-                "WHERE ingrediente_id = :did AND NOT EXISTS ("
-                "  SELECT 1 FROM alimento_ingrediente a2 "
-                "  WHERE a2.alimento_id = alimento_ingrediente.alimento_id AND a2.ingrediente_id = :eid"
-                ")"
-            ), {'eid': existente.id, 'did': ingrediente_id})
-            # Borrar filas que quedarían duplicadas
-            db.session.execute(text(
-                "DELETE FROM alimento_ingrediente WHERE ingrediente_id = :did"
-            ), {'did': ingrediente_id})
+            _transferir_alimentos(ingrediente_id, existente.id)
 
             # Actualizar campos del existente con los datos verificados
             if 'categoria' in data and data['categoria']:
@@ -188,6 +196,53 @@ def obtener_alimentos_de_ingrediente(ingrediente_id):
         ]
         return jsonify({'alimentos': alimentos, 'total': len(alimentos)}), 200
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@ingredientes_bp.route('/<int:ingrediente_id>/reemplazar', methods=['POST'])
+def reemplazar_ingrediente(ingrediente_id):
+    """
+    Marca `ingrediente_id` como duplicado de otro ingrediente ya existente
+    (`destino_id`): transfiere todos los alimentos que lo usaban al destino
+    y elimina el duplicado. Útil para fusionar dos ingredientes que en
+    realidad son el mismo pero se crearon con nombres distintos.
+    """
+    try:
+        origen = Ingrediente.query.get(ingrediente_id)
+        if not origen:
+            return jsonify({'error': 'Ingrediente no encontrado'}), 404
+
+        data = request.get_json() or {}
+        destino_id = data.get('destino_id')
+        if not destino_id:
+            return jsonify({'error': 'Falta destino_id'}), 400
+        if int(destino_id) == ingrediente_id:
+            return jsonify({'error': 'El destino no puede ser el mismo ingrediente'}), 400
+
+        destino = Ingrediente.query.get(destino_id)
+        if not destino:
+            return jsonify({'error': 'Ingrediente de destino no encontrado'}), 404
+
+        _transferir_alimentos(ingrediente_id, destino.id)
+
+        # Completar datos del destino con los del origen si le faltan
+        if not destino.categoria and origen.categoria:
+            destino.categoria = origen.categoria
+        if not destino.notas and origen.notas:
+            destino.notas = origen.notas
+        if origen.es_aditivo:
+            destino.es_aditivo = True
+        destino.verificado = True
+
+        db.session.delete(origen)
+        db.session.commit()
+
+        return jsonify({
+            'mensaje': f'"{origen.nombre}" reemplazado por "{destino.nombre}"',
+            'ingrediente': destino.to_dict()
+        }), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 

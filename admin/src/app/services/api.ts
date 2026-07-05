@@ -57,6 +57,11 @@ export class ApiService {
     return this.http.delete(`${this.base}/api/ingredientes/${id}`);
   }
 
+  /** Marca `id` como duplicado de `destinoId`: transfiere los alimentos y borra `id` */
+  reemplazarIngrediente(id: number, destinoId: number): Observable<any> {
+    return this.http.post(`${this.base}/api/ingredientes/${id}/reemplazar`, { destino_id: destinoId });
+  }
+
   /** Alimentos que tienen este ingrediente asociado */
   alimentosDeIngrediente(id: number): Observable<{ id: number; nombre: string; marca: string }[]> {
     return this.http

@@ -130,7 +130,7 @@ import { ApiService } from '../../services/api';
             </div>
 
             <div class="acciones">
-              <button class="btn btn-danger" (click)="confirmarEliminar = true" [disabled]="guardando || eliminando">Eliminar</button>
+              <button class="btn btn-danger" (click)="confirmarEliminar = true" [disabled]="guardando || eliminando || fusionando">Eliminar</button>
               <div class="acciones-derecha">
                 <button class="btn" (click)="cerrar()" [disabled]="guardando || eliminando">Cancelar</button>
                 <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando || eliminando || !edit.nombre.trim()">
@@ -154,6 +154,49 @@ import { ApiService } from '../../services/api';
                 </div>
               </div>
             }
+
+            <div class="fusion-bloque">
+              @if (!mostrarFusion) {
+                <button class="btn" (click)="abrirFusion()" [disabled]="guardando || eliminando">🔁 Es un duplicado de otro ingrediente...</button>
+              } @else {
+                <div class="fusion-box">
+                  <p class="fusion-titulo">Reemplazar <strong>{{ seleccionado.nombre }}</strong> por:</p>
+
+                  @if (!fusionDestino) {
+                    <input class="fusion-buscador" type="text" [(ngModel)]="fusionTermino" (ngModelChange)="buscarFusion()"
+                           placeholder="Buscar el ingrediente correcto..." autocomplete="off" />
+                    @if (fusionSugerencias.length > 0) {
+                      <ul class="fusion-sugerencias">
+                        @for (s of fusionSugerencias; track s.id) {
+                          <li (click)="elegirFusionDestino(s)">
+                            {{ s.nombre }}
+                            @if (s.categoria) { <small>{{ s.categoria }}</small> }
+                          </li>
+                        }
+                      </ul>
+                    } @else if (fusionTermino.trim().length > 0) {
+                      <p class="fusion-sin-resultados">Sin coincidencias</p>
+                    }
+                  } @else {
+                    <div class="fusion-elegido">
+                      <span>→ <strong>{{ fusionDestino.nombre }}</strong></span>
+                      <button class="btn" (click)="fusionDestino = null">Cambiar</button>
+                    </div>
+                    <p class="fusion-aviso">
+                      Se transferirán los {{ alimentosAsociados.length }} alimento(s) que usan "{{ seleccionado.nombre }}"
+                      a "{{ fusionDestino.nombre }}", y "{{ seleccionado.nombre }}" se eliminará. No se puede deshacer.
+                    </p>
+                  }
+
+                  <div class="confirm-acciones">
+                    <button class="btn" (click)="cancelarFusion()" [disabled]="fusionando">Cancelar</button>
+                    <button class="btn btn-primary" (click)="confirmarFusion()" [disabled]="!fusionDestino || fusionando">
+                      {{ fusionando ? 'Fusionando...' : 'Confirmar fusión' }}
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
           </div>
         } @else {
           <div class="card vacio">Selecciona un ingrediente para editarlo.</div>
@@ -218,6 +261,17 @@ import { ApiService } from '../../services/api';
     .confirm-acciones { display: flex; gap: 10px; justify-content: flex-end; }
     .vacio { padding: 24px; color: var(--text-muted); text-align: center; }
     .vacio-lista { text-align: center; color: var(--text-muted); padding: 24px; margin: 0; }
+    .fusion-bloque { border-top: 1px solid var(--border); padding-top: 14px; }
+    .fusion-box { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
+    .fusion-titulo { margin: 0; font-size: 13px; color: var(--text-muted); }
+    .fusion-buscador { width: 100%; }
+    .fusion-sugerencias { list-style: none; margin: 0; padding: 0; max-height: 180px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+    .fusion-sugerencias li { padding: 8px 12px; cursor: pointer; font-size: 13px; display: flex; justify-content: space-between; gap: 8px; }
+    .fusion-sugerencias li:hover { background: var(--primary-soft); }
+    .fusion-sugerencias li small { color: var(--text-muted); }
+    .fusion-sin-resultados { margin: 0; font-size: 13px; color: var(--text-muted); }
+    .fusion-elegido { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
+    .fusion-aviso { margin: 0; font-size: 12px; color: var(--warning); }
     .paginador { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
     .pagina-info { font-size: 13px; color: var(--text-muted); font-weight: 600; padding: 0 6px; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
@@ -250,6 +304,12 @@ export class IngredientesComponent implements OnInit {
 
   alimentosAsociados: { id: number; nombre: string; marca: string }[] = [];
   cargandoAlimentos = false;
+
+  mostrarFusion = false;
+  fusionTermino = '';
+  fusionSugerencias: any[] = [];
+  fusionDestino: any = null;
+  fusionando = false;
 
   mensaje = '';
   esError = false;
@@ -370,6 +430,7 @@ export class IngredientesComponent implements OnInit {
   seleccionar(ing: any): void {
     this.seleccionado = ing;
     this.confirmarEliminar = false;
+    this.cancelarFusion();
     this.edit = {
       nombre: ing.nombre || '',
       es_aditivo: !!ing.es_aditivo,
@@ -388,6 +449,64 @@ export class IngredientesComponent implements OnInit {
   cerrar(): void {
     this.seleccionado = null;
     this.confirmarEliminar = false;
+    this.cancelarFusion();
+  }
+
+  // ── Fusión / reemplazo por duplicado ──
+  abrirFusion(): void {
+    this.mostrarFusion = true;
+    this.fusionTermino = '';
+    this.fusionSugerencias = [];
+    this.fusionDestino = null;
+  }
+
+  cancelarFusion(): void {
+    this.mostrarFusion = false;
+    this.fusionTermino = '';
+    this.fusionSugerencias = [];
+    this.fusionDestino = null;
+  }
+
+  buscarFusion(): void {
+    const t = this.norm(this.fusionTermino.trim());
+    if (!t) { this.fusionSugerencias = []; return; }
+    const palabras = t.split(/\s+/).filter(Boolean);
+    this.fusionSugerencias = this.todos
+      .filter((i) => i.id !== this.seleccionado?.id)
+      .filter((i) => {
+        const texto = this.norm(`${i.nombre || ''} ${i.categoria || ''}`);
+        return palabras.every((p) => texto.includes(p));
+      })
+      .slice(0, 8);
+  }
+
+  elegirFusionDestino(ing: any): void {
+    this.fusionDestino = ing;
+    this.fusionSugerencias = [];
+  }
+
+  confirmarFusion(): void {
+    if (!this.seleccionado || !this.fusionDestino) return;
+    this.fusionando = true;
+    const origenId = this.seleccionado.id;
+    const origenNombre = this.seleccionado.nombre;
+    const destino = this.fusionDestino;
+    this.api.reemplazarIngrediente(origenId, destino.id).subscribe({
+      next: (res: any) => {
+        this.todos = this.todos.filter((i) => i.id !== origenId);
+        const idx = this.todos.findIndex((i) => i.id === destino.id);
+        if (idx !== -1 && res?.ingrediente) this.todos[idx] = res.ingrediente;
+        this.todos.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+        this.filtrar();
+        this.fusionando = false;
+        this.mostrar(`"${origenNombre}" reemplazado por "${destino.nombre}"`, false);
+        this.cerrar();
+      },
+      error: (err) => {
+        this.fusionando = false;
+        this.mostrar(err.error?.error || 'No se pudo fusionar', true);
+      }
+    });
   }
 
   guardar(): void {
