@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ApiService } from '../../services/api';
+import { AlimentoModalComponent } from '../../components/alimento-modal/alimento-modal';
 
 @Component({
   selector: 'app-ingredientes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AlimentoModalComponent],
   template: `
     <header class="page-head">
       <h2>Ingredientes</h2>
@@ -123,9 +124,14 @@ import { ApiService } from '../../services/api';
               } @else {
                 <ul class="alimentos-usan">
                   @for (a of alimentosAsociados; track a.id) {
-                    <li>{{ a.nombre }} <small>{{ a.marca }}</small></li>
+                    <li>
+                      <button type="button" class="alimento-link" (click)="abrirAlimento(a.id)" title="Ver ficha del alimento">
+                        {{ a.nombre }} <small>{{ a.marca }}</small>
+                      </button>
+                    </li>
                   }
                 </ul>
+                <p class="alimentos-ayuda">Haz click en un alimento para ver su ficha.</p>
               }
             </div>
 
@@ -218,6 +224,14 @@ import { ApiService } from '../../services/api';
         </div>
       </div>
     }
+
+    @if (alimentoModalId) {
+      <app-alimento-modal
+        [alimentoId]="alimentoModalId"
+        (cerrar)="cerrarAlimentoModal()"
+        (guardado)="onAlimentoGuardado($event)">
+      </app-alimento-modal>
+    }
   `,
   styles: [`
     .page-head { margin-bottom: 16px; }
@@ -248,9 +262,11 @@ import { ApiService } from '../../services/api';
     .check { display: flex; align-items: center; gap: 8px; font-weight: 600; }
     .campo { display: flex; flex-direction: column; gap: 5px; }
     .campo span { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-    .alimentos-usan { margin: 0; padding-left: 18px; max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; }
-    .alimentos-usan li { font-size: 13px; }
-    .alimentos-usan small { color: var(--text-muted); margin-left: 4px; }
+    .alimentos-usan { list-style: none; margin: 0; padding: 0; max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+    .alimento-link { display: block; width: 100%; text-align: left; border: none; background: none; padding: 5px 6px; border-radius: 6px; font-size: 13px; color: var(--text); cursor: pointer; }
+    .alimento-link:hover { background: var(--primary-soft); color: var(--primary-dark); text-decoration: underline; }
+    .alimento-link small { color: var(--text-muted); margin-left: 4px; }
+    .alimentos-ayuda { margin: 4px 0 0; font-size: 12px; color: var(--text-muted); }
     .sin-uso { font-size: 13px; color: var(--text-muted); margin: 0; }
     .acciones { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; }
     .acciones-derecha { display: flex; gap: 10px; }
@@ -304,6 +320,7 @@ export class IngredientesComponent implements OnInit {
 
   alimentosAsociados: { id: number; nombre: string; marca: string }[] = [];
   cargandoAlimentos = false;
+  alimentoModalId: number | null = null;
 
   mostrarFusion = false;
   fusionTermino = '';
@@ -557,6 +574,19 @@ export class IngredientesComponent implements OnInit {
       },
       error: (err) => { this.eliminando = false; this.mostrar(err.error?.error || 'No se pudo eliminar', true); }
     });
+  }
+
+  // ── Ver ficha de un alimento que usa este ingrediente ──
+  abrirAlimento(id: number): void {
+    this.alimentoModalId = id;
+  }
+
+  cerrarAlimentoModal(): void {
+    this.alimentoModalId = null;
+  }
+
+  onAlimentoGuardado(_actualizado: any): void {
+    // Los datos del alimento no afectan a la vista de ingredientes; nada que refrescar aquí.
   }
 
   private mostrar(t: string, e: boolean): void {

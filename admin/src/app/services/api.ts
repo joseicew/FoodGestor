@@ -33,6 +33,10 @@ export class ApiService {
       .pipe(map((r) => r.alimentos || []));
   }
 
+  obtenerAlimento(id: number): Observable<any> {
+    return this.http.get(`${this.base}/api/alimentos/${id}`);
+  }
+
   /** El backend espera form-data para el PUT de alimento */
   actualizarAlimento(id: number, datos: Record<string, any>): Observable<any> {
     const fd = new FormData();

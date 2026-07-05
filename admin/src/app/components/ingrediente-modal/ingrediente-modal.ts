@@ -60,9 +60,14 @@ export interface IngredienteModalResultado {
             } @else {
               <ul class="alimentos-usan">
                 @for (a of alimentosAsociados; track a.id) {
-                  <li>{{ a.nombre }} <small>{{ a.marca }}</small></li>
+                  <li>
+                    <button type="button" class="alimento-link" (click)="verAlimento.emit(a.id)" title="Ver ficha del alimento">
+                      {{ a.nombre }} <small>{{ a.marca }}</small>
+                    </button>
+                  </li>
                 }
               </ul>
+              <p class="alimentos-ayuda">Haz click en un alimento para ver su ficha.</p>
             }
           </div>
 
@@ -150,9 +155,11 @@ export interface IngredienteModalResultado {
     .check { display: flex; align-items: center; gap: 8px; font-weight: 600; }
     .campo { display: flex; flex-direction: column; gap: 5px; }
     .campo span { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-    .alimentos-usan { margin: 0; padding-left: 18px; max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; }
-    .alimentos-usan li { font-size: 13px; }
-    .alimentos-usan small { color: var(--text-muted); margin-left: 4px; }
+    .alimentos-usan { list-style: none; margin: 0; padding: 0; max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+    .alimento-link { display: block; width: 100%; text-align: left; border: none; background: none; padding: 5px 6px; border-radius: 6px; font-size: 13px; color: var(--text); cursor: pointer; }
+    .alimento-link:hover { background: var(--primary-soft); color: var(--primary-dark); text-decoration: underline; }
+    .alimento-link small { color: var(--text-muted); margin-left: 4px; }
+    .alimentos-ayuda { margin: 4px 0 0; font-size: 12px; color: var(--text-muted); }
     .sin-uso { font-size: 13px; color: var(--text-muted); margin: 0; }
     .acciones { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .acciones-derecha { display: flex; gap: 10px; }
@@ -178,6 +185,7 @@ export class IngredienteModalComponent implements OnChanges {
   @Input() ingredienteId!: number;
   @Output() cerrar = new EventEmitter<void>();
   @Output() cambiado = new EventEmitter<IngredienteModalResultado>();
+  @Output() verAlimento = new EventEmitter<number>();
 
   cargando = true;
   ingrediente: any = null;

@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
 import { IngredienteModalComponent, IngredienteModalResultado } from '../../components/ingrediente-modal/ingrediente-modal';
+import { AlimentoModalComponent } from '../../components/alimento-modal/alimento-modal';
+import { CATEGORIAS_ALIMENTO, UNIDADES_COMUNES, MACROS_ALIMENTO } from '../../constants/alimento-constants';
 
 @Component({
   selector: 'app-alimentos',
   standalone: true,
-  imports: [CommonModule, FormsModule, IngredienteModalComponent],
+  imports: [CommonModule, FormsModule, IngredienteModalComponent, AlimentoModalComponent],
   template: `
     <header class="page-head">
       <h2>Alimentos</h2>
@@ -129,8 +131,17 @@ import { IngredienteModalComponent, IngredienteModalResultado } from '../../comp
       <app-ingrediente-modal
         [ingredienteId]="ingredienteModalId"
         (cerrar)="cerrarIngredienteModal()"
-        (cambiado)="onIngredienteCambiado($event)">
+        (cambiado)="onIngredienteCambiado($event)"
+        (verAlimento)="abrirAlimentoRelacionado($event)">
       </app-ingrediente-modal>
+    }
+
+    @if (alimentoModalId) {
+      <app-alimento-modal
+        [alimentoId]="alimentoModalId"
+        (cerrar)="cerrarAlimentoModal()"
+        (guardado)="onAlimentoRelacionadoGuardado($event)">
+      </app-alimento-modal>
     }
   `,
   styles: [`
@@ -192,36 +203,14 @@ export class AlimentosComponent implements OnInit {
   guardando = false;
 
   ingredienteModalId: number | null = null;
+  alimentoModalId: number | null = null;
 
   mensaje = '';
   esError = false;
 
-  readonly macros = [
-    { key: 'calorias', label: 'Calorías (kcal)' },
-    { key: 'proteinas', label: 'Proteínas (g)' },
-    { key: 'hidratos_carbono', label: 'Carbohidratos (g)' },
-    { key: 'grasas', label: 'Grasas (g)' },
-    { key: 'grasas_saturadas', label: 'Grasas sat. (g)' },
-    { key: 'azucares', label: 'Azúcares (g)' },
-    { key: 'fibra', label: 'Fibra (g)' },
-    { key: 'sal', label: 'Sal (g)' },
-    { key: 'sodio', label: 'Sodio (mg)' },
-    { key: 'potasio', label: 'Potasio (mg)' },
-    { key: 'calcio', label: 'Calcio (mg)' },
-    { key: 'hierro', label: 'Hierro (mg)' },
-  ];
-
-  // Mismas listas exactas que la app móvil (frontend/.../alimento-detalle.ts)
-  readonly categorias = [
-    'Carnes y Aves', 'Pescados y Mariscos', 'Lácteos y Huevos', 'Frutas',
-    'Verduras y Hortalizas', 'Cereales y Derivados', 'Legumbres', 'Grasas y Aceites',
-    'Frutos Secos', 'Bebidas', 'Snacks y Aperitivos', 'Dulces y Repostería',
-    'Condimentos y Salsas', 'Platos Preparados', 'Suplementos', 'Otros',
-  ];
-
-  readonly unidadesComunes = [
-    'Bolsa', 'Pieza', 'Rebanada', 'Loncha', 'Lata', 'Bote', 'Botella', 'Barrita', 'Galleta',
-  ];
+  readonly macros = MACROS_ALIMENTO;
+  readonly categorias = CATEGORIAS_ALIMENTO;
+  readonly unidadesComunes = UNIDADES_COMUNES;
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
@@ -301,6 +290,24 @@ export class AlimentosComponent implements OnInit {
 
   cerrarIngredienteModal(): void {
     this.ingredienteModalId = null;
+  }
+
+  abrirAlimentoRelacionado(id: number): void {
+    this.alimentoModalId = id;
+  }
+
+  cerrarAlimentoModal(): void {
+    this.alimentoModalId = null;
+  }
+
+  onAlimentoRelacionadoGuardado(actualizado: any): void {
+    // Si el alimento relacionado que se editó es el mismo que ya tenemos abierto, refrescar sus datos
+    if (this.seleccionado && actualizado?.id === this.seleccionado.id) {
+      Object.assign(this.seleccionado, actualizado);
+      this.edit = { ...actualizado, ingredientes: Array.isArray(actualizado.ingredientes) ? [...actualizado.ingredientes] : [] };
+    }
+    const idx = this.todos.findIndex((a) => a.id === actualizado?.id);
+    if (idx !== -1) Object.assign(this.todos[idx], actualizado);
   }
 
   onIngredienteCambiado(evento: IngredienteModalResultado): void {
