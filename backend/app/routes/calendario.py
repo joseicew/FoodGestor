@@ -4,6 +4,7 @@ from app import db
 from app.models.comida_diaria import ComidaDiaria, comida_raciones, comida_alimentos
 from app.models.racion import Racion
 from app.models.alimento import Alimento
+from app.models.usuario import Usuario
 from datetime import datetime, date, timedelta
 from sqlalchemy import select
 
@@ -150,7 +151,18 @@ def obtener_dia(fecha):
             return jsonify({'error': 'Formato de fecha inválido (use YYYY-MM-DD)'}), 400
 
         totales_diarios = calcular_totales_diarios(comidas)
-        limites_base = LIMITES_BASE_DEFECTO  # TODO: obtener del perfil del usuario
+
+        usuario = Usuario.query.get(usuario_id)
+        if usuario:
+            limites_base = {
+                'calorias': usuario.limites_calorias or LIMITES_BASE_DEFECTO['calorias'],
+                'proteinas': usuario.limites_proteinas or LIMITES_BASE_DEFECTO['proteinas'],
+                'grasas': usuario.limites_grasas or LIMITES_BASE_DEFECTO['grasas'],
+                'azucares': usuario.limites_azucares or LIMITES_BASE_DEFECTO['azucares'],
+            }
+        else:
+            limites_base = LIMITES_BASE_DEFECTO
+
         porcentajes = calcular_porcentajes(totales_diarios, limites_base)
 
         return jsonify({

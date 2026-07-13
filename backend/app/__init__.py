@@ -223,6 +223,10 @@ def _migrar_columnas():
             with db.engine.connect() as conn:
                 conn.execute(text('ALTER TABLE alimento ADD COLUMN favorito BOOLEAN DEFAULT 0'))
                 conn.commit()
+        if 'medida_unidad' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE alimento ADD COLUMN medida_unidad VARCHAR(2) DEFAULT 'g'"))
+                conn.commit()
     except Exception:
         pass
 

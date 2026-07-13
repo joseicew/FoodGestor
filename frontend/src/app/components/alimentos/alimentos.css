@@ -17,7 +17,166 @@
   margin-bottom: 0;
 }
 
+.tabs + .tabs {
+  margin-top: 8px;
+}
+
 .mensaje { flex-shrink: 0; z-index: 998; }
+
+/* ── Sugerir ── */
+.sugerir-explicacion {
+  font-size: 12px;
+  color: #777;
+  text-align: center;
+  margin: 4px 0 10px;
+  padding: 0 8px;
+}
+
+.sugerir-macros {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.sugerir-macro-chip {
+  flex: 1 0 auto;
+  min-width: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sugerir-macro-chip:hover { border-color: #a5d6a7; }
+
+.sugerir-macro-chip.active {
+  background: #e8f5e9;
+  border-color: #4CAF50;
+}
+
+.sugerir-macro-icono { font-size: 18px; line-height: 1; }
+.sugerir-macro-label { font-size: 11px; font-weight: 700; color: #444; }
+.sugerir-macro-restante { font-size: 9px; color: #888; white-space: nowrap; }
+.sugerir-macro-chip.active .sugerir-macro-restante { color: #2e7d32; }
+
+.sugerencias-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #445935;
+  border-radius: 16px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 8px;
+}
+
+.sugerencia-card {
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sugerencia-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.sugerencia-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sugerencia-nombre { font-weight: 600; font-size: 15px; color: #2d2d2d; line-height: 1.25; }
+.sugerencia-marca { font-size: 13px; color: #777; }
+
+.sugerencia-cantidad {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #ececec;
+}
+
+.sugerencia-cantidad-label { font-size: 11px; color: #888; }
+
+.sugerencia-cantidad-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sugerencia-cantidad-control button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.sugerencia-cantidad-control button:hover { background: #c8e6c9; }
+
+.sugerencia-cantidad-control input {
+  width: 64px;
+  padding: 5px 6px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.sugerencia-cantidad-control span { font-size: 12px; color: #666; }
+
+.sugerencia-aporte { font-size: 12px; font-weight: 600; color: #2e7d32; }
+.sugerencia-warning { font-size: 11px; color: #e65100; font-weight: 600; }
+
+.etiqueta-extra {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2e7d32;
+  background: #e8f5e9;
+  padding: 3px 9px;
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.btn-favorito {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: transform 0.2s;
+  opacity: 0.6;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.btn-favorito:hover { opacity: 1; transform: scale(1.2); }
+.btn-favorito.favorito { opacity: 1; color: #FFC107; }
+
+.empty-state {
+  text-align: center;
+  color: #999;
+  padding: 32px 16px;
+  font-size: 14px;
+}
 
 /* .tab-panel en vez de .panel para no heredar la regla global .card,.panel
    (margin-bottom, border, box-shadow, border-radius, hover transform...). */

@@ -32,8 +32,9 @@ class Alimento(db.Model):
     codigo_barras = db.Column(db.String(100), unique=True, nullable=True)
     foto_ingredientes = db.Column(db.String(500))
     foto_macros = db.Column(db.String(500))
-    peso_unidad = db.Column(db.Float, nullable=True)  # Peso en gramos de una unidad (ej: 150g para 1 manzana)
+    peso_unidad = db.Column(db.Float, nullable=True)  # Peso/volumen de una unidad (ej: 150 para 1 manzana)
     nombre_unidad = db.Column(db.String(50), nullable=True)  # Nombre de la unidad (ej: "manzana", "plátano", "vaso")
+    medida_unidad = db.Column(db.String(2), nullable=True, default='g')  # 'g' (gramos) o 'ml' (mililitros)
     favorito = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -69,6 +70,7 @@ class Alimento(db.Model):
             'foto_macros': self.foto_macros,
             'peso_unidad': self.peso_unidad,
             'nombre_unidad': self.nombre_unidad,
+            'medida_unidad': self.medida_unidad or 'g',
             'favorito': self.favorito,
             'ingredientes': [i.nombre for i in self.ingredientes],
             'created_at': self.created_at.isoformat() if self.created_at else None,

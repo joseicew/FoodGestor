@@ -45,6 +45,16 @@
   color: #777;
 }
 
+.etiqueta-extra {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2e7d32;
+  background: #e8f5e9;
+  padding: 3px 9px;
+  border-radius: 10px;
+  width: fit-content;
+}
+
 .alimento-bottom {
   display: flex;
   justify-content: space-between;

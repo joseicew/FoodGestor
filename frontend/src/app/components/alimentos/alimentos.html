@@ -4,8 +4,14 @@
   <div class="tabs">
     <button class="tab" [class.active]="activePanel === 'buscar'" (click)="cambiarPanel('buscar')">🔍 Buscar</button>
     <button class="tab" [class.active]="activePanel === 'favoritos'" (click)="cambiarPanel('favoritos')">⭐ Favoritos</button>
-    <button class="tab" [class.active]="activePanel === 'actualizar'" (click)="cambiarPanel('actualizar')">🔄 Actualizar</button>
+    <button class="tab" [class.active]="activePanel === 'sugerir'" (click)="cambiarPanel('sugerir')">💡 Sugerir</button>
   </div>
+
+  @if (esAdmin) {
+    <div class="tabs">
+      <button class="tab" [class.active]="activePanel === 'actualizar'" (click)="cambiarPanel('actualizar')">🔄 Actualizar</button>
+    </div>
+  }
 
   <app-mensaje-flash />
 
@@ -58,6 +64,77 @@
     </div>
   }
 
+  <!-- ═══════════════ PANEL SUGERIR ═══════════════ -->
+  @if (activePanel === 'sugerir') {
+    <div class="tab-panel">
+      @if (sugerirCargando) {
+        <div class="barra-carga-contenedor">
+          <div class="barra-carga-riel"><div class="barra-carga-progreso"></div></div>
+          <p class="barra-carga-texto">Calculando sugerencias...</p>
+        </div>
+      } @else {
+        <p class="sugerir-explicacion">¿Qué necesitas hoy? Te sugerimos alimentos con buen aporte de eso, y bajos en lo que ya tienes casi al límite.</p>
+
+        <div class="sugerir-macros">
+          @for (m of macrosSugerir; track m.key) {
+            <button class="sugerir-macro-chip" [class.active]="macroPrioridad === m.key" (click)="seleccionarMacroPrioridad(m.key)">
+              <span class="sugerir-macro-icono">{{ m.icono }}</span>
+              <span class="sugerir-macro-label">{{ m.label }}</span>
+              @if (restantesSugerir[m.key] != null) {
+                <span class="sugerir-macro-restante">
+                  @if (restantesSugerir[m.key] > 0) {
+                    Faltan {{ restantesSugerir[m.key] | number:'1.0-0' }}{{ m.key === 'calorias' ? 'kcal' : 'g' }}
+                  } @else {
+                    Límite superado
+                  }
+                </span>
+              }
+            </button>
+          }
+        </div>
+
+        @if (sugerencias.length === 0) {
+          <p class="empty-state">No encontramos alimentos que encajen bien ahora mismo</p>
+        }
+
+        <div class="sugerencias-list">
+          @for (alimento of sugerencias; track alimento.id) {
+            <div class="sugerencia-card">
+              <div class="sugerencia-top" (click)="abrirDetalle(alimento, false)">
+                <div class="sugerencia-info">
+                  <span class="sugerencia-nombre">{{ alimento.nombre }}</span>
+                  @if (alimento.marca) {
+                    <span class="sugerencia-marca">{{ alimento.marca }}</span>
+                  }
+                  <span class="etiqueta-extra">{{ etiquetaSugerencia(alimento) }}</span>
+                </div>
+                <button class="btn-favorito" [class.favorito]="alimento.favorito"
+                        (click)="toggleFavorito(alimento); $event.stopPropagation()" title="Favorito">
+                  {{ alimento.favorito ? '⭐' : '☆' }}
+                </button>
+              </div>
+
+              <div class="sugerencia-cantidad">
+                <span class="sugerencia-cantidad-label">Para llegar a tu objetivo: ~{{ alimento._gramosNecesarios }}g</span>
+                <div class="sugerencia-cantidad-control">
+                  <button type="button" (click)="ajustarCantidad(alimento, -10)">−</button>
+                  <input type="number" min="1" [(ngModel)]="alimento._cantidad"
+                         (ngModelChange)="onCantidadInput(alimento, $event)" />
+                  <span>g</span>
+                  <button type="button" (click)="ajustarCantidad(alimento, 10)">+</button>
+                </div>
+                <span class="sugerencia-aporte">= {{ aporteEnCantidad(alimento) }}{{ macroPrioridad === 'calorias' ? 'kcal' : 'g' }} de {{ macroPrioridad }}</span>
+                @if (macrosExcedidos(alimento).length > 0) {
+                  <span class="sugerencia-warning">⚠️ A esa cantidad superarías: {{ macrosExcedidos(alimento).join(', ') }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
   <!-- ═══════════════ PANEL ACTUALIZAR ═══════════════ -->
   @if (activePanel === 'actualizar') {
     <div class="tab-panel">
@@ -88,11 +165,13 @@
     </div>
   }
 
-  <!-- FAB Añadir -->
-  <button class="fab-button" (click)="navegarAnadir()" title="Añadir nuevo alimento">
-    <span class="fab-icon">➕</span>
-    <span class="fab-texto">Añadir alimento</span>
-  </button>
+  <!-- FAB Añadir (solo en la pestaña Buscar) -->
+  @if (activePanel === 'buscar') {
+    <button class="fab-button" (click)="navegarAnadir()" title="Añadir nuevo alimento">
+      <span class="fab-icon">➕</span>
+      <span class="fab-texto">Añadir alimento</span>
+    </button>
+  }
 
   <!-- Popup de detalle compartido -->
   @if (alimentoDetalle) {

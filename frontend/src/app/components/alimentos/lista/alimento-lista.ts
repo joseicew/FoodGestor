@@ -20,6 +20,8 @@ export class AlimentoLista {
   @Input() tieneAlergia: (alimento: any) => boolean = () => false;
   /** Función externa que decide si un alimento tiene ingredientes no deseados por el usuario. */
   @Input() tieneIngNoDeseado: (alimento: any) => boolean = () => false;
+  /** Función externa opcional que devuelve una etiqueta destacada por alimento (ej. aporte de un macro), o null para no mostrar nada. */
+  @Input() etiquetaExtra: (alimento: any) => string | null = () => null;
 
   @Output() seleccionar = new EventEmitter<any>();
   @Output() toggleFavorito = new EventEmitter<{ alimento: any; event: Event }>();

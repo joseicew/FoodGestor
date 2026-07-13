@@ -17,8 +17,9 @@ export class ModalCantidadAlimentoComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['alimento']?.currentValue) {
-      this.cantidad = 100;
-      this.modo = 'gramos';
+      const tienePorciones = !!(this.alimento?.peso_unidad && this.alimento?.nombre_unidad);
+      this.modo = tienePorciones ? 'unidades' : 'gramos';
+      this.cantidad = tienePorciones ? 1 : 100;
     }
   }
 

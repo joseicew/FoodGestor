@@ -11,6 +11,16 @@ from app.models.ingrediente import Ingrediente
 
 alimentos_bp = Blueprint('alimentos', __name__, url_prefix='/api/alimentos')
 
+# Palabras sin valor para detectar similitud de nombres (no cuentan como coincidencia)
+STOPWORDS_NOMBRE = {
+    'de', 'del', 'la', 'el', 'los', 'las', 'y', 'con', 'sin',
+    'al', 'en', 'para', 'un', 'una', 'unos', 'unas', 'o'
+}
+
+
+def _palabras_significativas(texto: str) -> set:
+    return {p for p in texto.lower().split() if p not in STOPWORDS_NOMBRE and len(p) > 2}
+
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '..', '..', 'uploads', 'alimentos')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -110,16 +120,12 @@ def verificar_duplicado():
         if not nombre or not marca:
             return jsonify({'es_duplicado': False, 'duplicado': None}), 200
 
-        alimentos = Alimento.query.all()
+        # Filtrar por marca exacta en la propia consulta SQL (evita cargar toda la tabla)
+        alimentos = Alimento.query.filter(db.func.lower(Alimento.marca) == marca).all()
+        palabras_nueva = set(nombre.split())
 
         for alimento in alimentos:
-            # Marca exacta
-            marca_match = alimento.marca.lower() == marca
-            if not marca_match:
-                continue
-
             # Nombre similar (al menos 2 palabras en común)
-            palabras_nueva = set(nombre.split())
             palabras_existente = set(alimento.nombre.lower().split())
             coincidencias_nombre = palabras_nueva & palabras_existente
 
@@ -153,28 +159,28 @@ def verificar_duplicado():
 
 @alimentos_bp.route('/similar', methods=['POST'])
 def buscar_similares():
-    """Busca productos con nombre similar para evitar duplicados"""
+    """Busca productos con nombre realmente similar (no solo misma marca) para evitar duplicados"""
     try:
         data = request.get_json() or {}
         nombre = data.get('nombre', '').strip().lower()
-        marca = data.get('marca', '').strip().lower()
 
         if not nombre:
             return jsonify({'similares': []}), 200
 
-        alimentos = Alimento.query.all()
+        palabras_nueva = _palabras_significativas(nombre)
+        if not palabras_nueva:
+            return jsonify({'similares': []}), 200
+
+        # Filtrar en la propia consulta SQL por palabras significativas del nombre
+        # (evita cargar toda la tabla de alimentos solo para descartar la mayoría en Python)
+        condiciones = [Alimento.nombre.ilike(f'%{p}%') for p in palabras_nueva]
+        candidatos = Alimento.query.filter(db.or_(*condiciones)).limit(100).all()
+
         similares = []
-        for a in alimentos:
-            # Búsqueda por nombre: si contienen palabras comunes
-            nombre_existente = a.nombre.lower()
-            palabras_nueva = set(nombre.split())
-            palabras_existente = set(nombre_existente.split())
+        for a in candidatos:
+            palabras_existente = _palabras_significativas(a.nombre)
             coincidencias = palabras_nueva & palabras_existente
-
-            # También buscar por marca si se proporciona
-            marca_match = marca and a.marca.lower() == marca
-
-            if (coincidencias and len(coincidencias) >= 1) or marca_match:
+            if len(coincidencias) >= 1:
                 similares.append(a.to_dict())
 
         return jsonify({'similares': similares}), 200
@@ -276,6 +282,7 @@ def crear_alimento():
             codigo_barras=codigo_barras,
             peso_unidad=f('peso_unidad'),
             nombre_unidad=data.get('nombre_unidad', '').strip() or None,
+            medida_unidad=data.get('medida_unidad', 'g').strip() or 'g',
         )
 
         ruta_ing = _guardar_foto(request.files.get('foto_ingredientes'), 'ingredientes')
@@ -333,6 +340,7 @@ def actualizar_alimento(id):
         alimento.categoria = data.get('categoria', alimento.categoria)
         alimento.peso_unidad = f('peso_unidad', alimento.peso_unidad)
         alimento.nombre_unidad = data.get('nombre_unidad', alimento.nombre_unidad).strip() or None if data.get('nombre_unidad') else alimento.nombre_unidad
+        alimento.medida_unidad = data.get('medida_unidad', alimento.medida_unidad).strip() or alimento.medida_unidad if data.get('medida_unidad') else alimento.medida_unidad
 
         ruta_ing = _guardar_foto(request.files.get('foto_ingredientes'), 'ingredientes')
         if ruta_ing:

@@ -11,7 +11,7 @@
           }
           @if (alimento.peso_unidad && alimento.nombre_unidad) {
             <p style="margin: 8px 0 0 0; font-size: 12px; color: #999; background: #f5f5f5; padding: 8px 12px; border-radius: 4px;">
-              1 {{ alimento.nombre_unidad }} = {{ alimento.peso_unidad }}g
+              1 {{ alimento.nombre_unidad }} = {{ alimento.peso_unidad }}{{ alimento.medida_unidad === 'ml' ? 'ml' : 'g' }}
             </p>
           }
         </div>
@@ -43,7 +43,7 @@
               @if (modo === 'unidades' && alimento.nombre_unidad) {
                 {{ alimento.nombre_unidad }}
               } @else {
-                gr/ml
+                {{ alimento.medida_unidad === 'ml' ? 'ml' : 'gr' }}
               }
             </span>
           </div>

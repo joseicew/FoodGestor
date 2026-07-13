@@ -47,6 +47,8 @@ export class AlimentoAnadir implements OnInit {
   fotoCodigoFile: File | null = null;
 
   ingredientesExtraidos: string[] = [];
+  nuevoIngredienteManual = '';
+  ingredientesFiltrados: string[] = [];
   codigoDuplicado: string | null = null;
   nombreDuplicado: string | null = null;
   marcaFaltante = false;
@@ -81,6 +83,9 @@ export class AlimentoAnadir implements OnInit {
       next: (data) => { this.alimentos = data; },
       error: () => {}
     });
+    if (!this.ingredientesService.estaCargado()) {
+      this.ingredientesService.cargarTodosLosIngredientes().subscribe();
+    }
   }
 
   volver() {
@@ -278,6 +283,52 @@ export class AlimentoAnadir implements OnInit {
     }
   }
 
+  // ── Edición de ingredientes ──
+  private normalizarTexto(s: string): string {
+    return (s || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').trim();
+  }
+
+  eliminarIngredienteExtraido(index: number) {
+    this.ingredientesExtraidos.splice(index, 1);
+    this.cdr.detectChanges();
+  }
+
+  filtrarIngredientesManual() {
+    const texto = this.normalizarTexto(this.nuevoIngredienteManual);
+    if (!texto) { this.ingredientesFiltrados = []; return; }
+
+    const yaEnLista = new Set(this.ingredientesExtraidos.map(i => this.normalizarTexto(i)));
+    this.ingredientesFiltrados = this.ingredientesService.obtenerIngredientesCacheados()
+      .map(i => i.nombre as string)
+      .filter(nombre => this.normalizarTexto(nombre).includes(texto) && !yaEnLista.has(this.normalizarTexto(nombre)))
+      .slice(0, 8);
+  }
+
+  seleccionarSugerenciaManual(nombre: string) {
+    this.agregarIngredienteManual(nombre);
+  }
+
+  agregarIngredienteManual(nombreForzado?: string) {
+    const nombre = (nombreForzado ?? this.nuevoIngredienteManual).trim();
+    if (!nombre) return;
+    const norm = this.normalizarTexto(nombre);
+
+    if (this.ingredientesExtraidos.some(i => this.normalizarTexto(i) === norm)) {
+      this.flash.mostrar('Ese ingrediente ya está en la lista', 'error');
+      return;
+    }
+
+    // Si ya existe en la base de datos (aunque con distinta tilde/mayúscula), usamos
+    // el nombre tal cual está guardado para no crear un duplicado nuevo al guardar.
+    const existente = this.ingredientesService.obtenerIngredientesCacheados()
+      .find((i: any) => this.normalizarTexto(i.nombre) === norm);
+
+    this.ingredientesExtraidos.push(existente ? existente.nombre : nombre);
+    this.nuevoIngredienteManual = '';
+    this.ingredientesFiltrados = [];
+    this.cdr.detectChanges();
+  }
+
   // ── Validación de duplicados ──
   onNombreBlur() {
     const n = this.nuevoAlimento.nombre.trim();
@@ -318,6 +369,7 @@ export class AlimentoAnadir implements OnInit {
     this.alimentoDuplicado = producto;
     this.nombreDuplicado = null;
     this.codigoDuplicado = null;
+    this.esDuplicadoSoloEAN = false;
     this.mostrarModalDuplicado = true;
     this.cdr.detectChanges();
   }
@@ -561,6 +613,24 @@ export class AlimentoAnadir implements OnInit {
     this.router.navigate(['/alimentos']);
   }
 
+  marcarFavoritoCreado() {
+    if (!this.alimentoCreado) return;
+    this.cargando = true;
+    this.alimentosService.toggleFavorito(this.alimentoCreado.id).subscribe({
+      next: (res) => {
+        this.alimentoCreado.favorito = res.alimento.favorito;
+        this.flash.mostrar(this.alimentoCreado.favorito ? '⭐ Agregado a favoritos' : '☆ Removido de favoritos', 'exito');
+        this.cargando = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.flash.mostrar('Error al actualizar favorito', 'error');
+        this.cargando = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   getMacrosVisibles(a: any): { label: string; valor: number; unidad: string }[] {
     return [
       { key: 'calorias', label: 'Calorías', unidad: 'kcal' },
@@ -590,7 +660,7 @@ export class AlimentoAnadir implements OnInit {
     return { nombre: '', marca: '', codigo_barras: '', calorias: 0, proteinas: 0, grasas: 0,
       grasas_saturadas: 0, hidratos_carbono: 0, azucares: 0, fibra: 0,
       sal: 0, sodio: 0, potasio: 0, calcio: 0, hierro: 0, categoria: '',
-      peso_unidad: 0, nombre_unidad: '' };
+      peso_unidad: 0, nombre_unidad: '', medida_unidad: 'g' };
   }
 
   private esperar(ms: number): Promise<void> {

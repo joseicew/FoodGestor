@@ -20,6 +20,34 @@
       "runtimeArgs": ["start", "--prefix", "admin", "--", "--port", "4300"],
       "port": 4300,
       "autoPort": false
+    },
+    {
+      "name": "angular-guia-moderna",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "../angular-guia-moderna", "--", "--port", "4500"],
+      "port": 4500,
+      "autoPort": false
+    },
+    {
+      "name": "react-guia-moderna",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "../react-guia-moderna", "--", "--port", "4600", "--strictPort"],
+      "port": 4600,
+      "autoPort": false
+    },
+    {
+      "name": "portal-frontend",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "../portal-frontend", "-l", "4400"],
+      "port": 4400,
+      "autoPort": false
+    },
+    {
+      "name": "vue-guia-moderna",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "../vue-guia-moderna", "--", "--port", "4700", "--strictPort"],
+      "port": 4700,
+      "autoPort": false
     }
   ]
 }

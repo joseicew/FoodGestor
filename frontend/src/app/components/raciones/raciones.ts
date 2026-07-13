@@ -415,22 +415,17 @@ export class Raciones implements OnInit, AfterViewInit {
       }
 
       const totales = this.racionSeleccionada.totales;
-      const caloriaProteinas = parseFloat(totales.proteinas) * 4;
-      const caloriaHidratos = parseFloat(totales.hidratos_carbono) * 4;
-      const caloriaGrasas = parseFloat(totales.grasas) * 9;
+      const proteinas = parseFloat(totales.proteinas) || 0;
+      const hidratos = parseFloat(totales.hidratos_carbono) || 0;
+      const grasas = parseFloat(totales.grasas) || 0;
       const azucares = parseFloat(totales.azucares) || 0;
       const fibra = parseFloat(totales.fibra) || 0;
-      const totalCalorias = caloriaProteinas + caloriaHidratos + caloriaGrasas;
+      const totalGramos = proteinas + hidratos + grasas + azucares + fibra;
 
       // Si no hay datos, no crear la gráfica
-      if (totalCalorias === 0) {
+      if (totalGramos === 0) {
         return;
       }
-
-      // Calcular porcentajes
-      const porcentajeProt = ((caloriaProteinas / totalCalorias) * 100).toFixed(1);
-      const porcentajeHid = ((caloriaHidratos / totalCalorias) * 100).toFixed(1);
-      const porcentajeGras = ((caloriaGrasas / totalCalorias) * 100).toFixed(1);
 
       this.macrosChart = new Chart(ctx, {
         type: 'bar',
@@ -438,8 +433,8 @@ export class Raciones implements OnInit, AfterViewInit {
           labels: ['Proteínas', 'Hidratos', 'Grasas', 'Azúcares', 'Fibra'],
           datasets: [
             {
-              label: 'Calorías / Gramos',
-              data: [caloriaProteinas, caloriaHidratos, caloriaGrasas, azucares, fibra],
+              label: 'Gramos',
+              data: [proteinas, hidratos, grasas, azucares, fibra],
               backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF9F40', '#90EE90'],
               borderColor: ['#FF4573', '#2B8FD9', '#FFB82E', '#FF8C00', '#7CB342'],
               borderWidth: 1,
@@ -461,14 +456,7 @@ export class Raciones implements OnInit, AfterViewInit {
               callbacks: {
                 label: (context: any) => {
                   const value = context.parsed.x || 0;
-                  const idx = context.dataIndex;
-                  if (idx < 3) {
-                    const percentages = [porcentajeProt, porcentajeHid, porcentajeGras];
-                    const percentage = percentages[idx];
-                    return `${value.toFixed(1)} kcal (${percentage}%)`;
-                  } else {
-                    return `${value.toFixed(1)}g`;
-                  }
+                  return `${value.toFixed(1)}g`;
                 }
               }
             }
@@ -476,8 +464,14 @@ export class Raciones implements OnInit, AfterViewInit {
           scales: {
             x: {
               beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Gramos',
+                font: { size: 11 }
+              },
               ticks: {
-                font: { size: 10 }
+                font: { size: 10 },
+                callback: (value: any) => `${value}g`
               }
             },
             y: {

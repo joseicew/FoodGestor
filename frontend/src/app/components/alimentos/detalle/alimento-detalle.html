@@ -41,15 +41,20 @@
               @if (!editable) {
                 <span class="info-valor">
                   @if (detalle.peso_unidad && detalle.nombre_unidad) {
-                    {{ detalle.peso_unidad }}g / {{ detalle.nombre_unidad }}
+                    {{ detalle.peso_unidad }}{{ detalle.medida_unidad === 'ml' ? 'ml' : 'g' }} / {{ detalle.nombre_unidad }}
                   } @else {
                     No especificado
                   }
                 </span>
               } @else {
-                <div style="display: flex; gap: 8px; align-items: center;">
-                  <input type="number" [(ngModel)]="detalle.peso_unidad" placeholder="g" min="0" step="0.1"
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <input type="number" [(ngModel)]="detalle.peso_unidad" placeholder="Peso" min="0" step="0.1"
                          style="width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
+                  <select [(ngModel)]="detalle.medida_unidad"
+                          style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                    <option value="g">g</option>
+                    <option value="ml">ml</option>
+                  </select>
                   <select [(ngModel)]="detalle.nombre_unidad"
                           style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
                     <option value="">Seleccionar</option>

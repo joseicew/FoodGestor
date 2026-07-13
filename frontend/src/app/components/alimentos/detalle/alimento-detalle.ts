@@ -47,6 +47,7 @@ export class AlimentoDetalle implements OnChanges {
   private categoriaOriginal = '';
   private pesoOriginal: number | null = null;
   private unidadOriginal: string | null = null;
+  private medidaOriginal: string | null = null;
 
   cargandoDetalles = false;
   cargandoEliminar = false;
@@ -84,6 +85,7 @@ export class AlimentoDetalle implements OnChanges {
       this.categoriaOriginal = this.detalle.categoria || '';
       this.pesoOriginal = this.detalle.peso_unidad || null;
       this.unidadOriginal = this.detalle.nombre_unidad || null;
+      this.medidaOriginal = this.detalle.medida_unidad || 'g';
       this.enriquecerIngredientes();
     }
   }
@@ -159,12 +161,14 @@ export class AlimentoDetalle implements OnChanges {
     const categoriaChanged = this.detalle.categoria !== this.categoriaOriginal;
     const pesoChanged = this.detalle.peso_unidad !== this.pesoOriginal;
     const unidadChanged = this.detalle.nombre_unidad !== this.unidadOriginal;
+    const medidaChanged = this.detalle.medida_unidad !== this.medidaOriginal;
 
-    if (categoriaChanged || pesoChanged || unidadChanged) {
+    if (categoriaChanged || pesoChanged || unidadChanged || medidaChanged) {
       const formData = new FormData();
       if (categoriaChanged) formData.append('categoria', this.detalle.categoria);
       if (pesoChanged) formData.append('peso_unidad', this.detalle.peso_unidad || '');
       if (unidadChanged) formData.append('nombre_unidad', this.detalle.nombre_unidad || '');
+      if (medidaChanged) formData.append('medida_unidad', this.detalle.medida_unidad || 'g');
 
       this.alimentosService.actualizarAlimento(this.detalle.id, formData).subscribe({
         next: () => this.guardado.emit(),
@@ -186,6 +190,7 @@ export class AlimentoDetalle implements OnChanges {
     formData.append('categoria', this.detalle.categoria || '');
     formData.append('peso_unidad', String(this.detalle.peso_unidad ?? ''));
     formData.append('nombre_unidad', this.detalle.nombre_unidad || '');
+    formData.append('medida_unidad', this.detalle.medida_unidad || 'g');
     if (this.detalle.ingredientes) {
       formData.append('ingredientes', JSON.stringify(this.detalle.ingredientes));
     }

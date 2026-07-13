@@ -108,19 +108,38 @@
       </div>
     </div>
 
-    @if (ingredientesExtraidos.length > 0) {
-      <div class="ingredientes-bloque">
-        <div class="ingredientes-cabecera">
-          <span class="ingredientes-titulo">Ingredientes detectados</span>
-          <span class="ingredientes-count">{{ ingredientesExtraidos.length }}</span>
-        </div>
+    <div class="ingredientes-bloque">
+      <div class="ingredientes-cabecera">
+        <span class="ingredientes-titulo">Ingredientes</span>
+        <span class="ingredientes-count">{{ ingredientesExtraidos.length }}</span>
+      </div>
+
+      @if (ingredientesExtraidos.length > 0) {
         <ul class="ingredientes-lista">
-          @for (ing of ingredientesExtraidos; track ing) {
-            <li class="ingrediente-item">{{ ing }}</li>
+          @for (ing of ingredientesExtraidos; track $index) {
+            <li class="ingrediente-item ingrediente-item-row">
+              <span>{{ ing }}</span>
+              <button type="button" class="btn-quitar-ingrediente" (click)="eliminarIngredienteExtraido($index)" title="Quitar ingrediente">✕</button>
+            </li>
           }
         </ul>
+      }
+
+      <div class="ingrediente-add-row">
+        <input type="text" [(ngModel)]="nuevoIngredienteManual"
+               (ngModelChange)="filtrarIngredientesManual()"
+               (keyup.enter)="agregarIngredienteManual()"
+               placeholder="Añadir ingrediente manualmente..." />
+        <button type="button" class="btn-add-ingrediente" (click)="agregarIngredienteManual()" title="Añadir">➕</button>
       </div>
-    }
+      @if (ingredientesFiltrados.length > 0) {
+        <div class="ingrediente-sugerencias">
+          @for (sug of ingredientesFiltrados; track sug) {
+            <button type="button" class="sugerencia-item" (click)="seleccionarSugerenciaManual(sug)">{{ sug }}</button>
+          }
+        </div>
+      }
+    </div>
 
     <!-- Macronutrientes -->
     <div style="border-top: 1px solid #e0e0e0; margin-top: 14px; padding-top: 14px; text-align: center;">
@@ -193,7 +212,14 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Peso (gramos)</label>
+          <label>Medida</label>
+          <select [(ngModel)]="nuevoAlimento.medida_unidad">
+            <option value="g">Gramos (g)</option>
+            <option value="ml">Mililitros (ml)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Peso ({{ nuevoAlimento.medida_unidad === 'ml' ? 'ml' : 'gramos' }})</label>
           <input type="number" [(ngModel)]="nuevoAlimento.peso_unidad" min="0" step="0.1" placeholder="Ej: 150" />
         </div>
       </div>
@@ -360,6 +386,10 @@
         </div>
 
         <div class="modal-footer">
+          <button class="btn-success modal-btn" (click)="marcarFavoritoCreado()" [disabled]="cargando"
+                  [style.background]="alimentoCreado.favorito ? '#FFC107' : '#27ae60'">
+            {{ alimentoCreado.favorito ? '⭐ Es favorito' : '☆ Agregar a favoritos' }}
+          </button>
           <button class="btn-primary modal-btn" (click)="cerrarModal()">Aceptar</button>
         </div>
       </div>

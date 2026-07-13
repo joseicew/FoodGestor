@@ -21,6 +21,10 @@
         <span class="alimento-marca">{{ alimento.marca }}</span>
       }
 
+      @if (etiquetaExtra(alimento); as etiqueta) {
+        <span class="etiqueta-extra">{{ etiqueta }}</span>
+      }
+
       <div class="alimento-bottom">
         @if (alimento.codigo_barras) {
           <span class="alimento-barcode">{{ alimento.codigo_barras }}</span>

@@ -9,6 +9,7 @@ import { IngredientesService } from '../../services/ingredientes';
 import { AuthService } from '../../services/auth';
 import { AllergensService } from '../../services/allergens';
 import { CacheService } from '../../services/cache';
+import { CalendarioService } from '../../services/calendario';
 import { AlimentoFiltros } from './filtros/alimento-filtros';
 import { AlimentoLista } from './lista/alimento-lista';
 import { AlimentoDetalle, CATEGORIAS } from './detalle/alimento-detalle';
@@ -23,7 +24,8 @@ import { AlimentoDetalle, CATEGORIAS } from './detalle/alimento-detalle';
 export class Alimentos implements OnInit {
   @ViewChild(MensajeFlash) flash!: MensajeFlash;
 
-  activePanel: 'buscar' | 'favoritos' | 'actualizar' = 'buscar';
+  activePanel: 'buscar' | 'favoritos' | 'actualizar' | 'sugerir' = 'buscar';
+  esAdmin = false;
 
   readonly categorias = CATEGORIAS;
 
@@ -43,6 +45,20 @@ export class Alimentos implements OnInit {
 
   cargando = false;
 
+  // ── Sugerir ──
+  readonly macrosSugerir: { key: 'proteinas' | 'grasas' | 'azucares' | 'calorias'; label: string; icono: string }[] = [
+    { key: 'proteinas', label: 'Proteínas', icono: '💪' },
+    { key: 'grasas', label: 'Grasas', icono: '🧈' },
+    { key: 'azucares', label: 'Azúcares', icono: '🍬' },
+    { key: 'calorias', label: 'Calorías', icono: '🔥' },
+  ];
+  macroPrioridad: 'proteinas' | 'grasas' | 'azucares' | 'calorias' = 'proteinas';
+  limitesSugerir: Record<string, number> = {};
+  restantesSugerir: Record<string, number> = {};
+  sugerencias: any[] = [];
+  sugerirCargando = false;
+  private sugerirCalculadoUnaVez = false;
+
   // Verificación de ingredientes
   ingredientesAVerificar: any[] = [];
   totalIngredientesVerificar = 0;
@@ -57,6 +73,7 @@ export class Alimentos implements OnInit {
     private authService: AuthService,
     private allergensService: AllergensService,
     private cacheService: CacheService,
+    private calendarioService: CalendarioService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -97,6 +114,7 @@ export class Alimentos implements OnInit {
           this.alimentos = data;
           this.cacheService.guardarAlimentos(data);
           this.buscarAlimento();
+          if (this.activePanel === 'sugerir') this.calcularSugerencias();
           this.cdr.detectChanges();
         }
       },
@@ -129,11 +147,161 @@ export class Alimentos implements OnInit {
   onCategoria(valor: string) { this.categoriaFiltro = valor; this.buscarAlimento(); }
 
   // ── Pestañas ──
-  cambiarPanel(panel: 'buscar' | 'favoritos' | 'actualizar') {
+  cambiarPanel(panel: 'buscar' | 'favoritos' | 'actualizar' | 'sugerir') {
     this.activePanel = panel;
     this.terminoBusqueda = '';
     this.categoriaFiltro = '';
     this.cargarAlimentos();
+    if (panel === 'sugerir' && !this.sugerirCalculadoUnaVez) {
+      this.sugerirCalculadoUnaVez = true;
+      this.cargarSugerencias();
+    }
+  }
+
+  // ── Sugerir ──
+  private formatoFechaHoy(): string {
+    const hoy = new Date();
+    const año = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoy.getDate()).padStart(2, '0');
+    return `${año}-${mes}-${dia}`;
+  }
+
+  cargarSugerencias() {
+    this.sugerirCargando = true;
+    this.calendarioService.obtenerDia(this.formatoFechaHoy()).subscribe({
+      next: (data) => {
+        this.limitesSugerir = data.limites_base || {};
+        const totales = data.totales_diarios || {};
+        this.restantesSugerir = {};
+        for (const key of Object.keys(this.limitesSugerir)) {
+          this.restantesSugerir[key] = this.limitesSugerir[key] - (totales[key] || 0);
+        }
+        this.elegirMacroPorDefecto();
+        this.sugerirCargando = false;
+        this.calcularSugerencias();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.sugerirCargando = false;
+        this.calcularSugerencias();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /** Preselecciona el macro del que el usuario tiene más margen disponible hoy */
+  private elegirMacroPorDefecto() {
+    let mejor: typeof this.macroPrioridad = 'proteinas';
+    let mejorPct = -Infinity;
+    for (const m of this.macrosSugerir) {
+      const limite = this.limitesSugerir[m.key];
+      if (!limite) continue;
+      const pct = (this.restantesSugerir[m.key] ?? 0) / limite;
+      if (pct > mejorPct) {
+        mejorPct = pct;
+        mejor = m.key;
+      }
+    }
+    this.macroPrioridad = mejor;
+  }
+
+  seleccionarMacroPrioridad(macro: 'proteinas' | 'grasas' | 'azucares' | 'calorias') {
+    this.macroPrioridad = macro;
+    this.calcularSugerencias();
+  }
+
+  /**
+   * Puntúa cada alimento: premia el aporte al macro elegido (relativo a lo que falta hoy)
+   * y penaliza el aporte a los macros donde ya queda poco margen (o se ha superado el límite).
+   */
+  calcularSugerencias() {
+    if (this.alimentos.length === 0) {
+      this.sugerencias = [];
+      return;
+    }
+
+    const macro = this.macroPrioridad;
+    const otrosMacros = this.macrosSugerir.map(m => m.key).filter(m => m !== macro);
+    const restante = this.restantesSugerir[macro] ?? 0;
+
+    const puntuados = this.alimentos
+      .filter(a => (a[macro] || 0) > 0) // sin aporte del macro buscado, no interesa
+      .map(a => {
+        const aporte = a[macro] || 0;
+        const aportePct = restante > 0 ? (aporte / restante) * 100 : 0;
+
+        let riesgo = 0;
+        for (const m of otrosMacros) {
+          const valor = a[m] || 0;
+          const restanteM = this.restantesSugerir[m];
+          const limiteM = this.limitesSugerir[m];
+          if (restanteM == null || limiteM == null) continue;
+          riesgo += restanteM > 0
+            ? (valor / restanteM) * 100
+            : (valor / limiteM) * 200; // ya se pasó del límite: penaliza el doble
+        }
+
+        return { alimento: a, score: aportePct - riesgo, aporte };
+      });
+
+    puntuados.sort((a, b) => b.score - a.score);
+
+    // Gramos necesarios de ese alimento para cubrir lo que falta del macro elegido hoy.
+    // Si hacen falta más de 500g, probablemente sea un aditivo o algo con aporte residual: se descarta.
+    this.sugerencias = puntuados
+      .map(p => {
+        const gramosNecesarios = restante > 0
+          ? Math.max(1, Math.round((restante / p.aporte) * 100))
+          : 100;
+        return { ...p, gramosNecesarios };
+      })
+      .filter(p => p.gramosNecesarios <= 500)
+      .slice(0, 30)
+      .map(p => {
+      return {
+        ...p.alimento,
+        _gramosNecesarios: p.gramosNecesarios,
+        _cantidad: p.gramosNecesarios
+      };
+    });
+  }
+
+  etiquetaSugerencia = (alimento: any): string | null => {
+    const macro = this.macrosSugerir.find(m => m.key === this.macroPrioridad);
+    const valor = alimento?.[this.macroPrioridad];
+    if (!macro || valor == null) return null;
+    const unidad = this.macroPrioridad === 'calorias' ? 'kcal' : 'g';
+    return `${macro.icono} ${valor}${unidad} / 100g`;
+  };
+
+  ajustarCantidad(alimento: any, delta: number) {
+    alimento._cantidad = Math.max(1, (alimento._cantidad || 0) + delta);
+  }
+
+  onCantidadInput(alimento: any, valor: string) {
+    const num = parseFloat(valor);
+    alimento._cantidad = !isNaN(num) && num > 0 ? num : 1;
+  }
+
+  /** Aporte real del macro elegido a la cantidad actualmente seleccionada */
+  aporteEnCantidad(alimento: any): number {
+    const valor100g = alimento[this.macroPrioridad] || 0;
+    return Math.round((valor100g / 100) * (alimento._cantidad || 0) * 10) / 10;
+  }
+
+  /** Macros (distintos del elegido) que se superarían si se comiera la cantidad actual */
+  macrosExcedidos(alimento: any): string[] {
+    const otros = this.macrosSugerir.filter(m => m.key !== this.macroPrioridad);
+    const excedidos: string[] = [];
+    for (const m of otros) {
+      const restanteM = this.restantesSugerir[m.key];
+      if (restanteM == null) continue;
+      const valor100g = alimento[m.key] || 0;
+      const aporte = (valor100g / 100) * (alimento._cantidad || 0);
+      if (aporte > restanteM) excedidos.push(m.label);
+    }
+    return excedidos;
   }
 
   navegarAnadir() {
@@ -185,6 +353,7 @@ export class Alimentos implements OnInit {
       next: (perfil) => {
         this.alergenosDelUsuario = perfil.alergenos_seleccionados || [];
         this.ingredientesNoDeseadosUsuario = perfil.ingredientes_no_deseados || [];
+        this.esAdmin = perfil.rol === 'admin' || perfil.rol === 'superadmin';
         this.perfilCargado = true;
         this.cdr.detectChanges();
       },

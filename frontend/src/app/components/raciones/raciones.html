@@ -83,7 +83,7 @@
       <!-- Sección de Alimentos -->
       <div class="alimentos-section">
         <!-- Añadir alimento (arriba) -->
-        <h3>Añadir alimento</h3>
+        <h3>➕ Añadir alimento</h3>
         <app-busqueda-alimento
           [alimentos]="alimentos"
           [excluirIds]="alimentosEnRacionIds"
@@ -93,7 +93,7 @@
         <hr class="seccion-divider" />
 
         <!-- Lista de alimentos añadidos (abajo) -->
-        <h3>Alimentos ({{ racionSeleccionada.alimentos.length }})</h3>
+        <h3>📝 Alimentos ({{ racionSeleccionada.alimentos.length }})</h3>
         @if (racionSeleccionada.alimentos.length > 0) {
           <div class="alimentos-agregados">
             @for (alimento of racionSeleccionada.alimentos; track alimento.id) {
@@ -117,7 +117,7 @@
             }
           </div>
         } @else {
-          <p class="empty-state-small">Añade alimentos para comenzar</p>
+          <p class="empty-state-small">🍽️ Añade alimentos para comenzar</p>
         }
 
         <hr class="seccion-divider" />
@@ -171,9 +171,9 @@
           </div>
         </div>
 
-        <!-- Gráfica de distribución de calorías -->
+        <!-- Gráfica de distribución de gramos -->
         <div class="chart-section">
-          <h3>Distribución de Calorías por Macronutriente</h3>
+          <h3>Distribución de Gramos por Macronutriente</h3>
           <canvas #macrosChart></canvas>
           <div class="chart-gramos">
             <div class="chart-gramo"><span class="chart-gramo-dot" style="background:#FF6384"></span>Proteínas <strong>{{ racionSeleccionada.totales.proteinas | number:'1.1-1' }}g</strong></div>
@@ -184,6 +184,10 @@
           </div>
         </div>
       </div>
+
+      <button class="btn-crear-grande" style="width: 100%; margin-top: 16px;" (click)="volverALista()">
+        💾 Guardar y volver a la lista
+      </button>
   }
 
   <!-- ═══════════════ MODAL CREAR MENÚ ═══════════════ -->
