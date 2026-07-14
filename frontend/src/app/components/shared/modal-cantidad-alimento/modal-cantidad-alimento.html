@@ -49,6 +49,17 @@
           </div>
         </div>
 
+        @if (!alimento.favorito) {
+          <button (click)="toggleFavorito()" [disabled]="actualizandoFavorito"
+                  style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 8px; margin-bottom: 12px; background: #fff8e1; color: #a17f00; border: 1.5px dashed #FFC107; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">
+            ☆ ¿Lo añades a favoritos? Así lo encontrarás más rápido la próxima vez
+          </button>
+        } @else {
+          <p style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #a17f00; margin: 0 0 12px;">
+            ⭐ Ya está en tus favoritos
+          </p>
+        }
+
         <div style="display: flex; gap: 8px;">
           <button (click)="onConfirmar()"
                   style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">

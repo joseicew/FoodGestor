@@ -704,6 +704,65 @@
   background: #fff;
 }
 
+.modal-form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #777;
+  margin: 14px 0 8px;
+}
+
+/* ── Filtro/selector de categoría de comida ── */
+.categoria-filtros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.categoria-chip {
+  padding: 6px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 20px;
+  background: #fafafa;
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.categoria-chip:hover { border-color: var(--chip-color, #a5d6a7); }
+
+.categoria-chip.active {
+  background: color-mix(in srgb, var(--chip-color, #4CAF50) 16%, #fff);
+  border-color: var(--chip-color, #4CAF50);
+  color: color-mix(in srgb, var(--chip-color, #4CAF50) 75%, #1a1a1a);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--chip-color, #4CAF50) 30%, transparent);
+}
+
+/* ── Badges de categoría en la tarjeta de ración ── */
+.racion-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.racion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.2px;
+  line-height: 1.6;
+}
+
 /* ── Alergenos/Intolerancias ── */
 .alimento-en-menu.allergen-warning {
   border: 2px solid #d32f2f;

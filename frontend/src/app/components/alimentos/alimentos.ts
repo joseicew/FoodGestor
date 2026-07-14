@@ -148,7 +148,9 @@ export class Alimentos implements OnInit {
     if (this.ocultarNoDeseados) {
       resultado = resultado.filter(a => !this.tieneIngNoDeseadoUsuario(a));
     }
-    this.alimentosFiltrados = resultado;
+    this.alimentosFiltrados = [...resultado].sort((a, b) =>
+      a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' })
+    );
   }
 
   onTermino(valor: string) { this.terminoBusqueda = valor; this.buscarAlimento(); }
@@ -319,7 +321,9 @@ export class Alimentos implements OnInit {
   }
 
   obtenerFavoritos() {
-    return this.alimentos.filter(a => a.favorito);
+    return this.alimentos
+      .filter(a => a.favorito)
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
   }
 
   toggleFavorito(alimento: any) {

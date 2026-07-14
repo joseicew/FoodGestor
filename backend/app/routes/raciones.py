@@ -59,6 +59,9 @@ def crear_racion():
             nombre=nombre,
             descripcion=data.get('descripcion', '')
         )
+        categorias = data.get('categorias')
+        if isinstance(categorias, list):
+            racion.set_categorias(categorias)
         db.session.add(racion)
         db.session.commit()
 
@@ -87,6 +90,9 @@ def actualizar_racion(racion_id):
 
         if 'descripcion' in data:
             racion.descripcion = data['descripcion']
+
+        if 'categorias' in data and isinstance(data['categorias'], list):
+            racion.set_categorias(data['categorias'])
 
         db.session.commit()
         return jsonify({

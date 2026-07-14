@@ -12,10 +12,11 @@ import { AllergensService } from '../../services/allergens';
 import { BusquedaAlimentoComponent } from '../shared/busqueda-alimento/busqueda-alimento';
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { PageHeaderComponent } from '../shared/page-header/page-header';
+import { ModalCantidadAlimentoComponent } from '../shared/modal-cantidad-alimento/modal-cantidad-alimento';
 
 @Component({
   selector: 'app-calendario',
-  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent, ModalCantidadAlimentoComponent],
   templateUrl: './calendario.html',
   styleUrl: './calendario.css'
 })
@@ -29,13 +30,7 @@ export class Calendario implements OnInit {
   // Datos del día
   diaActual: any = null;
   comidas = ['desayuno', 'almuerzo', 'comida', 'merienda', 'cena'];
-  seccionesAbiertas: { [key: string]: boolean } = {
-    desayuno: true,
-    almuerzo: false,
-    comida: false,
-    merienda: false,
-    cena: false
-  };
+  comidaIndex = 0;
 
   // Totales diarios
   totalesDiarios: any = {
@@ -68,6 +63,10 @@ export class Calendario implements OnInit {
   cargando = false;
   panelActivo: { tipoComida: string; modo: 'racion' | 'alimento' } | null = null;
   terminoBusquedaRacion = '';
+
+  // Modal de cantidad al añadir un alimento a una comida
+  alimentoParaAgregar: any = null;
+  private tipoComidaParaAgregar: string | null = null;
   // Alergias del usuario
   intoleranciaUsuario: string[] = [];
 
@@ -237,17 +236,21 @@ export class Calendario implements OnInit {
     this.porcentajes = {};
   }
 
+  private ordenarPorNombre<T extends { nombre: string }>(lista: T[]): T[] {
+    return [...lista].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+  }
+
   cargarRaciones() {
     const cachedRaciones = this.cacheService.obtenerRaciones();
     if (cachedRaciones.length > 0) {
-      this.raciones = cachedRaciones;
-      this.racionesFiltradas = cachedRaciones;
+      this.raciones = this.ordenarPorNombre(cachedRaciones);
+      this.racionesFiltradas = this.raciones;
     }
     this.racionesService.obtenerRaciones().subscribe({
       next: (data) => {
         if (this.cacheService.hanCambiadoRaciones(data || [])) {
-          this.raciones = data || [];
-          this.racionesFiltradas = data || [];
+          this.raciones = this.ordenarPorNombre(data || []);
+          this.racionesFiltradas = this.raciones;
           this.cacheService.guardarRaciones(data || []);
         }
       },
@@ -314,10 +317,17 @@ export class Calendario implements OnInit {
     this.mostrarDatepicker = !this.mostrarDatepicker;
   }
 
-  // ── Secciones colapsables ──
+  // ── Navegación entre comidas ──
 
-  toggleSeccion(tipo: string) {
-    this.seccionesAbiertas[tipo] = !this.seccionesAbiertas[tipo];
+  cambiarComida(delta: number) {
+    const nuevo = this.comidaIndex + delta;
+    if (nuevo < 0 || nuevo >= this.comidas.length) return;
+    this.comidaIndex = nuevo;
+    this.panelActivo = null;
+  }
+
+  get tipoComidaActual(): string {
+    return this.comidas[this.comidaIndex];
   }
 
   // ── Modales ──
@@ -372,19 +382,28 @@ export class Calendario implements OnInit {
 
   onSeleccionarAlimentoInline(tipoComida: string, alimento: any) {
     this.panelActivo = null;
+    this.tipoComidaParaAgregar = tipoComida;
+    this.alimentoParaAgregar = alimento;
+  }
+
+  onConfirmarCantidadAlimento(gramos: number) {
+    const tipoComida = this.tipoComidaParaAgregar;
+    const alimento = this.alimentoParaAgregar;
+    if (!tipoComida || !alimento) return;
+    this.onCancelarCantidadAlimento();
 
     // Actualización visual instantánea
     if (this.diaActual?.[tipoComida]) {
       const yaExiste = this.diaActual[tipoComida].alimentos.some((a: any) => a.id === alimento.id);
       if (!yaExiste) {
-        this.diaActual[tipoComida].alimentos.push({ ...alimento, cantidad: 100 });
+        this.diaActual[tipoComida].alimentos.push({ ...alimento, cantidad: gramos });
         this.cdr.detectChanges();
       }
     }
 
     const fechaStr = this.formatoFecha(this.fechaSeleccionada);
     this.optimisticUpdateService.encolar({
-      accion: () => this.calendarioService.agregarAlimentoAlComida(fechaStr, tipoComida, alimento.id, 100),
+      accion: () => this.calendarioService.agregarAlimentoAlComida(fechaStr, tipoComida, alimento.id, gramos),
       enExito: () => {
         this.flash.mostrar(`${alimento.nombre} agregado`, 'exito');
         this.cargarDia(this.fechaSeleccionada);
@@ -394,6 +413,11 @@ export class Calendario implements OnInit {
         this.cargarDia(this.fechaSeleccionada);
       }
     });
+  }
+
+  onCancelarCantidadAlimento() {
+    this.alimentoParaAgregar = null;
+    this.tipoComidaParaAgregar = null;
   }
 
   // ── Remover items de comida ──

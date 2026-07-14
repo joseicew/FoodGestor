@@ -5,6 +5,17 @@
 
   <!-- ═══════════════ PANEL LISTA ═══════════════ -->
   @if (activePanel === 'lista') {
+      @if (!cargandoRaciones && !errorRed && raciones.length > 0) {
+        <div class="categoria-filtros">
+          @for (cat of categoriasComida; track cat.key) {
+            <button class="categoria-chip" [class.active]="filtroCategorias.includes(cat.key)"
+                    [style.--chip-color]="cat.color" (click)="toggleFiltroCategoria(cat.key)">
+              {{ cat.icono }} {{ cat.label }}
+            </button>
+          }
+        </div>
+      }
+
       @if (cargandoRaciones) {
         <div class="empty-state-large">
           <span class="spinner" style="font-size: 48px; margin-bottom: 12px;"></span>
@@ -25,10 +36,23 @@
           <p>Crea tu primera ración para empezar a combinar alimentos</p>
           <button class="btn-crear-grande" (click)="abrirModalCrear()">➕ Crear Ración</button>
         </div>
+      } @else if (racionesOrdenadas.length === 0) {
+        <div class="empty-state-large">
+          <div class="empty-icon">🔍</div>
+          <h3>Sin raciones en esta categoría</h3>
+          <p>Prueba a quitar el filtro o crea una nueva</p>
+        </div>
       } @else {
         <div class="raciones-grid">
-          @for (racion of raciones; track racion.id) {
+          @for (racion of racionesOrdenadas; track racion.id) {
             <div class="racion-card" (click)="seleccionarRacion(racion)">
+              @if (infoCategorias(racion).length > 0) {
+                <div class="racion-badges">
+                  @for (cat of infoCategorias(racion); track cat.key) {
+                    <span class="racion-badge" [style.background]="cat.color">{{ cat.icono }} {{ cat.label }}</span>
+                  }
+                </div>
+              }
               <div class="racion-header">
                 <h3>{{ racion.nombre }}</h3>
                 <button class="btn-eliminar" (click)="eliminarRacion(racion.id); $event.stopPropagation()"
@@ -78,6 +102,16 @@
           }
         </div>
         <button class="btn-volver" (click)="volverALista()" title="Volver" aria-label="Volver">←</button>
+      </div>
+
+      <!-- Categorías de la ración -->
+      <div class="categoria-filtros">
+        @for (cat of categoriasComida; track cat.key) {
+          <button class="categoria-chip" [class.active]="racionSeleccionada.categorias?.includes(cat.key)"
+                  [style.--chip-color]="cat.color" (click)="cambiarCategoriaRacion(cat.key)">
+            {{ cat.icono }} {{ cat.label }}
+          </button>
+        }
       </div>
 
       <!-- Sección de Alimentos -->
@@ -208,6 +242,16 @@
                    placeholder="Ej: Desayuno Saludable"
                    (keyup.enter)="crearRacion()"
                    autofocus />
+
+            <label class="modal-form-label">Categorías (opcional)</label>
+            <div class="categoria-filtros">
+              @for (cat of categoriasComida; track cat.key) {
+                <button type="button" class="categoria-chip" [class.active]="nuevoRacionCategorias.includes(cat.key)"
+                        [style.--chip-color]="cat.color" (click)="elegirCategoriaNueva(cat.key)">
+                  {{ cat.icono }} {{ cat.label }}
+                </button>
+              }
+            </div>
           </div>
         </div>
 

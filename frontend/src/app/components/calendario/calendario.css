@@ -44,6 +44,11 @@
   background: #e0e0e0;
 }
 
+.btn-flecha:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .fecha-display {
   display: flex;
   align-items: center;
@@ -182,61 +187,41 @@
   overflow: hidden;
 }
 
-.comida-header {
+.comida-nav {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px;
   background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
-  border: none;
   border-bottom: 1px solid #e8e8e8;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.comida-header:hover {
-  background: linear-gradient(135deg, #f0f0f0 0%, #eaeaea 100%);
 }
 
 .comida-titulo {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   font-size: 14px;
   font-weight: 600;
   color: #2d2d2d;
   flex: 1;
-  text-align: left;
+  text-align: center;
 }
 
 .comida-icono {
-  font-size: 18px;
+  font-size: 22px;
 }
 
 .comida-nombre {
   text-transform: capitalize;
+  font-size: 15px;
 }
 
 .comida-macros-header {
-  display: flex;
-  gap: 12px;
   font-size: 11px;
   color: #666;
-  flex: 1;
-  justify-content: flex-end;
-}
-
-.comida-flecha {
-  font-size: 10px;
-  transition: transform 0.3s ease;
-  color: #aaa;
-  margin-left: 8px;
-  flex-shrink: 0;
-}
-
-.comida-flecha.abierta {
-  transform: rotate(180deg);
+  font-weight: 500;
 }
 
 .comida-contenido {

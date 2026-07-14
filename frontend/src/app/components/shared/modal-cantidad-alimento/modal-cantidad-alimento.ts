@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AlimentosService } from '../../../services/alimentos';
 
 @Component({
   selector: 'app-modal-cantidad-alimento',
@@ -14,6 +15,9 @@ export class ModalCantidadAlimentoComponent implements OnChanges {
 
   cantidad: string | number = 100;
   modo: 'gramos' | 'unidades' = 'gramos';
+  actualizandoFavorito = false;
+
+  constructor(private alimentosService: AlimentosService) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['alimento']?.currentValue) {
@@ -47,5 +51,17 @@ export class ModalCantidadAlimentoComponent implements OnChanges {
 
   onCancelar() {
     this.cancelar.emit();
+  }
+
+  toggleFavorito() {
+    if (!this.alimento || this.actualizandoFavorito) return;
+    this.actualizandoFavorito = true;
+    this.alimentosService.toggleFavorito(this.alimento.id).subscribe({
+      next: (res) => {
+        this.alimento.favorito = res.alimento.favorito;
+        this.actualizandoFavorito = false;
+      },
+      error: () => { this.actualizandoFavorito = false; }
+    });
   }
 }

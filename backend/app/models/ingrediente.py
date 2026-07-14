@@ -14,7 +14,11 @@ ALERGENO_CATEGORIAS = [
     'Huevo',
     'Soja',
     'Pescado',
-    'Moluscos'
+    'Moluscos',
+    'Sésamo',
+    'Sulfitos',
+    'Mostaza',
+    'Altramuces'
 ]
 
 # Categorías de alimentos (grupos de alimentos)

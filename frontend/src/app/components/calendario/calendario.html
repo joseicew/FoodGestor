@@ -108,35 +108,29 @@
         </div>
       </div>
 
-      <!-- ── 5 Secciones de comidas ── -->
-      @for (tipoComida of comidas; track tipoComida) {
-        @if (diaActual[tipoComida]) {
-          <div class="comida-section">
-            <!-- Header colapsable -->
-            <button class="comida-header" (click)="toggleSeccion(tipoComida)">
-              <div class="comida-titulo">
-                <span class="comida-icono">
-                  @switch (tipoComida) {
-                    @case ('desayuno') { 🌅 }
-                    @case ('almuerzo') { 🍽️ }
-                    @case ('comida') { 🍴 }
-                    @case ('merienda') { ☕ }
-                    @case ('cena') { 🌙 }
-                  }
-                </span>
-                <span class="comida-nombre">
-                  {{ tipoComida | titlecase }}
-                </span>
-              </div>
-              <div class="comida-macros-header">
-                <span>🔥 {{ diaActual[tipoComida].totales.calorias | number:'1.0-0' }} kcal</span>
-              </div>
-              <span class="comida-flecha" [class.abierta]="seccionesAbiertas[tipoComida]">▼</span>
-            </button>
+      <!-- ── Navegación entre comidas (flechas, sin desplegable) ── -->
+      @if (diaActual[tipoComidaActual]; as datosComida) {
+        <div class="comida-section">
+          <div class="comida-nav">
+            <button class="btn-flecha" (click)="cambiarComida(-1)" [disabled]="comidaIndex === 0" title="Comida anterior">◀</button>
+            <div class="comida-titulo">
+              <span class="comida-icono">
+                @switch (tipoComidaActual) {
+                  @case ('desayuno') { 🌅 }
+                  @case ('almuerzo') { 🍽️ }
+                  @case ('comida') { 🍴 }
+                  @case ('merienda') { ☕ }
+                  @case ('cena') { 🌙 }
+                }
+              </span>
+              <span class="comida-nombre">{{ tipoComidaActual | titlecase }}</span>
+              <span class="comida-macros-header">🔥 {{ datosComida.totales.calorias | number:'1.0-0' }} kcal</span>
+            </div>
+            <button class="btn-flecha" (click)="cambiarComida(1)" [disabled]="comidaIndex === comidas.length - 1" title="Comida siguiente">▶</button>
+          </div>
 
-            <!-- Contenido colapsable -->
-            @if (seccionesAbiertas[tipoComida]) {
-              <div class="comida-contenido">
+          <div class="comida-contenido">
+            @let tipoComida = tipoComidaActual;
                 <!-- Raciones -->
                 @if (diaActual[tipoComida].raciones.length > 0) {
                   <div class="items-section">
@@ -236,11 +230,15 @@
                   </div>
                 }
               </div>
-            }
           </div>
         }
-      }
     </div>
   }
 
+  <!-- Modal cantidad alimento (muestra porción/gramos si el alimento tiene peso_unidad) -->
+  <app-modal-cantidad-alimento
+    [alimento]="alimentoParaAgregar"
+    (confirmar)="onConfirmarCantidadAlimento($event)"
+    (cancelar)="onCancelarCantidadAlimento()">
+  </app-modal-cantidad-alimento>
 </div>

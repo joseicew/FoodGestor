@@ -159,10 +159,11 @@ def verificar_duplicado():
 
 @alimentos_bp.route('/similar', methods=['POST'])
 def buscar_similares():
-    """Busca productos con nombre realmente similar (no solo misma marca) para evitar duplicados"""
+    """Busca productos con nombre realmente similar (misma categoría + 2+ palabras en común) para evitar duplicados"""
     try:
         data = request.get_json() or {}
         nombre = data.get('nombre', '').strip().lower()
+        categoria = data.get('categoria', '').strip()
 
         if not nombre:
             return jsonify({'similares': []}), 200
@@ -174,13 +175,16 @@ def buscar_similares():
         # Filtrar en la propia consulta SQL por palabras significativas del nombre
         # (evita cargar toda la tabla de alimentos solo para descartar la mayoría en Python)
         condiciones = [Alimento.nombre.ilike(f'%{p}%') for p in palabras_nueva]
-        candidatos = Alimento.query.filter(db.or_(*condiciones)).limit(100).all()
+        query = Alimento.query.filter(db.or_(*condiciones))
+        if categoria:
+            query = query.filter(Alimento.categoria == categoria)
+        candidatos = query.limit(100).all()
 
         similares = []
         for a in candidatos:
             palabras_existente = _palabras_significativas(a.nombre)
             coincidencias = palabras_nueva & palabras_existente
-            if len(coincidencias) >= 1:
+            if len(coincidencias) >= 2:
                 similares.append(a.to_dict())
 
         return jsonify({'similares': similares}), 200

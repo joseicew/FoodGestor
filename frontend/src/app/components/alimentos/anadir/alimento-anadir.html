@@ -335,6 +335,10 @@
                 <div class="similar-info">
                   <span class="similar-categoria">{{ sim.categoria }}</span>
                   <span class="similar-calorias">{{ sim.calorias }} kcal</span>
+                  <button type="button" class="btn-favorito-similar" (click)="marcarFavoritoSimilar(sim); $event.stopPropagation()"
+                          [style.color]="sim.favorito ? '#FFC107' : '#999'" title="Marcar como favorito">
+                    {{ sim.favorito ? '⭐' : '☆' }}
+                  </button>
                 </div>
               </div>
             }

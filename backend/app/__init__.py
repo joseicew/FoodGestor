@@ -230,6 +230,27 @@ def _migrar_columnas():
     except Exception:
         pass
 
+    # Migrar tabla racion
+    try:
+        columnas = [c['name'] for c in inspector.get_columns('racion')]
+        if 'categoria' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE racion ADD COLUMN categoria VARCHAR(20)'))
+                conn.commit()
+        if 'categorias' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE racion ADD COLUMN categorias TEXT DEFAULT '[]'"))
+                conn.commit()
+            # Migrar el valor único ya guardado en 'categoria' (si lo hay) al nuevo array 'categorias'
+            with db.engine.connect() as conn:
+                conn.execute(text(
+                    "UPDATE racion SET categorias = '[\"' || categoria || '\"]' "
+                    "WHERE categoria IS NOT NULL AND categoria <> ''"
+                ))
+                conn.commit()
+    except Exception:
+        pass
+
     # Migrar tabla ingrediente
     try:
         columnas = [c['name'] for c in inspector.get_columns('ingrediente')]

@@ -55,7 +55,7 @@ export class BusquedaAlimentoComponent implements OnChanges {
     return [...lista].sort((a, b) => {
       if (a.favorito && !b.favorito) return -1;
       if (!a.favorito && b.favorito) return 1;
-      return 0;
+      return (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' });
     });
   }
 }

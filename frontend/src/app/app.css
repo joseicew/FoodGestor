@@ -24,20 +24,17 @@
   /* Safe area del notch dentro del propio .content: así el elemento ocupa
      todo el alto del .app-container y el contenido interior respeta el notch. */
   padding-top: max(env(safe-area-inset-top), 16px);
-  padding-bottom: 70px;
 }
 
 .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
+  flex-shrink: 0;
   display: flex;
   background: var(--bg-surface);
   border-top: 1px solid var(--border-color);
   height: 65px;
+  /* El nav ocupa espacio real en el layout (ya no es fixed), así .content
+     nunca se solapa con él; esto solo añade el hueco del home indicator. */
+  padding-bottom: env(safe-area-inset-bottom);
   z-index: 100;
   transition: background-color 0.3s ease;
 }

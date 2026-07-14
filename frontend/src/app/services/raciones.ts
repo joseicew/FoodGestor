@@ -31,11 +31,11 @@ export class RacionesService {
     return this.http.get<any>(`${this.apiUrl}/${id}`, this.getHeaders());
   }
 
-  crearRacion(data: { nombre: string; descripcion?: string }): Observable<any> {
+  crearRacion(data: { nombre: string; descripcion?: string; categorias?: string[] }): Observable<any> {
     return this.http.post<any>(this.apiUrl, data, this.getHeaders());
   }
 
-  actualizarRacion(id: number, data: { nombre?: string; descripcion?: string }): Observable<any> {
+  actualizarRacion(id: number, data: { nombre?: string; descripcion?: string; categorias?: string[] }): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${id}`, data, this.getHeaders());
   }
 

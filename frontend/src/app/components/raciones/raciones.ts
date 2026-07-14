@@ -34,9 +34,19 @@ export class Raciones implements OnInit, AfterViewInit {
   activePanel: 'lista' | 'editar' = 'lista';
   racionSeleccionada: any = null;
 
+  readonly categoriasComida: { key: string; label: string; icono: string; color: string }[] = [
+    { key: 'desayuno', label: 'Desayuno', icono: '🌅', color: '#F59E0B' },
+    { key: 'almuerzo', label: 'Almuerzo', icono: '🍽️', color: '#10B981' },
+    { key: 'comida', label: 'Comida', icono: '🍴', color: '#3B82F6' },
+    { key: 'merienda', label: 'Merienda', icono: '☕', color: '#EC4899' },
+    { key: 'cena', label: 'Cena', icono: '🌙', color: '#6366F1' },
+  ];
+  filtroCategorias: string[] = [];
+
   // Modal de crear ración
   mostrarModalCrear = false;
   nuevoRacionNombre = '';
+  nuevoRacionCategorias: string[] = [];
 
   cargando = false;
   cargandoRaciones = true;
@@ -81,6 +91,26 @@ export class Raciones implements OnInit, AfterViewInit {
   }
 
   errorRed = false;
+
+  get racionesOrdenadas(): any[] {
+    let lista = this.raciones;
+    if (this.filtroCategorias.length > 0) {
+      lista = lista.filter(r => (r.categorias || []).some((c: string) => this.filtroCategorias.includes(c)));
+    }
+    return [...lista].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+  }
+
+  toggleFiltroCategoria(categoria: string) {
+    const idx = this.filtroCategorias.indexOf(categoria);
+    if (idx >= 0) this.filtroCategorias.splice(idx, 1);
+    else this.filtroCategorias.push(categoria);
+  }
+
+  /** Info (icono/color/label) de las categorías de una ración, para pintar sus badges */
+  infoCategorias(racion: any): { key: string; icono: string; color: string; label: string }[] {
+    const cats: string[] = racion?.categorias || [];
+    return this.categoriasComida.filter(c => cats.includes(c.key));
+  }
 
   cargarRaciones() {
     this.errorRed = false;
@@ -142,12 +172,20 @@ export class Raciones implements OnInit, AfterViewInit {
   abrirModalCrear() {
     this.mostrarModalCrear = true;
     this.nuevoRacionNombre = '';
+    this.nuevoRacionCategorias = [];
     this.cdr.detectChanges();
   }
 
   cerrarModalCrear() {
     this.mostrarModalCrear = false;
     this.nuevoRacionNombre = '';
+    this.nuevoRacionCategorias = [];
+  }
+
+  elegirCategoriaNueva(categoria: string) {
+    const idx = this.nuevoRacionCategorias.indexOf(categoria);
+    if (idx >= 0) this.nuevoRacionCategorias.splice(idx, 1);
+    else this.nuevoRacionCategorias.push(categoria);
   }
 
 
@@ -159,11 +197,13 @@ export class Raciones implements OnInit, AfterViewInit {
     }
 
     this.mostrarModalCrear = false;
+    const categorias = [...this.nuevoRacionCategorias];
 
     // Crear ración temporal para mostrar inmediatamente
     const nuevoRacionTemp = {
       id: Date.now(),
       nombre: nombre,
+      categorias,
       alimentos: [],
       descripcion: '',
       totales: { calorias: 0, proteinas: 0, hidratos_carbono: 0, grasas: 0, azucares: 0, fibra: 0, sal: 0 }
@@ -179,7 +219,7 @@ export class Raciones implements OnInit, AfterViewInit {
       updateLocal: () => {
         console.log(`📝 Ración "${nombre}" creada localmente`);
       },
-      serverAction: () => this.racionesService.crearRacion({ nombre, descripcion: '' }),
+      serverAction: () => this.racionesService.crearRacion({ nombre, descripcion: '', categorias }),
       rollback: () => {
         // Revertir la ración local si falla
         const index = this.raciones.findIndex(r => r.id === nuevoRacionTemp.id);
@@ -225,6 +265,30 @@ export class Raciones implements OnInit, AfterViewInit {
     setTimeout(() => {
       this.crearGrafica();
     }, 300);
+  }
+
+  cambiarCategoriaRacion(categoria: string) {
+    if (!this.racionSeleccionada) return;
+    const anterior = [...(this.racionSeleccionada.categorias || [])];
+    const nuevas = [...anterior];
+    const idx = nuevas.indexOf(categoria);
+    if (idx >= 0) nuevas.splice(idx, 1);
+    else nuevas.push(categoria);
+
+    this.racionSeleccionada.categorias = nuevas;
+    this.cdr.detectChanges();
+
+    this.racionesService.actualizarRacion(this.racionSeleccionada.id, { categorias: nuevas }).subscribe({
+      next: (res) => {
+        const i = this.raciones.findIndex(r => r.id === res.racion.id);
+        if (i >= 0) this.raciones[i] = { ...this.raciones[i], categorias: res.racion.categorias };
+      },
+      error: () => {
+        this.racionSeleccionada.categorias = anterior;
+        this.flash.mostrar('Error al actualizar la categoría', 'error');
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   volverALista() {

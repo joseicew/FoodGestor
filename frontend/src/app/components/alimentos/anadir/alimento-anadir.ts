@@ -437,7 +437,14 @@ export class AlimentoAnadir implements OnInit {
           this.cdr.detectChanges();
           return;
         }
-        this.verificarSimilares();
+        // Las sugerencias de "similares" solo tienen sentido cuando el usuario no ha
+        // introducido un EAN: si lo introdujo, el código de barras ya desambigua el
+        // producto y verificarDuplicado() ya lo habría detectado si coincidía.
+        if (this.nuevoAlimento.codigo_barras?.trim()) {
+          this.guardarAlimento();
+        } else {
+          this.verificarSimilares();
+        }
       },
       error: () => {
         this.flash.mostrar('Error al verificar duplicados', 'error');
@@ -451,7 +458,8 @@ export class AlimentoAnadir implements OnInit {
     this.cargando = true;
     this.alimentosService.verificarSimilares({
       nombre: this.nuevoAlimento.nombre,
-      marca: this.nuevoAlimento.marca
+      marca: this.nuevoAlimento.marca,
+      categoria: this.nuevoAlimento.categoria
     }).subscribe({
       next: (data) => {
         this.alimentosSimilares = data.similares || [];
@@ -469,6 +477,16 @@ export class AlimentoAnadir implements OnInit {
         this.cargando = false;
         this.cdr.detectChanges();
       }
+    });
+  }
+
+  marcarFavoritoSimilar(sim: any) {
+    this.alimentosService.toggleFavorito(sim.id).subscribe({
+      next: (res) => {
+        sim.favorito = res.alimento.favorito;
+        this.cdr.detectChanges();
+      },
+      error: () => this.flash.mostrar('Error al actualizar favorito', 'error')
     });
   }
 

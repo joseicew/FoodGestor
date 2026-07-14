@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime
+import json
 
 
 racion_alimentos = db.Table(
@@ -17,6 +18,8 @@ class Racion(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False, index=True)
     nombre = db.Column(db.String(255), nullable=False)
     descripcion = db.Column(db.Text, default='')
+    categoria = db.Column(db.String(20), nullable=True)  # legado, ya no se usa (ver categorias)
+    categorias = db.Column(db.Text, default='[]')  # JSON array: desayuno, almuerzo, comida, merienda, cena
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -26,6 +29,15 @@ class Racion(db.Model):
         lazy='select',
         backref=db.backref('raciones', lazy='select')
     )
+
+    def get_categorias(self):
+        try:
+            return json.loads(self.categorias) if self.categorias else []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def set_categorias(self, categorias):
+        self.categorias = json.dumps(categorias) if isinstance(categorias, list) else '[]'
 
     def to_dict(self):
         from sqlalchemy import text
@@ -71,6 +83,7 @@ class Racion(db.Model):
             'id': self.id,
             'nombre': self.nombre,
             'descripcion': self.descripcion,
+            'categorias': self.get_categorias(),
             'alimentos': alimentos_list,
             'totales': {
                 'calorias': round(total_calorias, 2),
