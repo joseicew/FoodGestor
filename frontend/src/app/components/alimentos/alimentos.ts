@@ -34,6 +34,8 @@ export class Alimentos implements OnInit {
 
   terminoBusqueda = '';
   categoriaFiltro = '';
+  ocultarAlergicos = false;
+  ocultarNoDeseados = false;
 
   alergenosDelUsuario: string[] = [];
   ingredientesNoDeseadosUsuario: number[] = [];
@@ -140,11 +142,19 @@ export class Alimentos implements OnInit {
     if (this.categoriaFiltro) {
       resultado = resultado.filter(a => a.categoria === this.categoriaFiltro);
     }
+    if (this.ocultarAlergicos) {
+      resultado = resultado.filter(a => !this.tieneAlergiaUsuario(a));
+    }
+    if (this.ocultarNoDeseados) {
+      resultado = resultado.filter(a => !this.tieneIngNoDeseadoUsuario(a));
+    }
     this.alimentosFiltrados = resultado;
   }
 
   onTermino(valor: string) { this.terminoBusqueda = valor; this.buscarAlimento(); }
   onCategoria(valor: string) { this.categoriaFiltro = valor; this.buscarAlimento(); }
+  onOcultarAlergicos(valor: boolean) { this.ocultarAlergicos = valor; this.buscarAlimento(); }
+  onOcultarNoDeseados(valor: boolean) { this.ocultarNoDeseados = valor; this.buscarAlimento(); }
 
   // ── Pestañas ──
   cambiarPanel(panel: 'buscar' | 'favoritos' | 'actualizar' | 'sugerir') {

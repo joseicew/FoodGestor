@@ -14,4 +14,13 @@
       </select>
     </div>
   }
+
+  <div class="filtros-toggles">
+    <button type="button" class="toggle-chip" [class.active]="ocultarAlergicos" (click)="toggleOcultarAlergicos()">
+      🚫 Ocultar alérgicos
+    </button>
+    <button type="button" class="toggle-chip" [class.active]="ocultarNoDeseados" (click)="toggleOcultarNoDeseados()">
+      🚫 Ocultar no deseados
+    </button>
+  </div>
 </div>

@@ -15,9 +15,13 @@ export class AlimentoFiltros {
   @Input() categoria = '';
   @Input() mostrarCategoria = true;
   @Input() placeholder = '🔍 Buscar por nombre, marca...';
+  @Input() ocultarAlergicos = false;
+  @Input() ocultarNoDeseados = false;
 
   @Output() terminoChange = new EventEmitter<string>();
   @Output() categoriaChange = new EventEmitter<string>();
+  @Output() ocultarAlergicosChange = new EventEmitter<boolean>();
+  @Output() ocultarNoDeseadosChange = new EventEmitter<boolean>();
 
   onTermino(valor: string) {
     this.termino = valor;
@@ -27,5 +31,15 @@ export class AlimentoFiltros {
   onCategoria(valor: string) {
     this.categoria = valor;
     this.categoriaChange.emit(valor);
+  }
+
+  toggleOcultarAlergicos() {
+    this.ocultarAlergicos = !this.ocultarAlergicos;
+    this.ocultarAlergicosChange.emit(this.ocultarAlergicos);
+  }
+
+  toggleOcultarNoDeseados() {
+    this.ocultarNoDeseados = !this.ocultarNoDeseados;
+    this.ocultarNoDeseadosChange.emit(this.ocultarNoDeseados);
   }
 }

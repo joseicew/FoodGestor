@@ -31,8 +31,12 @@
         [categorias]="categorias"
         [termino]="terminoBusqueda"
         [categoria]="categoriaFiltro"
+        [ocultarAlergicos]="ocultarAlergicos"
+        [ocultarNoDeseados]="ocultarNoDeseados"
         (terminoChange)="onTermino($event)"
-        (categoriaChange)="onCategoria($event)">
+        (categoriaChange)="onCategoria($event)"
+        (ocultarAlergicosChange)="onOcultarAlergicos($event)"
+        (ocultarNoDeseadosChange)="onOcultarNoDeseados($event)">
       </app-alimento-filtros>
 
       <app-alimento-lista
@@ -149,9 +153,13 @@
         [categorias]="categorias"
         [termino]="terminoBusqueda"
         [categoria]="categoriaFiltro"
+        [ocultarAlergicos]="ocultarAlergicos"
+        [ocultarNoDeseados]="ocultarNoDeseados"
         placeholder="🔍 Buscar alimento..."
         (terminoChange)="onTermino($event)"
-        (categoriaChange)="onCategoria($event)">
+        (categoriaChange)="onCategoria($event)"
+        (ocultarAlergicosChange)="onOcultarAlergicos($event)"
+        (ocultarNoDeseadosChange)="onOcultarNoDeseados($event)">
       </app-alimento-filtros>
 
       <app-alimento-lista
