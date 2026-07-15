@@ -8,7 +8,7 @@
 }
 
 html, body {
-  overflow-x: hidden;
+  overflow: hidden;
   width: 100%;
   max-width: 100vw;
 }
@@ -22,9 +22,7 @@ html, body {
 }
 
 /* Safe area for iPhone notch:
-   se aplica en .app-container (height:100dvh, border-box) para que el
-   padding quede DENTRO del alto del viewport y no provoque scroll de página.
-   Antes estaba en `html`, que al sumarse a height:100%/100dvh desbordaba ~16px. */
+   se aplica dentro de .content (padding-top), no aquí en html/body. */
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
