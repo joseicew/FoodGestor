@@ -29,6 +29,7 @@
 .bottom-nav {
   flex-shrink: 0;
   display: flex;
+  align-items: center;
   background: var(--bg-surface);
   border-top: 1px solid var(--border-color);
   /* min-height (no height fijo): con box-sizing:border-box, un height fijo
@@ -36,8 +37,11 @@
      sumarlo, dejando ~31px para icono+etiqueta y recortando las etiquetas. */
   min-height: 65px;
   /* El nav ocupa espacio real en el layout (ya no es fixed), así .content
-     nunca se solapa con él; esto solo añade el hueco del home indicator. */
-  padding-bottom: env(safe-area-inset-bottom);
+     nunca se solapa con él. padding-top pequeño para que icono+etiqueta no
+     queden pegados al borde superior (se veía "descentrado" con solo
+     padding-bottom); el hueco real del home indicator sigue abajo, fuera
+     de la zona de toque, como recomienda Apple. */
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
   z-index: 100;
   transition: background-color 0.3s ease;
 }
