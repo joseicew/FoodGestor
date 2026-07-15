@@ -145,21 +145,6 @@
       }
     </div>
 
-    <!-- Seguridad: acceso rápido con Face ID/Touch ID -->
-    @if (biometriaDisponible) {
-      <div class="perfil-info-card">
-        <h3>🔐 Seguridad</h3>
-        <div class="dato-inline-row">
-          <div class="dato-label-inline">Acceso rápido con {{ etiquetaBiometria }}</div>
-          @if (biometriaActivada) {
-            <button class="btn-edit-icon" (click)="abrirDesactivarBiometria()" title="Desactivar">🗑️</button>
-          } @else {
-            <div class="dato-valor-inline" style="color:#999;font-size:12px;">Se activa al iniciar sesión</div>
-          }
-        </div>
-      </div>
-    }
-
   } @else {
     <!-- VISTA DE EDICIÓN -->
     <div class="perfil-edicion-card">
@@ -214,6 +199,18 @@
               />
             </div>
           </div>
+
+          <!-- Seguridad: acceso rápido con Face ID/Touch ID -->
+          @if (biometriaDisponible) {
+            <div class="dato-inline-row">
+              <div class="dato-label-inline">🔐 Acceso rápido con {{ etiquetaBiometria }}</div>
+              @if (biometriaActivada) {
+                <button type="button" class="btn-edit-icon" (click)="abrirDesactivarBiometria()" [disabled]="cargando" title="Desactivar">🗑️</button>
+              } @else {
+                <div class="dato-valor-inline" style="color:#999;font-size:12px;">Se activa al iniciar sesión</div>
+              }
+            </div>
+          }
         </div>
 
         <!-- OBJETIVOS Y ACTIVIDAD -->
