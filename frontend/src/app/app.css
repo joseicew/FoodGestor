@@ -44,10 +44,13 @@
      sumarlo, dejando ~31px para icono+etiqueta y recortando las etiquetas. */
   min-height: 65px;
   /* El nav ocupa espacio real en el layout (ya no es fixed), así .content
-     nunca se solapa con él. Padding simétrico arriba y abajo (mismo valor
-     en ambos lados) para que icono+etiqueta queden centrados en el alto
-     total de la barra, incluyendo el hueco del home indicator. */
-  padding: max(8px, env(safe-area-inset-bottom)) 0;
+     nunca se solapa con él. padding-bottom asimétrico (igual al safe-area):
+     iOS reserva esa franja inferior para su propio gesto de "ir a inicio" y
+     puede interceptar los toques ahí, así que icono+etiqueta deben quedar
+     FUERA de esa zona (por eso no se centran en el alto total de la barra,
+     aunque visualmente parezca que están "subidos" — es el mismo patrón que
+     usan todas las apps nativas de iOS). */
+  padding: 10px 0 max(10px, env(safe-area-inset-bottom));
   z-index: 100;
   transition: background-color 0.3s ease;
 }
