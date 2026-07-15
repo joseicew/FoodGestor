@@ -43,11 +43,15 @@
   transition: background-color 0.3s ease;
 }
 
-/* El <a> es SOLO la celda táctil: ocupa toda su columna de la barra, sin
-   padding ni layout propio. Todo el diseño vive en el div interior. */
+/* El <a> es la celda táctil completa: ocupa toda su columna de la barra.
+   El hueco del safe-area (gesto de inicio de iOS) vive AQUÍ como padding,
+   así sigue siendo parte del área táctil pero queda fuera del div de diseño:
+   en esa franja inferior iOS prioriza su gesto y retiene los toques del
+   WKWebView, por lo que icono+etiqueta deben quedar POR ENCIMA de ella. */
 .nav-item {
   flex: 1;
   display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
   text-decoration: none;
   color: var(--text-secondary);
   transition: color 0.2s;
@@ -56,15 +60,9 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* El div interior lleva el diseño (icono+etiqueta centrados y el hueco del
-   safe-area). pointer-events:none (se hereda a los spans) lo hace transparente
-   al toque: el <a> padre es siempre quien lo recibe, toques donde toques.
-
-   El padding-bottom SUMA un extra al safe-area: en la franja inferior de
-   la pantalla iOS prioriza su gesto de inicio y retiene los toques del
-   WKWebView, así que la etiqueta de texto (que queda más abajo que el
-   icono) debe quedar claramente POR ENCIMA de esa zona — si se apoya justo
-   en el borde del safe-area, el icono responde pero el texto no. */
+/* El div interior lleva el diseño: icono+etiqueta centrados, con el mismo
+   margen arriba y abajo. pointer-events:none (se hereda a los spans) lo hace
+   transparente al toque: el <a> padre es siempre quien lo recibe. */
 .nav-item-inner {
   flex: 1;
   display: flex;
@@ -72,7 +70,7 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
-  padding: 8px 0 calc(max(8px, env(safe-area-inset-bottom)) + 10px);
+  padding: 10px 0;
   pointer-events: none;
 }
 
