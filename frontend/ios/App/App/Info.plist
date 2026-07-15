@@ -31,6 +31,8 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>FoodGestor usa la cámara para escanear etiquetas y códigos de barras de los alimentos.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>FoodGestor usa Face ID para acelerar el acceso desbloqueando tu sesión guardada.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>FoodGestor accede a tus fotos para leer etiquetas y códigos de barras de los alimentos.</string>
 	<key>UILaunchStoryboardName</key>

@@ -145,6 +145,21 @@
       }
     </div>
 
+    <!-- Seguridad: acceso rápido con Face ID/Touch ID -->
+    @if (biometriaDisponible) {
+      <div class="perfil-info-card">
+        <h3>🔐 Seguridad</h3>
+        <div class="dato-inline-row">
+          <div class="dato-label-inline">Acceso rápido con {{ etiquetaBiometria }}</div>
+          @if (biometriaActivada) {
+            <button class="btn-edit-icon" (click)="abrirDesactivarBiometria()" title="Desactivar">🗑️</button>
+          } @else {
+            <div class="dato-valor-inline" style="color:#999;font-size:12px;">Se activa al iniciar sesión</div>
+          }
+        </div>
+      </div>
+    }
+
   } @else {
     <!-- VISTA DE EDICIÓN -->
     <div class="perfil-edicion-card">
@@ -490,6 +505,20 @@
         <div class="logout-modal-actions">
           <button class="btn-cancel" (click)="cerrarLogout()">Cancelar</button>
           <button class="btn-confirm" (click)="hacerLogout()">Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal desactivar acceso rápido -->
+  @if (confirmarDesactivarBiometria) {
+    <div class="modal-overlay" (click)="cerrarDesactivarBiometria()">
+      <div class="logout-modal" (click)="$event.stopPropagation()">
+        <h3>¿Desactivar {{ etiquetaBiometria }}?</h3>
+        <p>Se borrarán las credenciales guardadas en este dispositivo. La próxima vez tendrás que iniciar sesión con tu email y contraseña.</p>
+        <div class="logout-modal-actions">
+          <button class="btn-cancel" (click)="cerrarDesactivarBiometria()">Cancelar</button>
+          <button class="btn-confirm" (click)="desactivarBiometria()">Desactivar</button>
         </div>
       </div>
     </div>

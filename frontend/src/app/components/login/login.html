@@ -8,6 +8,13 @@
 
     <app-mensaje-flash />
 
+    @if (mostrarBotonBiometria) {
+      <button type="button" class="btn-biometria" (click)="entrarConBiometria()" [disabled]="cargando">
+        {{ iconoBiometria }} Entrar con {{ etiquetaBiometria }}
+      </button>
+      <div class="separador-o"><span>o con tu email</span></div>
+    }
+
     <form (ngSubmit)="login()" class="form">
       <div class="form-group">
         <label for="email">Email</label>
@@ -161,6 +168,28 @@
           <button class="btn-primary" (click)="irARegistro()">
             Crear nueva cuenta
           </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Activar acceso rápido con biometría -->
+  @if (mostrarModalActivarBiometria) {
+    <div class="modal-overlay" (click)="rechazarBiometria()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ iconoBiometria }} Acceso rápido</h2>
+          <button class="btn-close" (click)="rechazarBiometria()">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <p>¿Quieres usar {{ etiquetaBiometria }} para entrar más rápido la próxima vez?</p>
+          <p style="font-size:12px;color:#999">Tus credenciales se guardan cifradas en este dispositivo y solo se usan tras confirmar tu identidad con {{ etiquetaBiometria }}.</p>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-secondary" (click)="rechazarBiometria()">Ahora no</button>
+          <button class="btn-primary" (click)="activarBiometria()">Activar</button>
         </div>
       </div>
     </div>

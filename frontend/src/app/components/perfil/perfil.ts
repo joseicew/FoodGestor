@@ -10,6 +10,7 @@ import { CalendarioService } from '../../services/calendario';
 import { AutoSyncService } from '../../services/auto-sync';
 import { AllergensService } from '../../services/allergens';
 import { IngredientesService } from '../../services/ingredientes';
+import { BiometricAuthService } from '../../services/biometric-auth';
 
 @Component({
   selector: 'app-perfil',
@@ -68,6 +69,12 @@ export class Perfil implements OnInit {
   totalGrasas: number = 0;
   totalAzucares: number = 0;
 
+  // Acceso rápido con Face ID/Touch ID
+  biometriaDisponible = false;
+  biometriaActivada = false;
+  etiquetaBiometria = 'Face ID';
+  confirmarDesactivarBiometria = false;
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -76,7 +83,8 @@ export class Perfil implements OnInit {
     private calendarioService: CalendarioService,
     private autoSyncService: AutoSyncService,
     private allergensService: AllergensService,
-    private ingredientesService: IngredientesService
+    private ingredientesService: IngredientesService,
+    private biometricAuthService: BiometricAuthService
   ) {}
 
   ngOnInit(): void {
@@ -111,6 +119,32 @@ export class Perfil implements OnInit {
 
     // Iniciar verificación periódica de cambios
     this.autoSyncService.iniciarVerificacionPeriodica();
+
+    this.comprobarBiometria();
+  }
+
+  private async comprobarBiometria(): Promise<void> {
+    this.biometriaDisponible = await this.biometricAuthService.disponible();
+    if (!this.biometriaDisponible) return;
+    this.etiquetaBiometria = await this.biometricAuthService.etiqueta();
+    this.biometriaActivada = await this.biometricAuthService.hayCredencialesGuardadas();
+    this.cdr.markForCheck();
+  }
+
+  abrirDesactivarBiometria(): void {
+    this.confirmarDesactivarBiometria = true;
+  }
+
+  cerrarDesactivarBiometria(): void {
+    this.confirmarDesactivarBiometria = false;
+  }
+
+  async desactivarBiometria(): Promise<void> {
+    await this.biometricAuthService.borrarCredenciales();
+    this.biometriaActivada = false;
+    this.confirmarDesactivarBiometria = false;
+    this.flash.mostrar(`Acceso rápido con ${this.etiquetaBiometria} desactivado`, 'exito');
+    this.cdr.markForCheck();
   }
 
   cargarAlergenos(): void {

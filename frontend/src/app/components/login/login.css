@@ -83,6 +83,46 @@
   font-weight: 600;
 }
 
+.btn-biometria {
+  width: 100%;
+  padding: 12px 16px;
+  background: #fff;
+  color: #2d2d2d;
+  border: 1.5px solid #A4C639;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.btn-biometria:hover:not(:disabled) {
+  background: rgba(164, 198, 57, 0.08);
+}
+
+.btn-biometria:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.separador-o {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  color: #999;
+  font-size: 12px;
+}
+
+.separador-o::before,
+.separador-o::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e8e8e8;
+}
+
 .form {
   display: flex;
   flex-direction: column;
