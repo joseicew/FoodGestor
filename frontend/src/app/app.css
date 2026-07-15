@@ -47,17 +47,26 @@
   /* El padding (incluido el hueco del safe-area) va AQUÍ, en el propio <a>,
      no en .bottom-nav: así el elemento clicable ocupa TODA la columna de
      arriba a abajo (antes solo era clicable el pequeño recuadro alrededor
-     de icono+etiqueta, y el resto de la barra visible no respondía al toque). */
+     de icono+etiqueta, y el resto de la barra visible no respondía al toque).
+
+     El padding-bottom SUMA un extra al safe-area: en la franja inferior de
+     la pantalla iOS prioriza su gesto de inicio y retiene los toques del
+     WKWebView, así que la etiqueta de texto (que queda más abajo que el
+     icono) debe quedar claramente POR ENCIMA de esa zona — si se apoya justo
+     en el borde del safe-area, el icono responde pero el texto no. */
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px 0 max(10px, env(safe-area-inset-bottom));
+  padding: 8px 0 calc(max(8px, env(safe-area-inset-bottom)) + 10px);
   text-decoration: none;
   color: var(--text-secondary);
   gap: 3px;
   transition: color 0.2s;
+  /* Sin retardo de 300ms por posible doble-tap: el toque navega al instante */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .nav-item.active {
