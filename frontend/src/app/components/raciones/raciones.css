@@ -24,8 +24,11 @@
   z-index: 900;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 14px 20px;
+  padding: 16px 22px;
+  min-width: 56px;
+  min-height: 56px;
   border: none;
   border-radius: 30px;
   background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
@@ -39,12 +42,12 @@
 
 .fab-button:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5); }
 .fab-button:active { transform: translateX(-50%) scale(0.95); }
-.fab-icon { font-size: 18px; line-height: 1; }
+.fab-icon { font-size: 24px; line-height: 1; }
 .fab-texto { white-space: nowrap; }
 
 @media (max-width: 480px) {
   .fab-texto { display: none; }
-  .fab-button { padding: 16px; border-radius: 50%; }
+  .fab-button { padding: 18px; border-radius: 50%; }
 }
 
 /* ── Panel toolbar ── */
