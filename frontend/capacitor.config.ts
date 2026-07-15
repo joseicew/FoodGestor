@@ -10,7 +10,12 @@ const config: CapacitorConfig = {
     // cleartext: true,
   },
   ios: {
-    contentInset: 'automatic',
+    // 'never': el webview ocupa la pantalla completa, borde a borde. Con
+    // 'automatic', iOS encogía el contenido dejando una franja inferior
+    // muerta (no reaccionaba al toque) y env(safe-area-inset-bottom)
+    // devolvía 0, rompiendo los ajustes CSS del safe-area. Los huecos del
+    // notch/home indicator los gestiona el CSS via viewport-fit=cover + env().
+    contentInset: 'never',
   },
 };
 
