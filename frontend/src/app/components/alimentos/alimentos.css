@@ -226,10 +226,13 @@
   100% { transform: translateX(400%); }
 }
 
-/* ── FAB Añadir ── */
+/* ── FAB Añadir ──
+   Mismo tamaño/posición en Alimentos y Raciones (ver raciones.css). bottom
+   usa env(safe-area-inset-bottom) para dejar siempre el mismo hueco por
+   encima de la barra de navegación, sea cual sea el iPhone. */
 .fab-button {
   position: fixed;
-  bottom: 80px;
+  bottom: calc(90px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   z-index: 900;
@@ -249,6 +252,7 @@
 }
 
 .fab-button:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5); }
+.fab-button:active { transform: translateX(-50%) scale(0.95); }
 .fab-icon { font-size: 18px; line-height: 1; }
 .fab-texto { white-space: nowrap; }
 

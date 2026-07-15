@@ -12,46 +12,40 @@
 /* .spinner, .spinner-sm, @keyframes spin → global styles.css */
 /* .obligatorio → global styles.css */
 
-/* ── FAB ── */
+/* ── FAB Añadir ──
+   Mismo tamaño/posición que el de Alimentos (ver alimentos.css). bottom
+   usa env(safe-area-inset-bottom) para dejar siempre el mismo hueco por
+   encima de la barra de navegación, sea cual sea el iPhone. */
 .fab-button {
   position: fixed;
-  bottom: 69px;
+  bottom: calc(90px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
-  width: auto;
-  padding: 10px 20px;
-  border-radius: 50px;
-  background: #4CAF50;
-  color: #fff;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
+  z-index: 900;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-  transition: all 0.3s;
-  z-index: 1000;
-  white-space: nowrap;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.4);
+  transition: all 0.2s;
 }
 
-.fab-icon { font-size: 18px; }
+.fab-button:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5); }
+.fab-button:active { transform: translateX(-50%) scale(0.95); }
+.fab-icon { font-size: 18px; line-height: 1; }
+.fab-texto { white-space: nowrap; }
 
-.fab-texto { display: none; }
-
-@media (min-width: 480px) {
-  .fab-texto { display: inline; }
+@media (max-width: 480px) {
+  .fab-texto { display: none; }
+  .fab-button { padding: 16px; border-radius: 50%; }
 }
-
-.fab-button:hover {
-  background: #45a049;
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.5);
-  transform: scale(1.1);
-}
-
-.fab-button:active { transform: scale(0.95); }
 
 /* ── Panel toolbar ── */
 .panel-toolbar {
