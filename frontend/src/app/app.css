@@ -36,32 +36,24 @@
 .bottom-nav {
   flex-shrink: 0;
   display: flex;
-  align-items: center;
   background: var(--bg-surface);
   border-top: 1px solid var(--border-color);
-  /* min-height (no height fijo): con box-sizing:border-box, un height fijo
-     + padding-bottom del safe-area restaba ese hueco al contenido en vez de
-     sumarlo, dejando ~31px para icono+etiqueta y recortando las etiquetas. */
   min-height: 65px;
-  /* El nav ocupa espacio real en el layout (ya no es fixed), así .content
-     nunca se solapa con él. padding-bottom asimétrico (igual al safe-area):
-     iOS reserva esa franja inferior para su propio gesto de "ir a inicio" y
-     puede interceptar los toques ahí, así que icono+etiqueta deben quedar
-     FUERA de esa zona (por eso no se centran en el alto total de la barra,
-     aunque visualmente parezca que están "subidos" — es el mismo patrón que
-     usan todas las apps nativas de iOS). */
-  padding: 10px 0 max(10px, env(safe-area-inset-bottom));
   z-index: 100;
   transition: background-color 0.3s ease;
 }
 
-
 .nav-item {
+  /* El padding (incluido el hueco del safe-area) va AQUÍ, en el propio <a>,
+     no en .bottom-nav: así el elemento clicable ocupa TODA la columna de
+     arriba a abajo (antes solo era clicable el pequeño recuadro alrededor
+     de icono+etiqueta, y el resto de la barra visible no respondía al toque). */
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 10px 0 max(10px, env(safe-area-inset-bottom));
   text-decoration: none;
   color: var(--text-secondary);
   gap: 3px;
