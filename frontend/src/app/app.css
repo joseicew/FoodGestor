@@ -64,6 +64,15 @@
   color: var(--primary);
 }
 
+/* Icono y etiqueta nunca deben "quedarse" con el toque: así el <a> padre
+   es SIEMPRE quien lo recibe, tanto si tocas el icono como el texto
+   (en iOS a veces un <span> de texto hijo capta el toque de forma distinta
+   al resto del enlace, dando la sensación de que "solo el icono funciona"). */
+.nav-item .nav-icon,
+.nav-item .nav-label {
+  pointer-events: none;
+}
+
 .nav-icon {
   font-size: 22px;
   line-height: 1;
