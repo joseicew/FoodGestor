@@ -124,6 +124,7 @@ def create_app():
     from app.routes.calendario import calendario_bp
     from app.routes.test_webhook import test_webhook_bp
     from app.routes.admin import admin_bp
+    from app.routes.limpiezas import limpiezas_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(alimentos_bp)
     app.register_blueprint(ingredientes_bp)
@@ -133,6 +134,7 @@ def create_app():
     app.register_blueprint(calendario_bp)
     app.register_blueprint(test_webhook_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(limpiezas_bp)
 
     # Crear tablas y migrar columnas nuevas
     with app.app_context():

@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 export class AuthInterceptor implements HttpInterceptor {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cerrandoSesionPorConexion = false;
 
   constructor() {
     console.log('[AuthInterceptor] Inicializado');
@@ -56,6 +57,18 @@ export class AuthInterceptor implements HttpInterceptor {
           console.warn(`[AuthInterceptor] 401 Unauthorized - logout y redirigiendo a login`);
           this.authService.logout();
           this.router.navigate(['/login']);
+        } else if (token && (error.status === 0 || error.status >= 500)) {
+          // Backend/BD inaccesible en una sesión ya autenticada: forzar logout
+          // para evitar que la app siga operando con datos a medias o errores
+          // en cascada. status 0 = sin red/servidor caído; 5xx = fallo del backend
+          // (normalmente la conexión a la base de datos, ver errorhandler global).
+          if (!this.cerrandoSesionPorConexion) {
+            this.cerrandoSesionPorConexion = true;
+            console.warn(`[AuthInterceptor] Sin acceso al servidor/BD (status ${error.status}) - cerrando sesión`);
+            this.authService.logout();
+            this.router.navigate(['/login'], { queryParams: { motivo: 'sin_conexion' } });
+            setTimeout(() => { this.cerrandoSesionPorConexion = false; }, 3000);
+          }
         }
         return throwError(() => error);
       })

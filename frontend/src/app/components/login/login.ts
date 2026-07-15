@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { timeout } from 'rxjs/operators';
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { AuthService } from '../../services/auth';
@@ -47,10 +47,20 @@ export class LoginComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private syncService: SyncService,
     private router: Router,
+    private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    // Si nos han redirigido aquí por pérdida de conexión con el servidor/BD
+    // (ver AuthInterceptor), avisar al usuario de por qué se cerró su sesión
+    if (this.route.snapshot.queryParamMap.get('motivo') === 'sin_conexion') {
+      setTimeout(() => {
+        this.flash?.mostrar('⚠️ Se cerró tu sesión: no se pudo conectar con el servidor. Vuelve a iniciar sesión cuando tengas conexión.', 'error');
+        this.cdr.detectChanges();
+      });
+    }
+
     // Si ya está autenticado, redirigir al perfil
     if (this.authService.estaAutenticado()) {
       this.router.navigate(['/perfil']);

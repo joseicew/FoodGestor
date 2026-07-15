@@ -24,8 +24,7 @@ import { AlimentoDetalle, CATEGORIAS } from './detalle/alimento-detalle';
 export class Alimentos implements OnInit {
   @ViewChild(MensajeFlash) flash!: MensajeFlash;
 
-  activePanel: 'buscar' | 'favoritos' | 'actualizar' | 'sugerir' = 'buscar';
-  esAdmin = false;
+  activePanel: 'buscar' | 'favoritos' | 'sugerir' = 'buscar';
 
   readonly categorias = CATEGORIAS;
 
@@ -61,14 +60,6 @@ export class Alimentos implements OnInit {
   sugerirCargando = false;
   private sugerirCalculadoUnaVez = false;
 
-  // Verificación de ingredientes
-  ingredientesAVerificar: any[] = [];
-  totalIngredientesVerificar = 0;
-  mostrarModalVerificarIngredientes = false;
-  ingredienteActualVerificacion: any = null;
-  alergenoDelIngrediente = '';
-  alimentoSeleccionadoAlergenos: any = null;
-
   constructor(
     private alimentosService: AlimentosService,
     private ingredientesService: IngredientesService,
@@ -90,7 +81,6 @@ export class Alimentos implements OnInit {
       this.ingredientesService.cargarTodosLosIngredientes().subscribe();
     }
     this.cargarAlimentos();
-    this.actualizarIngredientesPendientes();
     this.cargarAlergenosUsuario();
   }
 
@@ -159,7 +149,7 @@ export class Alimentos implements OnInit {
   onOcultarNoDeseados(valor: boolean) { this.ocultarNoDeseados = valor; this.buscarAlimento(); }
 
   // ── Pestañas ──
-  cambiarPanel(panel: 'buscar' | 'favoritos' | 'actualizar' | 'sugerir') {
+  cambiarPanel(panel: 'buscar' | 'favoritos' | 'sugerir') {
     this.activePanel = panel;
     this.terminoBusqueda = '';
     this.categoriaFiltro = '';
@@ -367,7 +357,6 @@ export class Alimentos implements OnInit {
       next: (perfil) => {
         this.alergenosDelUsuario = perfil.alergenos_seleccionados || [];
         this.ingredientesNoDeseadosUsuario = perfil.ingredientes_no_deseados || [];
-        this.esAdmin = perfil.rol === 'admin' || perfil.rol === 'superadmin';
         this.perfilCargado = true;
         this.cdr.detectChanges();
       },
@@ -397,134 +386,6 @@ export class Alimentos implements OnInit {
       return id != null && this.ingredientesNoDeseadosUsuario.includes(id);
     });
   };
-
-  // ── Verificación de ingredientes ──
-  actualizarIngredientesPendientes() {
-    this.alimentosService.obtenerIngredientesSinVerificar().subscribe({
-      next: (ingredientes) => {
-        this.ingredientesAVerificar = ingredientes || [];
-        this.totalIngredientesVerificar = this.ingredientesAVerificar.length;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.ingredientesAVerificar = [];
-        this.totalIngredientesVerificar = 0;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  abrirModalVerificarIngredientes() {
-    this.alimentosService.obtenerIngredientesSinVerificar().subscribe({
-      next: (ingredientes) => {
-        this.ingredientesAVerificar = ingredientes || [];
-        this.totalIngredientesVerificar = this.ingredientesAVerificar.length;
-
-        if (this.ingredientesAVerificar.length > 0) {
-          this.prepararIngredienteVerificacion(this.ingredientesAVerificar[0]);
-          this.mostrarModalVerificarIngredientes = true;
-          this.cdr.markForCheck();
-        } else {
-          this.flash.mostrar('No hay ingredientes para verificar', 'exito');
-        }
-      },
-      error: () => this.flash.mostrar('Error al cargar ingredientes pendientes', 'error')
-    });
-  }
-
-  private prepararIngredienteVerificacion(base: any) {
-    const ingrediente = { ...base };
-    if (typeof ingrediente.alergenos_categorias === 'string') {
-      try { ingrediente.alergenos_categorias = JSON.parse(ingrediente.alergenos_categorias); }
-      catch { ingrediente.alergenos_categorias = []; }
-    }
-    this.ingredienteActualVerificacion = ingrediente;
-    this.alergenoDelIngrediente = ingrediente.alergenos_categorias && ingrediente.alergenos_categorias.length > 0
-      ? ingrediente.alergenos_categorias[0] : '';
-
-    const alergenosEnCache = this.allergensService.obtenerAlergenosSync();
-    this.alimentoSeleccionadoAlergenos = {
-      ...ingrediente,
-      categorias_alergenos: alergenosEnCache.length > 0 ? alergenosEnCache : []
-    };
-    if (alergenosEnCache.length === 0) {
-      this.cargarCategoriasAlergenos();
-    }
-  }
-
-  cerrarModalVerificarIngredientes() {
-    this.mostrarModalVerificarIngredientes = false;
-    this.ingredienteActualVerificacion = null;
-    this.ingredientesAVerificar = [];
-    this.actualizarIngredientesPendientes();
-    this.cargarAlimentos();
-  }
-
-  cargarCategoriasAlergenos() {
-    this.alimentosService.obtenerCategoriasAlergenos().subscribe({
-      next: (data: any) => {
-        if (this.alimentoSeleccionadoAlergenos) {
-          this.alimentoSeleccionadoAlergenos.categorias_alergenos = data.categorias || [];
-        }
-      },
-      error: () => {}
-    });
-  }
-
-  asignarAlergeno() {
-    if (!this.ingredienteActualVerificacion) return;
-    this.ingredienteActualVerificacion.alergenos_categorias = this.alergenoDelIngrediente
-      ? [this.alergenoDelIngrediente] : [];
-  }
-
-  guardarIngredienteVerificado(ingrediente: any) {
-    if (!ingrediente || !ingrediente.id) {
-      this.flash.mostrar('Error: Ingrediente inválido', 'error');
-      return;
-    }
-    this.alimentosService.actualizarIngrediente(ingrediente.id, {
-      nombre: ingrediente.nombre,
-      categoria: ingrediente.categoria,
-      es_aditivo: ingrediente.es_aditivo,
-      notas: ingrediente.notas,
-      verificado: true,
-      alergenos_categorias: ingrediente.alergenos_categorias || []
-    }).subscribe({
-      next: () => {
-        this.flash.mostrar('Ingrediente verificado correctamente', 'exito');
-        this.pasarAlSiguienteIngrediente(ingrediente.id);
-      },
-      error: () => this.flash.mostrar('Error al guardar el ingrediente', 'error')
-    });
-  }
-
-  eliminarIngredienteIncorrecto(ingrediente: any) {
-    if (!ingrediente || !ingrediente.id) {
-      this.flash.mostrar('Error: Ingrediente inválido', 'error');
-      return;
-    }
-    this.alimentosService.eliminarIngrediente(ingrediente.id).subscribe({
-      next: () => {
-        this.flash.mostrar('Ingrediente eliminado correctamente', 'exito');
-        this.pasarAlSiguienteIngrediente(ingrediente.id);
-      },
-      error: () => this.flash.mostrar('Error al eliminar el ingrediente', 'error')
-    });
-  }
-
-  private pasarAlSiguienteIngrediente(ingredienteId: number) {
-    const index = this.ingredientesAVerificar.findIndex(ing => ing.id === ingredienteId);
-    if (index >= 0) this.ingredientesAVerificar.splice(index, 1);
-
-    if (this.ingredientesAVerificar.length > 0) {
-      this.prepararIngredienteVerificacion(this.ingredientesAVerificar[0]);
-    } else {
-      this.flash.mostrar('¡Todos los ingredientes han sido procesados!', 'exito');
-      this.cerrarModalVerificarIngredientes();
-    }
-    this.totalIngredientesVerificar = this.ingredientesAVerificar.length;
-    this.cdr.markForCheck();
-  }
 
   onMensajeDetalle(ev: { texto: string; tipo: 'exito' | 'error' }) {
     this.flash.mostrar(ev.texto, ev.tipo);

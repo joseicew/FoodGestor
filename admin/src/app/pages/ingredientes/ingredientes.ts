@@ -18,6 +18,12 @@ import { AlimentoModalComponent } from '../../components/alimento-modal/alimento
 
     @if (mensaje) { <div class="aviso" [class.error]="esError">{{ mensaje }}</div> }
 
+    @if (pendientesVerificar.length > 0) {
+      <button class="btn-verificar" (click)="abrirModalVerificar()">
+        ✓ Verificar ingredientes ({{ pendientesVerificar.length }})
+      </button>
+    }
+
     <div class="filtros">
       <input class="buscador" type="text" [(ngModel)]="termino" (ngModelChange)="filtrar()"
              placeholder="Buscar por nombre o categoría..." autocomplete="off" />
@@ -232,6 +238,55 @@ import { AlimentoModalComponent } from '../../components/alimento-modal/alimento
         (guardado)="onAlimentoGuardado($event)">
       </app-alimento-modal>
     }
+
+    @if (mostrarModalVerificar && ingredienteVerificando) {
+      <div class="modal-overlay" (click)="cerrarModalVerificar()">
+        <div class="card modal-box modal-verificar" (click)="$event.stopPropagation()">
+          <div class="verificar-progreso">
+            <div class="verificar-barra">
+              <div class="verificar-barra-relleno" [style.width.%]="progresoVerificacion"></div>
+            </div>
+            <span>{{ pendientesVerificar.length }} pendiente(s)</span>
+          </div>
+
+          <label class="campo">
+            <span>Ingrediente</span>
+            <input type="text" [(ngModel)]="ingredienteVerificando.nombre"
+                   [class.aditivo-input]="ingredienteVerificando.es_aditivo"
+                   placeholder="Nombre del ingrediente" />
+          </label>
+
+          <label class="campo">
+            <span>Alérgenos/Intolerancias</span>
+            @if (alergenosDisponibles.length > 0) {
+              <select [(ngModel)]="alergenoSeleccionado">
+                <option value="">-- Sin alérgeno --</option>
+                @for (a of alergenosDisponibles; track a) { <option [value]="a">{{ a }}</option> }
+              </select>
+            } @else {
+              <p class="sin-uso">Cargando alérgenos...</p>
+            }
+          </label>
+
+          <label class="check">
+            <input type="checkbox" [(ngModel)]="ingredienteVerificando.es_aditivo" /> Es un aditivo (E102, colorante, etc.)
+          </label>
+
+          <label class="campo">
+            <span>Notas</span>
+            <textarea rows="3" [(ngModel)]="ingredienteVerificando.notas" placeholder="Descripción o notas sobre el ingrediente..."></textarea>
+          </label>
+
+          <div class="confirm-acciones verificar-acciones">
+            <button class="btn" (click)="cerrarModalVerificar()" [disabled]="guardandoVerificacion">Cancelar</button>
+            <button class="btn btn-danger" (click)="eliminarDesdeVerificar()" [disabled]="guardandoVerificacion">Eliminar</button>
+            <button class="btn btn-primary" (click)="guardarVerificacion()" [disabled]="guardandoVerificacion || !ingredienteVerificando.nombre.trim()">
+              {{ guardandoVerificacion ? 'Guardando...' : 'Guardar y siguiente' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `,
   styles: [`
     .page-head { margin-bottom: 16px; }
@@ -294,6 +349,22 @@ import { AlimentoModalComponent } from '../../components/alimento-modal/alimento
     .modal-box { max-width: 420px; width: 100%; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
     .modal-box h3 { font-size: 17px; font-weight: 700; color: var(--danger); }
     .modal-box p { margin: 0; font-size: 14px; color: var(--text-muted); }
+
+    .btn-verificar {
+      display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; margin-bottom: 14px;
+      background: var(--primary); color: #fff; border: none; padding: 10px 16px; border-radius: 8px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-verificar:hover { background: var(--primary-dark); }
+
+    .modal-verificar { max-width: 480px; max-height: 90vh; overflow-y: auto; }
+    .verificar-progreso { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-muted); }
+    .verificar-barra { flex: 1; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+    .verificar-barra-relleno { height: 100%; background: var(--primary); transition: width 0.3s; }
+    .aditivo-input { background: var(--warning-soft) !important; border-color: var(--warning) !important; }
+    .verificar-acciones { justify-content: stretch; }
+    .verificar-acciones .btn { flex: 1; }
+
     @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .filtros { flex-wrap: wrap; } }
   `]
 })
@@ -334,6 +405,15 @@ export class IngredientesComponent implements OnInit {
   // Categorías oficiales (ALIMENTOS_CATEGORIAS del backend), las mismas que la app móvil
   categorias: string[] = [];
 
+  // ── Verificar ingredientes pendientes (igual que la pestaña "Actualizar" de la app) ──
+  alergenosDisponibles: string[] = [];
+  pendientesVerificar: any[] = [];
+  mostrarModalVerificar = false;
+  ingredienteVerificando: any = null;
+  alergenoSeleccionado = '';
+  guardandoVerificacion = false;
+  private totalAVerificarInicial = 0;
+
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
@@ -342,9 +422,15 @@ export class IngredientesComponent implements OnInit {
       error: () => {}
     });
 
+    this.api.listarAlergenosDisponibles().subscribe({
+      next: (alergenos) => { this.alergenosDisponibles = alergenos; this.cdr.markForCheck(); },
+      error: () => {}
+    });
+
     this.api.listarIngredientes().subscribe({
       next: (data) => {
         this.todos = data.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+        this.pendientesVerificar = this.todos.filter((i) => !i.verificado);
         this.filtrar();
         this.cargando = false;
         this.cdr.markForCheck();
@@ -574,6 +660,89 @@ export class IngredientesComponent implements OnInit {
       },
       error: (err) => { this.eliminando = false; this.mostrar(err.error?.error || 'No se pudo eliminar', true); }
     });
+  }
+
+  // ── Verificar ingredientes pendientes ──
+  get progresoVerificacion(): number {
+    if (this.totalAVerificarInicial === 0) return 0;
+    return ((this.totalAVerificarInicial - this.pendientesVerificar.length) / this.totalAVerificarInicial) * 100;
+  }
+
+  abrirModalVerificar(): void {
+    if (this.pendientesVerificar.length === 0) return;
+    this.totalAVerificarInicial = this.pendientesVerificar.length;
+    this.prepararVerificacion(this.pendientesVerificar[0]);
+    this.mostrarModalVerificar = true;
+  }
+
+  cerrarModalVerificar(): void {
+    this.mostrarModalVerificar = false;
+    this.ingredienteVerificando = null;
+  }
+
+  private prepararVerificacion(ing: any): void {
+    this.ingredienteVerificando = { ...ing };
+    const alergenos = ing.alergenos_categorias || [];
+    this.alergenoSeleccionado = alergenos.length > 0 ? alergenos[0] : '';
+  }
+
+  guardarVerificacion(): void {
+    if (!this.ingredienteVerificando) return;
+    const id = this.ingredienteVerificando.id;
+    const nombre = this.ingredienteVerificando.nombre.trim();
+    this.guardandoVerificacion = true;
+
+    this.api.actualizarIngrediente(id, {
+      nombre,
+      categoria: this.ingredienteVerificando.categoria || '',
+      es_aditivo: this.ingredienteVerificando.es_aditivo,
+      notas: this.ingredienteVerificando.notas || '',
+      verificado: true,
+      alergenos_categorias: this.alergenoSeleccionado ? [this.alergenoSeleccionado] : []
+    }).subscribe({
+      next: (res: any) => {
+        this.guardandoVerificacion = false;
+        const actualizado = res?.ingrediente || { ...this.ingredienteVerificando, verificado: true, alergenos_categorias: this.alergenoSeleccionado ? [this.alergenoSeleccionado] : [] };
+        const idx = this.todos.findIndex((i) => i.id === id);
+        if (idx !== -1) this.todos[idx] = actualizado;
+        this.mostrar(`"${nombre}" verificado`, false);
+        this.pasarSiguienteVerificacion(id);
+      },
+      error: (err) => {
+        this.guardandoVerificacion = false;
+        this.mostrar(err.error?.error || 'No se pudo guardar', true);
+      }
+    });
+  }
+
+  eliminarDesdeVerificar(): void {
+    if (!this.ingredienteVerificando) return;
+    const id = this.ingredienteVerificando.id;
+    this.guardandoVerificacion = true;
+    this.api.eliminarIngrediente(id).subscribe({
+      next: () => {
+        this.guardandoVerificacion = false;
+        this.todos = this.todos.filter((i) => i.id !== id);
+        this.mostrar('Ingrediente eliminado', false);
+        this.pasarSiguienteVerificacion(id);
+      },
+      error: (err) => {
+        this.guardandoVerificacion = false;
+        this.mostrar(err.error?.error || 'No se pudo eliminar', true);
+      }
+    });
+  }
+
+  private pasarSiguienteVerificacion(id: number): void {
+    this.pendientesVerificar = this.pendientesVerificar.filter((i) => i.id !== id);
+    this.filtrar();
+    if (this.pendientesVerificar.length > 0) {
+      this.prepararVerificacion(this.pendientesVerificar[0]);
+    } else {
+      this.mostrar('¡Todos los ingredientes han sido verificados!', false);
+      this.cerrarModalVerificar();
+    }
+    this.cdr.markForCheck();
   }
 
   // ── Ver ficha de un alimento que usa este ingrediente ──

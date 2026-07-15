@@ -3,6 +3,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from app import db
 from app.models.ingrediente import Ingrediente
+from app.models.alimento import alimento_ingrediente
 
 ingredientes_bp = Blueprint('ingredientes', __name__, url_prefix='/api/ingredientes')
 
@@ -312,24 +313,24 @@ def limpiar_ingredientes_orfanos():
     Ayuda a reducir la cantidad de ingredientes huérfanos en la BD.
     """
     try:
-        # Obtener todos los ingredientes
-        ingredientes = Ingrediente.query.all()
+        from sqlalchemy import exists
 
-        eliminar_count = 0
-        ingredientes_eliminados = []
+        # Una sola consulta NOT EXISTS: cargar todos los ingredientes y hacer
+        # lazy-load de `.alimentos` uno por uno (N+1) se volvía inviable con
+        # miles de filas contra Neon (cada lazy-load es un round-trip de red).
+        tiene_alimento = exists().where(alimento_ingrediente.c.ingrediente_id == Ingrediente.id)
+        huerfanos = Ingrediente.query.filter(~tiene_alimento).all()
 
-        for ing in ingredientes:
-            # Si el ingrediente no tiene alimentos vinculados
-            if not ing.alimentos:
-                ingredientes_eliminados.append(ing.nombre)
-                db.session.delete(ing)
-                eliminar_count += 1
+        ingredientes_eliminados = [ing.nombre for ing in huerfanos]
+        ids_eliminados = [ing.id for ing in huerfanos]
 
-        db.session.commit()
+        if ids_eliminados:
+            db.session.execute(Ingrediente.__table__.delete().where(Ingrediente.id.in_(ids_eliminados)))
+            db.session.commit()
 
         return jsonify({
-            'mensaje': f'Se eliminaron {eliminar_count} ingredientes huérfanos',
-            'cantidad_eliminados': eliminar_count,
+            'mensaje': f'Se eliminaron {len(ids_eliminados)} ingredientes huérfanos',
+            'cantidad_eliminados': len(ids_eliminados),
             'ingredientes': ingredientes_eliminados
         }), 200
 
@@ -439,20 +440,20 @@ def obtener_estadisticas_ingredientes():
     Útil para diagnosticar la base de datos.
     """
     try:
+        from sqlalchemy import exists
         from app.models.alimento import Alimento
 
         total_ingredientes = Ingrediente.query.count()
         total_alimentos = Alimento.query.count()
 
-        # Contar ingredientes huérfanos (sin alimentos)
-        ingredientes_huerfanos = []
-        for ing in Ingrediente.query.all():
-            if not ing.alimentos:
-                ingredientes_huerfanos.append({
-                    'id': ing.id,
-                    'nombre': ing.nombre,
-                    'categoria': ing.categoria
-                })
+        # Contar ingredientes huérfanos (sin alimentos): una sola consulta
+        # NOT EXISTS en vez de cargar todos los ingredientes y lazy-loadear
+        # `.alimentos` uno por uno (N+1 inviable con miles de filas en Neon).
+        tiene_alimento = exists().where(alimento_ingrediente.c.ingrediente_id == Ingrediente.id)
+        ingredientes_huerfanos = [
+            {'id': ing.id, 'nombre': ing.nombre, 'categoria': ing.categoria}
+            for ing in Ingrediente.query.filter(~tiene_alimento).all()
+        ]
 
         verificados = Ingrediente.query.filter_by(verificado=True).count()
         no_verificados = Ingrediente.query.filter_by(verificado=False).count()
@@ -461,11 +462,11 @@ def obtener_estadisticas_ingredientes():
         # Detectar posibles duplicados (mismo nombre case-insensitive)
         posibles_duplicados = []
         nombres_vistos = {}
-        for ing in Ingrediente.query.all():
-            nombre_norm = ing.nombre.lower().strip()
+        for ing_id, ing_nombre in db.session.query(Ingrediente.id, Ingrediente.nombre).all():
+            nombre_norm = ing_nombre.lower().strip()
             if nombre_norm not in nombres_vistos:
                 nombres_vistos[nombre_norm] = []
-            nombres_vistos[nombre_norm].append(ing.id)
+            nombres_vistos[nombre_norm].append(ing_id)
 
         for nombre_norm, ids in nombres_vistos.items():
             if len(ids) > 1:

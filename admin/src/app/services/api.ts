@@ -11,6 +11,14 @@ export interface UsuarioAdmin {
   rol: string;
 }
 
+export interface TipoLimpieza {
+  tipo: string;
+  nombre: string;
+  descripcion: string;
+  pendientes: number;
+  ia: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private base = environment.apiUrl;
@@ -89,5 +97,37 @@ export class ApiService {
     return this.http
       .get<{ categorias: string[] }>(`${this.base}/api/ingredientes/alimentos-categorias/disponibles`)
       .pipe(map((r) => r.categorias || []));
+  }
+
+  /** Categorías de alérgenos/intolerancias (ALERGENO_CATEGORIAS en el backend) */
+  listarAlergenosDisponibles(): Observable<string[]> {
+    return this.http
+      .get<{ categorias: string[] }>(`${this.base}/api/ingredientes/alergenos-categorias/disponibles`)
+      .pipe(map((r) => r.categorias || []));
+  }
+
+  // ── Limpiezas ──
+  listarTiposLimpieza(): Observable<TipoLimpieza[]> {
+    return this.http
+      .get<{ tipos: TipoLimpieza[] }>(`${this.base}/api/admin/limpiezas/tipos`)
+      .pipe(map((r) => r.tipos || []));
+  }
+
+  /** Lanza el agente de IA para el tipo de limpieza indicado; devuelve un job_id para sondear */
+  iniciarLimpieza(tipo: string): Observable<{ job_id: string; estado: string }> {
+    return this.http.post<{ job_id: string; estado: string }>(`${this.base}/api/admin/limpiezas/${tipo}/start`, {});
+  }
+
+  obtenerJobLimpieza(jobId: string): Observable<any> {
+    return this.http.get<any>(`${this.base}/api/admin/limpiezas/job/${jobId}`);
+  }
+
+  /** Limpiezas deterministas ya existentes (sin IA), se ejecutan de forma síncrona */
+  limpiarHuerfanos(): Observable<any> {
+    return this.http.post(`${this.base}/api/ingredientes/limpieza/orfanos`, {});
+  }
+
+  consolidarDuplicados(): Observable<any> {
+    return this.http.post(`${this.base}/api/ingredientes/limpieza/duplicados`, {});
   }
 }

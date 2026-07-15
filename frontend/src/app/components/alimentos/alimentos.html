@@ -7,12 +7,6 @@
     <button class="tab" [class.active]="activePanel === 'sugerir'" (click)="cambiarPanel('sugerir')">💡 Sugerir</button>
   </div>
 
-  @if (esAdmin) {
-    <div class="tabs">
-      <button class="tab" [class.active]="activePanel === 'actualizar'" (click)="cambiarPanel('actualizar')">🔄 Actualizar</button>
-    </div>
-  }
-
   <app-mensaje-flash />
 
   @if (cargando) {
@@ -139,40 +133,6 @@
     </div>
   }
 
-  <!-- ═══════════════ PANEL ACTUALIZAR ═══════════════ -->
-  @if (activePanel === 'actualizar') {
-    <div class="tab-panel">
-      @if (totalIngredientesVerificar > 0) {
-        <button class="btn-verificar-ingredientes" (click)="abrirModalVerificarIngredientes()" title="Verificar ingredientes sin revisar">
-          <span class="fab-icon">✓</span>
-          <span>Verificar Ingredientes ({{ totalIngredientesVerificar }})</span>
-        </button>
-      }
-
-      <app-alimento-filtros
-        [categorias]="categorias"
-        [termino]="terminoBusqueda"
-        [categoria]="categoriaFiltro"
-        [ocultarAlergicos]="ocultarAlergicos"
-        [ocultarNoDeseados]="ocultarNoDeseados"
-        placeholder="🔍 Buscar alimento..."
-        (terminoChange)="onTermino($event)"
-        (categoriaChange)="onCategoria($event)"
-        (ocultarAlergicosChange)="onOcultarAlergicos($event)"
-        (ocultarNoDeseadosChange)="onOcultarNoDeseados($event)">
-      </app-alimento-filtros>
-
-      <app-alimento-lista
-        [alimentos]="alimentosFiltrados"
-        [resaltarAlergias]="true"
-        [tieneAlergia]="tieneAlergiaUsuario"
-        [tieneIngNoDeseado]="tieneIngNoDeseadoUsuario"
-        (seleccionar)="abrirDetalle($event, true)"
-        (toggleFavorito)="toggleFavorito($event.alimento)">
-      </app-alimento-lista>
-    </div>
-  }
-
   <!-- FAB Añadir (solo en la pestaña Buscar) -->
   @if (activePanel === 'buscar') {
     <button class="fab-button" (click)="navegarAnadir()" title="Añadir nuevo alimento">
@@ -195,69 +155,4 @@
     </app-alimento-detalle>
   }
 
-  <!-- Modal: Verificación de ingredientes pendientes -->
-  @if (mostrarModalVerificarIngredientes && ingredienteActualVerificacion) {
-    <div class="modal-overlay" (click)="cerrarModalVerificarIngredientes()">
-      <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 600px; max-height: 95vh;">
-        <button class="modal-close" (click)="cerrarModalVerificarIngredientes()" style="position: absolute; top: 12px; right: 12px; z-index: 10;">✕</button>
-
-        <div class="modal-content" style="padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; max-height: calc(95vh - 40px);">
-          <div style="display: flex; gap: 8px; align-items: center; font-size: 12px; color: #666;">
-            <div style="flex: 1; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;">
-              <div style="height: 100%; background: #4CAF50; width: {{ totalIngredientesVerificar > 0 ? (((totalIngredientesVerificar - ingredientesAVerificar.length) / totalIngredientesVerificar) * 100) : 0 }}%; transition: width 0.3s;"></div>
-            </div>
-            <span>{{ ingredientesAVerificar.length }} ingredient{{ ingredientesAVerificar.length !== 1 ? 'es' : '' }} pendiente{{ ingredientesAVerificar.length !== 1 ? 's' : '' }}</span>
-          </div>
-
-          <div>
-            <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Ingrediente</label>
-            <input type="text" [(ngModel)]="ingredienteActualVerificacion.nombre"
-                   [style.background]="ingredienteActualVerificacion.es_aditivo ? '#FFF9E6' : 'white'"
-                   [style.border]="ingredienteActualVerificacion.es_aditivo ? '2px solid #FFC107' : '1px solid #ddd'"
-                   style="width: 100%; padding: 10px 12px; border-radius: 4px; font-size: 13px; box-sizing: border-box; font-weight: 600;"
-                   placeholder="Nombre del ingrediente" />
-          </div>
-
-          <div>
-            <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Alérgenos/Intolerancias</label>
-            @if (alimentoSeleccionadoAlergenos?.categorias_alergenos && alimentoSeleccionadoAlergenos.categorias_alergenos.length > 0) {
-              <select [(ngModel)]="alergenoDelIngrediente" (change)="asignarAlergeno()"
-                      style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; background: white; cursor: pointer;">
-                <option value="">-- Sin alérgeno --</option>
-                @for (alergeno of alimentoSeleccionadoAlergenos.categorias_alergenos; track alergeno) {
-                  <option [value]="alergeno">{{ alergeno }}</option>
-                }
-              </select>
-            } @else {
-              <p style="color: #999; font-size: 12px;">Cargando alérgenos...</p>
-            }
-          </div>
-
-          <div>
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
-              <input type="checkbox" [(ngModel)]="ingredienteActualVerificacion.es_aditivo"
-                     style="width: 16px; height: 16px; cursor: pointer; accent-color: #2196F3;" />
-              <span>Es un aditivo (E102, colorante, etc.)</span>
-            </label>
-          </div>
-
-          <div>
-            <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 6px;">Notas</label>
-            <textarea [(ngModel)]="ingredienteActualVerificacion.notas"
-                      placeholder="Descripción o notas sobre el ingrediente..."
-                      style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; min-height: 80px; resize: vertical; font-family: inherit;"></textarea>
-          </div>
-
-          <div style="display: flex; gap: 10px; margin-top: 8px;">
-            <button (click)="cerrarModalVerificarIngredientes()"
-                    style="flex: 1; background: #f0f0f0; color: #333; border: 1px solid #ddd; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Cancelar</button>
-            <button (click)="eliminarIngredienteIncorrecto(ingredienteActualVerificacion)"
-                    style="flex: 1; background: #ff6b6b; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Eliminar</button>
-            <button (click)="guardarIngredienteVerificado(ingredienteActualVerificacion)"
-                    style="flex: 1; background: #4CAF50; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Guardar y Siguiente</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  }
 </div>

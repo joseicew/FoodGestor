@@ -90,10 +90,6 @@ export class AlimentosService {
     return this.http.post<any>(`${API}/${id}/actualizar-codigo`, { codigo_barras }, this.getHeaders());
   }
 
-  obtenerCategoriasAlergenos(): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}/api/ingredientes/alergenos-categorias/disponibles`, this.getHeaders());
-  }
-
   obtenerCategoriasAlimentos(): Observable<any> {
     return this.http.get<any>(`${environment.apiUrl}/api/ingredientes/alimentos-categorias/disponibles`, this.getHeaders());
   }
@@ -104,13 +100,6 @@ export class AlimentosService {
 
   actualizarAlergenos(alimentoId: number, ingredientes: any[]): Observable<any> {
     return this.http.post<any>(`${API}/${alimentoId}/actualizar-alergenos`, { ingredientes }, this.getHeaders());
-  }
-
-  obtenerIngredientesSinVerificar(): Observable<any[]> {
-    const ingredientesAPI = `${environment.apiUrl}/api/ingredientes`;
-    return this.http.get<{ingredientes: any[], total: number}>(`${ingredientesAPI}/?verificado=false`, this.getHeaders()).pipe(
-      map(response => response.ingredientes || [])
-    );
   }
 
   obtenerIngrediente(nombre: string): Observable<any> {
