@@ -44,11 +44,10 @@
      sumarlo, dejando ~31px para icono+etiqueta y recortando las etiquetas. */
   min-height: 65px;
   /* El nav ocupa espacio real en el layout (ya no es fixed), así .content
-     nunca se solapa con él. padding-top pequeño para que icono+etiqueta no
-     queden pegados al borde superior (se veía "descentrado" con solo
-     padding-bottom); el hueco real del home indicator sigue abajo, fuera
-     de la zona de toque, como recomienda Apple. */
-  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+     nunca se solapa con él. Padding simétrico arriba y abajo (mismo valor
+     en ambos lados) para que icono+etiqueta queden centrados en el alto
+     total de la barra, incluyendo el hueco del home indicator. */
+  padding: max(8px, env(safe-area-inset-bottom)) 0;
   z-index: 100;
   transition: background-color 0.3s ease;
 }
