@@ -31,7 +31,10 @@
   display: flex;
   background: var(--bg-surface);
   border-top: 1px solid var(--border-color);
-  height: 65px;
+  /* min-height (no height fijo): con box-sizing:border-box, un height fijo
+     + padding-bottom del safe-area restaba ese hueco al contenido en vez de
+     sumarlo, dejando ~31px para icono+etiqueta y recortando las etiquetas. */
+  min-height: 65px;
   /* El nav ocupa espacio real en el layout (ya no es fixed), así .content
      nunca se solapa con él; esto solo añade el hueco del home indicator. */
   padding-bottom: env(safe-area-inset-bottom);
