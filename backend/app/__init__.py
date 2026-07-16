@@ -125,6 +125,7 @@ def create_app():
     from app.routes.test_webhook import test_webhook_bp
     from app.routes.admin import admin_bp
     from app.routes.limpiezas import limpiezas_bp
+    from app.routes.reportes import reportes_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(alimentos_bp)
     app.register_blueprint(ingredientes_bp)
@@ -135,6 +136,7 @@ def create_app():
     app.register_blueprint(test_webhook_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(limpiezas_bp)
+    app.register_blueprint(reportes_bp)
 
     # Crear tablas y migrar columnas nuevas
     with app.app_context():
@@ -144,6 +146,7 @@ def create_app():
             from app.models.ingrediente import Ingrediente
             from app.models.racion import Racion
             from app.models.comida_diaria import ComidaDiaria
+            from app.models.reporte_alimento import ReporteAlimento
 
             # Crear tablas basado en los modelos definidos
             db.create_all()

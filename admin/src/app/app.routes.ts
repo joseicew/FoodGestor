@@ -6,6 +6,7 @@ import { UsuariosComponent } from './pages/usuarios/usuarios';
 import { AlimentosComponent } from './pages/alimentos/alimentos';
 import { IngredientesComponent } from './pages/ingredientes/ingredientes';
 import { LimpiezasComponent } from './pages/limpiezas/limpiezas';
+import { ReportesComponent } from './pages/reportes/reportes';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -17,6 +18,7 @@ export const routes: Routes = [
       { path: 'usuarios', component: UsuariosComponent },
       { path: 'alimentos', component: AlimentosComponent },
       { path: 'ingredientes', component: IngredientesComponent },
+      { path: 'reportes', component: ReportesComponent },
       { path: 'limpiezas', component: LimpiezasComponent },
       { path: '', redirectTo: 'usuarios', pathMatch: 'full' },
     ],

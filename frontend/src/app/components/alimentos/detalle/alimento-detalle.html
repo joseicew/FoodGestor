@@ -146,6 +146,13 @@
           </div>
         }
 
+        <!-- Reportar error -->
+        <div style="margin-top: 16px;">
+          <button class="btn-secondary" (click)="abrirModalReportar()" style="width: 100%; padding: 10px;">
+            ⚠️ Reportar error
+          </button>
+        </div>
+
         <!-- Eliminar Producto -->
         @if (editable) {
           <div style="margin-top: 16px;">
@@ -312,6 +319,44 @@
             <span class="spinner" style="width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 6px;"></span>
             Eliminando...
           } @else { 🗑️ Sí, eliminar }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Reportar error -->
+@if (mostrarModalReportar && detalle) {
+  <div class="modal-overlay" (click)="cerrarModalReportar()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>⚠️ Reportar error</h2>
+        <button class="btn-close" (click)="cerrarModalReportar()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size: 14px; color: #666; margin-bottom: 12px;">
+          ¿Qué está mal en <strong>{{ detalle.nombre }}</strong>?
+        </p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+          @for (campo of camposReporte; track campo.key) {
+            <button type="button"
+                    (click)="toggleCampoReporte(campo.key)"
+                    [style.background]="reportarCampos.includes(campo.key) ? '#fff3cd' : '#f5f5f5'"
+                    [style.border]="reportarCampos.includes(campo.key) ? '1px solid #ffc107' : '1px solid #ddd'"
+                    style="padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; color: #333;">
+              {{ campo.label }}
+            </button>
+          }
+        </div>
+        <textarea [(ngModel)]="reportarComentario" rows="3" placeholder="Comentario (opcional)"
+                  style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; font-size: 13px; box-sizing: border-box; resize: vertical;"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="cerrarModalReportar()" [disabled]="enviandoReporte">Cancelar</button>
+        <button class="btn-primary" (click)="enviarReporte()" [disabled]="enviandoReporte || reportarCampos.length === 0">
+          {{ enviandoReporte ? 'Enviando...' : 'Enviar reporte' }}
         </button>
       </div>
     </div>

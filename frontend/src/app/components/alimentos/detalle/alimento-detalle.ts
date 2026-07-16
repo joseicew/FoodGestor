@@ -5,8 +5,16 @@ import { AlimentosService } from '../../../services/alimentos';
 import { IngredientesService } from '../../../services/ingredientes';
 import { AiVisionService } from '../../../services/ai-vision';
 import { OcrAsyncService } from '../../../services/ocr-async';
+import { ReportesService } from '../../../services/reportes';
 
 type OcrEstado = 'idle' | 'preparando' | 'analizando' | 'listo' | 'error';
+
+export const CAMPOS_REPORTE = [
+  { key: 'macros', label: 'Macros' },
+  { key: 'ingredientes', label: 'Ingredientes' },
+  { key: 'marca', label: 'Marca' },
+  { key: 'otro', label: 'Otro' },
+];
 
 export const CATEGORIAS = [
   'Carnes y Aves', 'Pescados y Mariscos', 'Lácteos y Huevos', 'Frutas',
@@ -71,13 +79,55 @@ export class AlimentoDetalle implements OnChanges {
   ocrIngredientesEstado: OcrEstado = 'idle';
   ocrMacrosEstado: OcrEstado = 'idle';
 
+  readonly camposReporte = CAMPOS_REPORTE;
+  mostrarModalReportar = false;
+  reportarCampos: string[] = [];
+  reportarComentario = '';
+  enviandoReporte = false;
+
   constructor(
     private alimentosService: AlimentosService,
     private ingredientesService: IngredientesService,
     private aiVision: AiVisionService,
     private ocrAsync: OcrAsyncService,
+    private reportesService: ReportesService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  abrirModalReportar(): void {
+    this.reportarCampos = [];
+    this.reportarComentario = '';
+    this.mostrarModalReportar = true;
+  }
+
+  cerrarModalReportar(): void {
+    this.mostrarModalReportar = false;
+  }
+
+  toggleCampoReporte(key: string): void {
+    const idx = this.reportarCampos.indexOf(key);
+    if (idx >= 0) this.reportarCampos.splice(idx, 1);
+    else this.reportarCampos.push(key);
+  }
+
+  enviarReporte(): void {
+    if (!this.detalle || this.reportarCampos.length === 0 || this.enviandoReporte) return;
+    this.enviandoReporte = true;
+    this.reportesService.crearReporte(this.detalle.id, this.reportarCampos, this.reportarComentario.trim())
+      .subscribe({
+        next: () => {
+          this.enviandoReporte = false;
+          this.mostrarModalReportar = false;
+          this.mensaje.emit({ texto: 'Gracias, hemos recibido tu reporte', tipo: 'exito' });
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.enviandoReporte = false;
+          this.mensaje.emit({ texto: err.error?.error || 'No se pudo enviar el reporte', tipo: 'error' });
+          this.cdr.markForCheck();
+        }
+      });
+  }
 
   ngOnChanges() {
     if (this.alimento) {

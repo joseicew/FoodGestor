@@ -19,6 +19,18 @@ export interface TipoLimpieza {
   ia: boolean;
 }
 
+export interface ReporteAlimento {
+  id: number;
+  alimento_id: number;
+  usuario_id: number;
+  campos: string[];
+  comentario: string;
+  estado: 'pendiente' | 'resuelto' | 'descartado';
+  created_at: string | null;
+  alimento: { id: number; nombre: string; marca: string } | null;
+  usuario_email: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private base = environment.apiUrl;
@@ -129,5 +141,17 @@ export class ApiService {
 
   consolidarDuplicados(): Observable<any> {
     return this.http.post(`${this.base}/api/ingredientes/limpieza/duplicados`, {});
+  }
+
+  // ── Reportes de alimentos ──
+  listarReportes(estado?: string): Observable<ReporteAlimento[]> {
+    const params: Record<string, string> = estado ? { estado } : {};
+    return this.http
+      .get<{ reportes: ReporteAlimento[] }>(`${this.base}/api/admin/reportes`, { params })
+      .pipe(map((r) => r.reportes || []));
+  }
+
+  actualizarReporte(id: number, estado: string): Observable<any> {
+    return this.http.put(`${this.base}/api/admin/reportes/${id}`, { estado });
   }
 }

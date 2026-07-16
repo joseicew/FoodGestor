@@ -3,6 +3,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from functools import wraps
 from app import db
 from app.models.usuario import Usuario
+from app.models.reporte_alimento import ReporteAlimento
+from app.models.alimento import Alimento
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
 
@@ -73,3 +75,46 @@ def cambiar_rol(id):
         'mensaje': 'Rol actualizado',
         'usuario': {'id': objetivo.id, 'email': objetivo.email, 'rol': objetivo.rol}
     }), 200
+
+
+@admin_bp.route('/reportes', methods=['GET'])
+@requiere_rol('superadmin', 'admin')
+def listar_reportes():
+    estado = request.args.get('estado')
+    query = ReporteAlimento.query
+    if estado:
+        query = query.filter_by(estado=estado)
+    reportes = query.order_by(ReporteAlimento.created_at.desc()).all()
+
+    alimento_ids = {r.alimento_id for r in reportes}
+    usuario_ids = {r.usuario_id for r in reportes}
+    alimentos = {a.id: a for a in Alimento.query.filter(Alimento.id.in_(alimento_ids)).all()} if alimento_ids else {}
+    usuarios = {u.id: u for u in Usuario.query.filter(Usuario.id.in_(usuario_ids)).all()} if usuario_ids else {}
+
+    resultado = []
+    for r in reportes:
+        d = r.to_dict()
+        alimento = alimentos.get(r.alimento_id)
+        usuario = usuarios.get(r.usuario_id)
+        d['alimento'] = {'id': alimento.id, 'nombre': alimento.nombre, 'marca': alimento.marca} if alimento else None
+        d['usuario_email'] = usuario.email if usuario else None
+        resultado.append(d)
+
+    return jsonify({'reportes': resultado}), 200
+
+
+@admin_bp.route('/reportes/<int:id>', methods=['PUT'])
+@requiere_rol('superadmin', 'admin')
+def actualizar_reporte(id):
+    data = request.get_json() or {}
+    nuevo_estado = (data.get('estado') or '').strip()
+    if nuevo_estado not in ('pendiente', 'resuelto', 'descartado'):
+        return jsonify({'error': 'Estado inválido'}), 400
+
+    reporte = ReporteAlimento.query.get(id)
+    if not reporte:
+        return jsonify({'error': 'Reporte no encontrado'}), 404
+
+    reporte.estado = nuevo_estado
+    db.session.commit()
+    return jsonify({'mensaje': 'Reporte actualizado', 'reporte': reporte.to_dict()}), 200

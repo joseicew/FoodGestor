@@ -19,6 +19,7 @@ import { AuthService } from '../../services/auth';
           <a routerLink="usuarios" routerLinkActive="active">👤 Usuarios</a>
           <a routerLink="alimentos" routerLinkActive="active">🥗 Alimentos</a>
           <a routerLink="ingredientes" routerLinkActive="active">🥘 Ingredientes</a>
+          <a routerLink="reportes" routerLinkActive="active">⚠️ Reportes</a>
           <a routerLink="limpiezas" routerLinkActive="active">🧹 Limpiezas</a>
         </nav>
 
