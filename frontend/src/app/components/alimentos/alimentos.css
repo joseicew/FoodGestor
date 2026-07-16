@@ -51,7 +51,7 @@
   gap: 2px;
   padding: 8px 10px;
   border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fafafa;
   cursor: pointer;
   transition: all 0.15s;
@@ -123,7 +123,7 @@
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #e8f5e9;
   color: #2e7d32;
   font-size: 16px;
@@ -138,7 +138,7 @@
   width: 64px;
   padding: 5px 6px;
   border: 1.5px solid #e0e0e0;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
   text-align: center;
 }
@@ -154,7 +154,7 @@
   color: #2e7d32;
   background: #e8f5e9;
   padding: 3px 9px;
-  border-radius: 10px;
+  border-radius: 12px;
   width: fit-content;
 }
 

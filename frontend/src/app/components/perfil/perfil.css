@@ -90,7 +90,7 @@
   font-size: 1.2rem;
   cursor: pointer;
   padding: 6px;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -310,8 +310,8 @@
 
 .macro-valor { font-size: 12px; color: #888; }
 
-.macro-bar  { height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
-.macro-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.macro-bar  { height: 8px; background: #f0f0f0; border-radius: 8px; overflow: hidden; }
+.macro-fill { height: 100%; border-radius: 8px; transition: width 0.5s ease; }
 
 .macro-fill.proteinas     { background: #4CAF50; }
 .macro-fill.carbohidratos { background: #2196F3; }
@@ -383,7 +383,7 @@
 .form-group select {
   padding: 8px 10px;
   border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 12px;
 }
 
@@ -706,7 +706,7 @@
   font-size: 11px;
   color: #999;
   background: #f0f0f0;
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 2px 6px;
   margin-left: 8px;
   flex-shrink: 0;
@@ -782,7 +782,7 @@
   color: #999;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: background 0.15s;
 }
 

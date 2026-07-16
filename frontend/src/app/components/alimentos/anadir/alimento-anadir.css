@@ -185,7 +185,7 @@ input.ocr-filled {
 .ingredientes-count { background: #4CAF50; color: #fff; font-size: 10px; font-weight: 700; border-radius: 20px; padding: 1px 6px; }
 
 .ingredientes-lista { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 3px; max-height: 140px; overflow-y: auto; }
-.ingrediente-item { font-size: 11px; color: #33691e; padding: 3px 6px; background: #fff; border-radius: 4px; border-left: 2px solid #4CAF50; line-height: 1.3; }
+.ingrediente-item { font-size: 11px; color: #33691e; padding: 3px 6px; background: #fff; border-radius: 8px; border-left: 2px solid #4CAF50; line-height: 1.3; }
 .ingrediente-item-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ingrediente-item-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -194,7 +194,7 @@ input.ocr-filled {
   background: #ffebee;
   color: #c62828;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 2px 7px;
   font-size: 11px;
   line-height: 1.4;
@@ -208,7 +208,7 @@ input.ocr-filled {
   min-width: 0;
   padding: 6px 8px;
   border: 1.5px solid #c8e6c9;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 12px;
   background: #fff;
   color: #000;
@@ -220,7 +220,7 @@ input.ocr-filled {
   background: #4CAF50;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   padding: 0 12px;
   font-size: 14px;
   cursor: pointer;
@@ -231,7 +231,7 @@ input.ocr-filled {
   margin-top: 4px;
   background: #fff;
   border: 1px solid #c8e6c9;
-  border-radius: 5px;
+  border-radius: 8px;
   max-height: 150px;
   overflow-y: auto;
 }
@@ -256,7 +256,7 @@ input.ocr-filled {
 
 .macro-inline-group { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .macro-inline-group label { font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.2px; margin: 0; min-width: 110px; flex-shrink: 0; }
-.macro-inline-group input { width: 100%; padding: 5px 8px; border: 1.5px solid #e0e0e0; border-radius: 5px; font-size: 14px; outline: none; transition: border-color 0.2s, background 0.2s; background: #fafafa; box-sizing: border-box; }
+.macro-inline-group input { width: 100%; padding: 5px 8px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s, background 0.2s; background: #fafafa; box-sizing: border-box; }
 .macro-inline-group input:focus { border-color: #4CAF50; background: #fff; }
 .macro-inline-group .error-hint { font-size: 9px; color: #e53935; margin: 0; white-space: nowrap; }
 
@@ -303,7 +303,7 @@ input.ocr-filled {
 .modal-valor { padding: 7px 4px; font-size: 14px; font-weight: 600; color: #1a1a1a; text-align: right; }
 .modal-unidad { font-size: 11px; font-weight: 400; color: #888; }
 
-.modal-ingredientes { background: #f1f8e9; border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; }
+.modal-ingredientes { background: #f1f8e9; border-radius: 12px; padding: 10px 12px; margin-bottom: 16px; }
 .modal-ings-titulo { font-size: 11px; font-weight: 700; color: #2e7d32; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px; }
 .modal-ings-texto { font-size: 12px; color: #4a4a4a; line-height: 1.5; margin: 0; }
 
@@ -318,7 +318,7 @@ input.ocr-filled {
 .duplicado-item { background: #fff3e0; border: 1.5px solid #FFB74D; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
 .duplicado-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .duplicado-macros { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; font-size: 12px; color: #555; }
-.duplicado-macros span { background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: 600; }
+.duplicado-macros span { background: #fff; padding: 4px 8px; border-radius: 8px; font-weight: 600; }
 .duplicado-categoria { display: inline-block; background: #e8f5e9; color: #2e7d32; font-size: 11px; font-weight: 600; border-radius: 20px; padding: 2px 10px; margin-bottom: 10px; }
 .duplicado-ingredientes { background: #f1f8e9; border-radius: 8px; padding: 10px; margin-top: 10px; }
 .duplicado-ings-titulo { font-size: 11px; font-weight: 700; color: #2e7d32; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px; }
@@ -326,12 +326,12 @@ input.ocr-filled {
 
 /* ── Similares ── */
 .similares-lista { display: flex; flex-direction: column; gap: 8px; padding: 0 16px 16px; max-height: 300px; overflow-y: auto; }
-.similar-item { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.similar-item { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
 .similar-header { display: flex; align-items: center; gap: 8px; }
-.similar-marca { background: #e8f5e9; color: #2e7d32; font-size: 10px; font-weight: 700; border-radius: 4px; padding: 2px 8px; flex-shrink: 0; }
+.similar-marca { background: #e8f5e9; color: #2e7d32; font-size: 10px; font-weight: 700; border-radius: 8px; padding: 2px 8px; flex-shrink: 0; }
 .similar-nombre { font-size: 13px; font-weight: 600; color: #1a1a1a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .similar-info { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: #777; }
-.similar-categoria { background: #f0f0f0; padding: 2px 8px; border-radius: 4px; }
+.similar-categoria { background: #f0f0f0; padding: 2px 8px; border-radius: 8px; }
 .similar-calorias { font-weight: 600; color: #4CAF50; flex: 1; text-align: right; }
 .btn-favorito-similar { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1; }
 

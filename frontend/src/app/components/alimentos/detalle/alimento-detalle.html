@@ -22,7 +22,7 @@
                 <span class="info-valor">{{ detalle.categoria }}</span>
               } @else {
                 <select [(ngModel)]="detalle.categoria"
-                        style="border: 1px solid #ddd; background: white; font-size: 13px; color: #333; cursor: pointer; padding: 6px 10px; border-radius: 4px;">
+                        style="border: 1px solid #ddd; background: white; font-size: 13px; color: #333; cursor: pointer; padding: 6px 10px; border-radius: 8px;">
                   <option value="">-- Seleccionar --</option>
                   @for (cat of categorias; track cat) {
                     <option [value]="cat">{{ cat }}</option>
@@ -49,14 +49,14 @@
               } @else {
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                   <input type="number" [(ngModel)]="detalle.peso_unidad" placeholder="Peso" min="0" step="0.1"
-                         style="width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;" />
+                         style="width: 80px; padding: 6px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px;" />
                   <select [(ngModel)]="detalle.medida_unidad"
-                          style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                          style="padding: 6px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px;">
                     <option value="g">g</option>
                     <option value="ml">ml</option>
                   </select>
                   <select [(ngModel)]="detalle.nombre_unidad"
-                          style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                          style="padding: 6px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px;">
                     <option value="">Seleccionar</option>
                     @for (unidad of unidadesComunes; track unidad) {
                       <option [value]="unidad">{{ unidad }}</option>
@@ -192,7 +192,7 @@
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <span class="ingrediente-item" style="flex: 1;">{{ typeof ing === 'string' ? ing : ing.nombre }}</span>
                   <button (click)="eliminarIngrediente(i)"
-                          style="background: #ffebee; color: #c62828; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">✕</button>
+                          style="background: #ffebee; color: #c62828; border: none; border-radius: 8px; padding: 4px 8px; cursor: pointer; font-size: 12px;">✕</button>
                 </div>
               }
             </div>
@@ -207,9 +207,9 @@
                    (keyup.enter)="!cargandoIngrediente && agregarIngrediente()"
                    placeholder="Nuevo ingrediente..."
                    [disabled]="cargandoIngrediente"
-                   style="flex: 1; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 13px;">
+                   style="flex: 1; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 13px;">
             <button (click)="agregarIngrediente()" [disabled]="cargandoIngrediente"
-                    style="background: #4CAF50; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                    style="background: #4CAF50; color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
               @if (cargandoIngrediente) {
                 <div class="spinner" style="width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
               } @else { + }
@@ -217,7 +217,7 @@
           </div>
 
           @if (ingredientesFiltrados.length > 0) {
-            <div style="position: absolute; top: 100%; left: 0; right: 56px; background: white; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 10;">
+            <div style="position: absolute; top: 100%; left: 0; right: 56px; background: white; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; z-index: 10;">
               @for (sugerencia of ingredientesFiltrados; track sugerencia) {
                 <button (click)="seleccionarSugerencia(sugerencia); $event.stopPropagation()" class="sugerencia-item">{{ sugerencia }}</button>
               }
@@ -298,7 +298,7 @@
 
       <div class="modal-body">
         <p style="font-size: 14px; color: #666; margin-bottom: 12px;">¿Estás seguro de que deseas eliminar este producto?</p>
-        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 16px; border-radius: 8px; margin: 16px 0;">
           <p style="margin: 0; font-weight: 600; color: #856404;">{{ detalle.nombre }}</p>
           <p style="margin: 4px 0 0 0; font-size: 12px; color: #856404;">Marca: {{ detalle.marca }}</p>
         </div>

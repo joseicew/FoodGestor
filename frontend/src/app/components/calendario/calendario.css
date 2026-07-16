@@ -69,7 +69,7 @@
   color: #2e7d32;
   border: none;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -83,7 +83,7 @@
 .btn-datepicker {
   background: #f0f0f0;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   width: 32px;
   height: 32px;
   cursor: pointer;
@@ -120,7 +120,7 @@
 .total-card {
   background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
   border: 1.5px solid #e8e8e8;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px;
   display: flex;
   align-items: center;
@@ -248,7 +248,7 @@
   padding: 8px 10px;
   background: #fafafa;
   border: 1px solid #e8e8e8;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .item-info {
@@ -287,7 +287,7 @@
   width: 60px;
   padding: 6px 4px;
   border: 1px solid #d0d0d0;
-  border-radius: 3px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
   text-align: center;
@@ -346,7 +346,7 @@
   background: #e8f5e9;
   color: #2e7d32;
   border: 1.5px solid #4CAF50;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -375,7 +375,7 @@
   padding: 10px;
   background: #f9f9f9;
   border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .inline-input {
@@ -409,7 +409,7 @@
   padding: 7px 10px;
   background: #fff;
   border: 1px solid #ececec;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   text-align: left;
   width: 100%;
