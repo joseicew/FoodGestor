@@ -35,11 +35,10 @@ export class Raciones implements OnInit, AfterViewInit {
   racionSeleccionada: any = null;
 
   readonly categoriasComida: { key: string; label: string; icono: string; color: string }[] = [
-    { key: 'desayuno', label: 'Desayuno', icono: '🌅', color: '#F59E0B' },
-    { key: 'almuerzo', label: 'Almuerzo', icono: '🍽️', color: '#10B981' },
-    { key: 'comida', label: 'Comida', icono: '🍴', color: '#3B82F6' },
-    { key: 'merienda', label: 'Merienda', icono: '☕', color: '#EC4899' },
-    { key: 'cena', label: 'Cena', icono: '🌙', color: '#6366F1' },
+    { key: 'desayuno', label: 'Desayunos', icono: '🌅', color: '#F59E0B' },
+    { key: 'comida', label: 'Comidas', icono: '🍴', color: '#3B82F6' },
+    { key: 'snack', label: 'Snacks', icono: '🥨', color: '#EC4899' },
+    { key: 'cena', label: 'Cenas', icono: '🌙', color: '#6366F1' },
   ];
   filtroCategorias: string[] = [];
 

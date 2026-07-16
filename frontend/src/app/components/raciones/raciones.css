@@ -707,15 +707,22 @@
 }
 
 /* ── Filtro/selector de categoría de comida ── */
+/* Una sola fila: los 4 chips se reparten el ancho a partes iguales */
 .categoria-filtros {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 6px;
+  flex-wrap: nowrap;
   margin-bottom: 12px;
 }
 
 .categoria-chip {
-  padding: 6px 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 6px 4px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   border: 1.5px solid #e0e0e0;
   border-radius: 20px;
   background: #fafafa;

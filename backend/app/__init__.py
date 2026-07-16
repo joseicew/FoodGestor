@@ -250,6 +250,22 @@ def _migrar_columnas():
                     "WHERE categoria IS NOT NULL AND categoria <> ''"
                 ))
                 conn.commit()
+
+        # Esquema de categorías reducido a 4 (desayuno/comida/snack/cena):
+        # las antiguas 'almuerzo' y 'merienda' pasan a 'snack'. Idempotente.
+        from app.models.racion import Racion
+        raciones_migrar = Racion.query.filter(
+            db.or_(Racion.categorias.contains('almuerzo'), Racion.categorias.contains('merienda'))
+        ).all()
+        for r in raciones_migrar:
+            nuevas = []
+            for c in r.get_categorias():
+                n = 'snack' if c in ('almuerzo', 'merienda') else c
+                if n not in nuevas:
+                    nuevas.append(n)
+            r.set_categorias(nuevas)
+        if raciones_migrar:
+            db.session.commit()
     except Exception:
         pass
 
