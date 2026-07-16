@@ -112,6 +112,10 @@ export class Calendario implements OnInit {
   cargarDia(fecha: Date) {
     const fechaStr = this.formatoFecha(fecha);
 
+    // Solo en cargas nuevas (inicial o cambio de fecha) se elige la pestaña de
+    // comida a mostrar; en recargas post-mutación no se mueve la pestaña.
+    let elegirComidaAlCargar = !this.diaActual;
+
     // Mostrar caché inmediatamente si no hay datos en pantalla (carga inicial o cambio de fecha)
     if (!this.diaActual) {
       const cached = this.cacheService.obtenerDia(fechaStr);
@@ -121,6 +125,10 @@ export class Calendario implements OnInit {
         this.limitesBase = cached.limites_base;
         this.porcentajes = cached.porcentajes;
         this.cargando = false;
+        if (elegirComidaAlCargar) {
+          this.seleccionarComidaInicial();
+          elegirComidaAlCargar = false;
+        }
         this.cdr.detectChanges();
       } else {
         this.cargando = true;
@@ -136,11 +144,16 @@ export class Calendario implements OnInit {
           this.cacheService.guardarDia(fechaStr, data);
           this.cdr.detectChanges();
         }
+        if (elegirComidaAlCargar) {
+          this.seleccionarComidaInicial();
+          this.cdr.detectChanges();
+        }
         this.cargando = false;
       },
       error: (error) => {
         if (error.status === 404) {
           this.inicializarDiaVacio();
+          if (elegirComidaAlCargar) this.seleccionarComidaInicial();
         } else if (!this.diaActual) {
           this.flash.mostrar('Error al cargar el día', 'error');
         }
@@ -148,6 +161,23 @@ export class Calendario implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  /**
+   * Muestra la última comida del día con datos (la más tardía con raciones o
+   * alimentos apuntados); si el día está vacío, el desayuno por ser la primera.
+   */
+  private seleccionarComidaInicial(): void {
+    let indice = 0;
+    for (let i = this.comidas.length - 1; i >= 0; i--) {
+      const comida = this.diaActual?.[this.comidas[i]];
+      if (comida && ((comida.raciones?.length || 0) > 0 || (comida.alimentos?.length || 0) > 0)) {
+        indice = i;
+        break;
+      }
+    }
+    this.comidaIndex = indice;
+    this.panelActivo = null;
   }
 
   /** Merge in-place: preserva referencias de objetos/arrays para evitar re-renders visibles */
