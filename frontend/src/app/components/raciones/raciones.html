@@ -6,7 +6,7 @@
   <!-- ═══════════════ PANEL LISTA ═══════════════ -->
   @if (activePanel === 'lista') {
       @if (!cargandoRaciones && !errorRed && raciones.length > 0) {
-        <div class="categoria-filtros">
+        <div class="categoria-filtros categoria-filtros-fija">
           @for (cat of categoriasComida; track cat.key) {
             <button class="categoria-chip" [class.active]="filtroCategorias.includes(cat.key)"
                     [style.--chip-color]="cat.color" (click)="toggleFiltroCategoria(cat.key)">
@@ -16,6 +16,7 @@
         </div>
       }
 
+      <div class="lista-scroll">
       @if (cargandoRaciones) {
         <div class="empty-state-large">
           <span class="spinner" style="font-size: 48px; margin-bottom: 12px;"></span>
@@ -84,6 +85,7 @@
           }
         </div>
       }
+      </div>
 
       <!-- Botón Flotante para Crear Ración -->
       <button class="fab-button" (click)="abrirModalCrear()" title="Crear nueva ración">
@@ -105,7 +107,7 @@
       </div>
 
       <!-- Categorías de la ración -->
-      <div class="categoria-filtros">
+      <div class="categoria-filtros categoria-filtros-fija">
         @for (cat of categoriasComida; track cat.key) {
           <button class="categoria-chip" [class.active]="racionSeleccionada.categorias?.includes(cat.key)"
                   [style.--chip-color]="cat.color" (click)="cambiarCategoriaRacion(cat.key)">
@@ -114,6 +116,7 @@
         }
       </div>
 
+      <div class="editar-scroll">
       <!-- Sección de Alimentos -->
       <div class="alimentos-section">
         <!-- Añadir alimento (arriba) -->
@@ -222,6 +225,7 @@
       <button class="btn-crear-grande" style="width: 100%; margin-top: 16px;" (click)="volverALista()">
         💾 Guardar y volver a la lista
       </button>
+      </div>
   }
 
   <!-- ═══════════════ MODAL CREAR MENÚ ═══════════════ -->

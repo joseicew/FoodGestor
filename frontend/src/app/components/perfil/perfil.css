@@ -1,5 +1,19 @@
+/* Cabecera estática; el resto de la vista normal hace scroll interno
+   (.perfil-scroll), para que la cabecera siga siempre accesible. */
 .perfil-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
   padding: 0px;
+}
+
+app-page-header, app-mensaje-flash { flex-shrink: 0; }
+
+.perfil-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* .header h1 → global styles.css */
@@ -338,6 +352,12 @@
   width: 100%;
   margin: 0 auto;
   position: relative;
+  /* Ahora que .perfil-container es flex column de altura fija, este bloque
+     necesita su propio scroll interno (antes lo heredaba de .content). */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .perfil-edicion-card h2 {

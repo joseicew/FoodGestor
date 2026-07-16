@@ -7,7 +7,8 @@
   <app-mensaje-flash />
 
   @if (!editando) {
-    <!-- VISTA NORMAL -->
+    <!-- VISTA NORMAL (con scroll propio; la cabecera de arriba queda fija) -->
+    <div class="perfil-scroll">
 
     <!-- 1. CALORÍAS HOY (PRIMERO) -->
     <div class="perfil-info-card calorias-card-simple">
@@ -145,6 +146,7 @@
       }
     </div>
 
+    </div>
   } @else {
     <!-- VISTA DE EDICIÓN -->
     <div class="perfil-edicion-card">

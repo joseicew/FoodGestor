@@ -1,6 +1,25 @@
+/* Cabecera + chips de categoría estáticos; solo la lista/edición de
+   contenido hace scroll interno (.lista-scroll / .editar-scroll), para que
+   ambos sigan siempre accesibles. */
 .raciones-container {
-  padding: 0 0 calc(48px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
   position: relative;
+}
+
+.header, app-page-header, app-mensaje-flash, .categoria-filtros-fija, .panel-header {
+  flex-shrink: 0;
+}
+
+/* El padding extra para no tapar el FAB va en las zonas de scroll, no en
+   el contenedor entero (que ya no hace scroll). */
+.lista-scroll, .editar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
 }
 
 /* .header, .header h1 → global styles.css */

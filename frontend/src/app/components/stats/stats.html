@@ -22,17 +22,19 @@
     }
   </div>
 
-  <!-- Gráfica -->
-  <div class="grafica-wrapper">
-    @if (cargando) {
-      <div class="loading">Cargando datos…</div>
-    } @else {
-      <canvas #graficaCanvas></canvas>
+  <div class="stats-scroll">
+    <!-- Gráfica -->
+    <div class="grafica-wrapper">
+      @if (cargando) {
+        <div class="loading">Cargando datos…</div>
+      } @else {
+        <canvas #graficaCanvas></canvas>
+      }
+    </div>
+
+    <!-- Leyenda objetivo -->
+    @if (!cargando && objetivoKcal > 0) {
+      <p class="objetivo-texto">Objetivo diario: <strong>{{ objetivoKcal | number:'1.0-0' }} kcal</strong></p>
     }
   </div>
-
-  <!-- Leyenda objetivo -->
-  @if (!cargando && objetivoKcal > 0) {
-    <p class="objetivo-texto">Objetivo diario: <strong>{{ objetivoKcal | number:'1.0-0' }} kcal</strong></p>
-  }
 </div>

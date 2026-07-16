@@ -10,25 +10,25 @@
       <h3>Cargando día...</h3>
     </div>
   } @else if (diaActual) {
-    <!-- Panel principal -->
-    <div class="panel">
-      <!-- ── Selector de fecha ── -->
-      <div class="fecha-selector">
-        <button class="btn-flecha" (click)="cambiarFecha(-1)" title="Día anterior">◀</button>
-        <div class="fecha-display">
-          <div class="fecha-texto">{{ fechaSeleccionada | date:'d MMMM yyyy' }}</div>
-          <button class="btn-hoy" (click)="irHoy()">Hoy</button>
-          <button class="btn-datepicker" (click)="toggleDatepicker()">📅</button>
-          @if (mostrarDatepicker) {
-            <input type="date"
-                   [value]="fechaSeleccionada | date:'yyyy-MM-dd'"
-                   (change)="onFechaChange($event)"
-                   class="datepicker-input" />
-          }
-        </div>
-        <button class="btn-flecha" (click)="cambiarFecha(1)" title="Día siguiente">▶</button>
+    <!-- ── Selector de fecha (estático, siempre accesible) ── -->
+    <div class="fecha-selector">
+      <button class="btn-flecha" (click)="cambiarFecha(-1)" title="Día anterior">◀</button>
+      <div class="fecha-display">
+        <div class="fecha-texto">{{ fechaSeleccionada | date:'d MMMM yyyy' }}</div>
+        <button class="btn-hoy" (click)="irHoy()">Hoy</button>
+        <button class="btn-datepicker" (click)="toggleDatepicker()">📅</button>
+        @if (mostrarDatepicker) {
+          <input type="date"
+                 [value]="fechaSeleccionada | date:'yyyy-MM-dd'"
+                 (change)="onFechaChange($event)"
+                 class="datepicker-input" />
+        }
       </div>
+      <button class="btn-flecha" (click)="cambiarFecha(1)" title="Día siguiente">▶</button>
+    </div>
 
+    <!-- Panel principal (scrollable) -->
+    <div class="panel">
       <!-- ── Totales diarios ── -->
       <div class="totales-diarios">
         <div class="total-card">
