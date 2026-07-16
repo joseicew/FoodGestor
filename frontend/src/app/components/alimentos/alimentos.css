@@ -14,7 +14,9 @@
   flex-shrink: 0;
   z-index: 999;
   background: white;
-  margin-bottom: 0;
+  /* Mismo margen lateral (8px) que el padding de .tab-panel: así pestañas,
+     filtros y lista quedan alineados al mismo borde del bloque. */
+  margin: 0 8px;
 }
 
 .tabs + .tabs {
