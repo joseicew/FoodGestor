@@ -199,6 +199,14 @@
                 <!-- Panel inline raciones -->
                 @if (panelActivo?.tipoComida === tipoComida && panelActivo?.modo === 'racion') {
                   <div class="inline-panel">
+                    <div class="inline-categoria-filtros">
+                      @for (cat of categoriasRacion; track cat.key) {
+                        <button type="button" class="inline-categoria-chip" [class.active]="filtroCategoriaRacion === cat.key"
+                                [style.--chip-color]="cat.color" (click)="toggleFiltroCategoriaRacion(cat.key)">
+                          {{ cat.icono }} {{ cat.label }}
+                        </button>
+                      }
+                    </div>
                     <input class="inline-input" type="text"
                            [(ngModel)]="terminoBusquedaRacion"
                            (ngModelChange)="buscarRaciones()"
@@ -213,7 +221,7 @@
                           </button>
                         }
                       </div>
-                    } @else if (terminoBusquedaRacion) {
+                    } @else if (terminoBusquedaRacion || filtroCategoriaRacion) {
                       <div class="inline-vacio">Sin resultados</div>
                     }
                   </div>

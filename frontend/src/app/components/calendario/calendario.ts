@@ -64,6 +64,22 @@ export class Calendario implements OnInit {
   panelActivo: { tipoComida: string; modo: 'racion' | 'alimento' } | null = null;
   terminoBusquedaRacion = '';
 
+  // Filtro por categoría al elegir una ración para añadir (se preselecciona
+  // según la comida del día en la que se está añadiendo, para no mostrar
+  // de golpe todas las raciones guardadas)
+  readonly categoriasRacion: { key: string; label: string; icono: string; color: string }[] = [
+    { key: 'desayuno', label: 'Desayunos', icono: '🌅', color: '#F59E0B' },
+    { key: 'comida', label: 'Comidas', icono: '🍴', color: '#3B82F6' },
+    { key: 'snack', label: 'Snacks', icono: '🥨', color: '#EC4899' },
+    { key: 'cena', label: 'Cenas', icono: '🌙', color: '#6366F1' },
+  ];
+  // Las comidas del día 'almuerzo'/'merienda' no tienen categoría propia de
+  // ración (se consolidaron en 'snack'); el resto mapea 1:1.
+  private readonly mapaComidaACategoria: Record<string, string> = {
+    desayuno: 'desayuno', almuerzo: 'snack', comida: 'comida', merienda: 'snack', cena: 'cena'
+  };
+  filtroCategoriaRacion: string | null = null;
+
   // Modal de cantidad al añadir un alimento a una comida
   alimentoParaAgregar: any = null;
   private tipoComidaParaAgregar: string | null = null;
@@ -364,9 +380,19 @@ export class Calendario implements OnInit {
 
   buscarRaciones() {
     const t = this.terminoBusquedaRacion.toLowerCase().trim();
-    this.racionesFiltradas = t
-      ? this.raciones.filter(r => r.nombre.toLowerCase().includes(t))
-      : this.raciones;
+    let lista = this.raciones;
+    if (this.filtroCategoriaRacion) {
+      lista = lista.filter(r => (r.categorias || []).includes(this.filtroCategoriaRacion));
+    }
+    if (t) {
+      lista = lista.filter(r => r.nombre.toLowerCase().includes(t));
+    }
+    this.racionesFiltradas = lista;
+  }
+
+  toggleFiltroCategoriaRacion(categoria: string) {
+    this.filtroCategoriaRacion = this.filtroCategoriaRacion === categoria ? null : categoria;
+    this.buscarRaciones();
   }
 
   // ── Panel inline ──
@@ -377,7 +403,11 @@ export class Calendario implements OnInit {
       this.panelActivo = null;
     } else {
       this.terminoBusquedaRacion = '';
-      this.racionesFiltradas = this.raciones;
+      // Preseleccionar la categoría de la comida actual para no mostrar de
+      // golpe todas las raciones guardadas; el usuario puede cambiarla o
+      // quitarla tocando el mismo chip.
+      this.filtroCategoriaRacion = modo === 'racion' ? (this.mapaComidaACategoria[tipoComida] || null) : null;
+      this.buscarRaciones();
       this.panelActivo = { tipoComida, modo };
     }
   }

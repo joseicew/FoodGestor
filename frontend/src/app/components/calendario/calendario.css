@@ -392,6 +392,40 @@
   border-radius: 12px;
 }
 
+/* Chips de categoría para acotar la lista de raciones al añadir (se
+   preseleccionan según la comida actual, para no mostrar todas de golpe) */
+.inline-categoria-filtros {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.inline-categoria-chip {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 4px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 20px;
+  background: #fafafa;
+  color: #666;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.inline-categoria-chip:hover { border-color: var(--chip-color, #a5d6a7); }
+
+.inline-categoria-chip.active {
+  background: color-mix(in srgb, var(--chip-color, #4CAF50) 16%, #fff);
+  border-color: var(--chip-color, #4CAF50);
+  color: color-mix(in srgb, var(--chip-color, #4CAF50) 75%, #1a1a1a);
+}
+
 .inline-input {
   width: 100%;
   padding: 8px 12px;
