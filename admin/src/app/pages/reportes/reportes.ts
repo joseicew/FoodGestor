@@ -10,6 +10,21 @@ const ETIQUETAS_CAMPO: Record<string, string> = {
   otro: 'Otro',
 };
 
+const ETIQUETAS_MACRO: Record<string, string> = {
+  calorias: 'Calorías',
+  proteinas: 'Proteínas',
+  grasas: 'Grasas',
+  grasas_saturadas: 'Grasas saturadas',
+  hidratos_carbono: 'Hidratos de carbono',
+  azucares: 'Azúcares',
+  fibra: 'Fibra',
+  sal: 'Sal',
+  sodio: 'Sodio',
+  potasio: 'Potasio',
+  calcio: 'Calcio',
+  hierro: 'Hierro',
+};
+
 @Component({
   selector: 'app-reportes',
   standalone: true,
@@ -49,6 +64,15 @@ const ETIQUETAS_CAMPO: Record<string, string> = {
               <div class="campos">
                 @for (c of r.campos; track c) { <span class="badge badge-campo">{{ etiqueta(c) }}</span> }
               </div>
+              @if (r.detalle_macros.length) {
+                <p class="subdetalle"><strong>Macros:</strong> {{ etiquetasMacros(r.detalle_macros) }}</p>
+              }
+              @if (r.detalle_ingredientes.length) {
+                <p class="subdetalle"><strong>Ingredientes:</strong> {{ r.detalle_ingredientes.join(', ') }}</p>
+              }
+              @if (r.marca_correcta) {
+                <p class="subdetalle"><strong>Marca correcta:</strong> {{ r.marca_correcta }}</p>
+              }
               @if (r.comentario) { <p class="comentario">"{{ r.comentario }}"</p> }
               <p class="meta">{{ r.usuario_email }} · {{ r.created_at | date:'d MMM yyyy, HH:mm' }}</p>
             </div>
@@ -81,6 +105,7 @@ const ETIQUETAS_CAMPO: Record<string, string> = {
     .badge-campo { background: var(--surface-2); color: var(--text-muted); }
     .badge-warning { background: var(--warning-soft); color: var(--warning); }
     .badge-success { background: var(--primary-soft); color: var(--primary-dark); }
+    .subdetalle { margin: 0; font-size: 13px; color: var(--text); }
     .comentario { margin: 0; font-size: 13px; color: var(--text); font-style: italic; }
     .meta { margin: 0; font-size: 12px; color: var(--text-muted); }
     .fila-acciones { display: flex; gap: 8px; flex-shrink: 0; }
@@ -118,6 +143,10 @@ export class ReportesComponent implements OnInit {
 
   etiqueta(campo: string): string {
     return ETIQUETAS_CAMPO[campo] || campo;
+  }
+
+  etiquetasMacros(campos: string[]): string {
+    return campos.map((c) => ETIQUETAS_MACRO[c] || c).join(', ');
   }
 
   cambiarEstado(reporte: ReporteAlimento, estado: string): void {

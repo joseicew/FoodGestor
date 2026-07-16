@@ -349,13 +349,57 @@
             </button>
           }
         </div>
-        <textarea [(ngModel)]="reportarComentario" rows="3" placeholder="Comentario (opcional)"
+
+        @if (reportarCampos.includes('macros')) {
+          <div style="margin-bottom: 16px;">
+            <span style="font-size: 12px; font-weight: 700; color: #666; text-transform: uppercase;">¿Qué macro(s)?</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+              @for (macro of macrosReporte; track macro.key) {
+                <button type="button"
+                        (click)="toggleDetalleMacro(macro.key)"
+                        [style.background]="reportarDetalleMacros.includes(macro.key) ? '#fff3cd' : '#f5f5f5'"
+                        [style.border]="reportarDetalleMacros.includes(macro.key) ? '1px solid #ffc107' : '1px solid #ddd'"
+                        style="padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; color: #333;">
+                  {{ macro.label }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        @if (reportarCampos.includes('ingredientes')) {
+          <div style="margin-bottom: 16px;">
+            <span style="font-size: 12px; font-weight: 700; color: #666; text-transform: uppercase;">¿Qué ingrediente(s)?</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+              @for (ing of detalle.ingredientes; track $index) {
+                <button type="button"
+                        (click)="toggleDetalleIngrediente(nombreIngrediente(ing))"
+                        [style.background]="reportarDetalleIngredientes.includes(nombreIngrediente(ing)) ? '#fff3cd' : '#f5f5f5'"
+                        [style.border]="reportarDetalleIngredientes.includes(nombreIngrediente(ing)) ? '1px solid #ffc107' : '1px solid #ddd'"
+                        style="padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; color: #333;">
+                  {{ nombreIngrediente(ing) }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        @if (reportarCampos.includes('marca')) {
+          <div style="margin-bottom: 16px;">
+            <span style="font-size: 12px; font-weight: 700; color: #666; text-transform: uppercase;">Marca correcta</span>
+            <input type="text" [(ngModel)]="reportarMarcaCorrecta" placeholder="Escribe la marca correcta"
+                   style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; font-size: 13px; box-sizing: border-box; margin-top: 8px;" />
+          </div>
+        }
+
+        <textarea [(ngModel)]="reportarComentario" rows="3"
+                  [placeholder]="reportarCampos.includes('otro') ? 'Describe el problema (obligatorio)' : 'Comentario (opcional)'"
                   style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; font-size: 13px; box-sizing: border-box; resize: vertical;"></textarea>
       </div>
 
       <div class="modal-actions">
         <button class="btn-secondary" (click)="cerrarModalReportar()" [disabled]="enviandoReporte">Cancelar</button>
-        <button class="btn-primary" (click)="enviarReporte()" [disabled]="enviandoReporte || reportarCampos.length === 0">
+        <button class="btn-primary" (click)="enviarReporte()" [disabled]="enviandoReporte || !reporteValido">
           {{ enviandoReporte ? 'Enviando...' : 'Enviar reporte' }}
         </button>
       </div>

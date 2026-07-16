@@ -272,6 +272,24 @@ def _migrar_columnas():
     except Exception:
         pass
 
+    # Migrar tabla reporte_alimento
+    try:
+        columnas = [c['name'] for c in inspector.get_columns('reporte_alimento')]
+        if 'detalle_macros' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE reporte_alimento ADD COLUMN detalle_macros TEXT DEFAULT '[]'"))
+                conn.commit()
+        if 'detalle_ingredientes' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE reporte_alimento ADD COLUMN detalle_ingredientes TEXT DEFAULT '[]'"))
+                conn.commit()
+        if 'marca_correcta' not in columnas:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE reporte_alimento ADD COLUMN marca_correcta VARCHAR(255)'))
+                conn.commit()
+    except Exception:
+        pass
+
     # Migrar tabla ingrediente
     try:
         columnas = [c['name'] for c in inspector.get_columns('ingrediente')]

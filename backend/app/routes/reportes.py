@@ -8,6 +8,11 @@ reportes_bp = Blueprint('reportes', __name__, url_prefix='/api/reportes')
 
 CAMPOS_VALIDOS = ['macros', 'ingredientes', 'marca', 'otro']
 
+MACROS_VALIDOS = [
+    'calorias', 'proteinas', 'grasas', 'grasas_saturadas', 'hidratos_carbono',
+    'azucares', 'fibra', 'sal', 'sodio', 'potasio', 'calcio', 'hierro'
+]
+
 
 @reportes_bp.route('', methods=['POST'])
 @jwt_required()
@@ -17,7 +22,8 @@ def crear_reporte():
         data = request.get_json() or {}
 
         alimento_id = data.get('alimento_id')
-        if not alimento_id or not Alimento.query.get(alimento_id):
+        alimento = Alimento.query.get(alimento_id) if alimento_id else None
+        if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
         campos = data.get('campos') or []
@@ -25,12 +31,37 @@ def crear_reporte():
         if not campos:
             return jsonify({'error': 'Selecciona al menos un campo (macros, ingredientes, marca u otro)'}), 400
 
+        comentario = (data.get('comentario') or '').strip()
+        marca_correcta = (data.get('marca_correcta') or '').strip()
+
+        detalle_macros = []
+        if 'macros' in campos:
+            detalle_macros = [m for m in (data.get('detalle_macros') or []) if m in MACROS_VALIDOS]
+            if not detalle_macros:
+                return jsonify({'error': 'Indica qué macro(s) están mal'}), 400
+
+        detalle_ingredientes = []
+        if 'ingredientes' in campos:
+            ingredientes_alimento = set(alimento.to_dict()['ingredientes'])
+            detalle_ingredientes = [i for i in (data.get('detalle_ingredientes') or []) if i in ingredientes_alimento]
+            if not detalle_ingredientes:
+                return jsonify({'error': 'Indica qué ingrediente(s) están mal'}), 400
+
+        if 'marca' in campos and not marca_correcta:
+            return jsonify({'error': 'Indica la marca correcta'}), 400
+
+        if 'otro' in campos and not comentario:
+            return jsonify({'error': 'Describe el problema en el comentario'}), 400
+
         reporte = ReporteAlimento(
             alimento_id=alimento_id,
             usuario_id=usuario_id,
-            comentario=(data.get('comentario') or '').strip()
+            comentario=comentario,
+            marca_correcta=marca_correcta or None
         )
         reporte.set_campos(campos)
+        reporte.set_detalle_macros(detalle_macros)
+        reporte.set_detalle_ingredientes(detalle_ingredientes)
         db.session.add(reporte)
         db.session.commit()
 

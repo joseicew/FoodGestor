@@ -24,7 +24,21 @@ export class ReportesService {
     return { headers };
   }
 
-  crearReporte(alimentoId: number, campos: string[], comentario: string): Observable<any> {
-    return this.http.post(API, { alimento_id: alimentoId, campos, comentario }, this.getHeaders());
+  crearReporte(datos: {
+    alimentoId: number;
+    campos: string[];
+    comentario: string;
+    detalleMacros?: string[];
+    detalleIngredientes?: string[];
+    marcaCorrecta?: string;
+  }): Observable<any> {
+    return this.http.post(API, {
+      alimento_id: datos.alimentoId,
+      campos: datos.campos,
+      comentario: datos.comentario,
+      detalle_macros: datos.detalleMacros || [],
+      detalle_ingredientes: datos.detalleIngredientes || [],
+      marca_correcta: datos.marcaCorrecta || ''
+    }, this.getHeaders());
   }
 }

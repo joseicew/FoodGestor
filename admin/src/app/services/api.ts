@@ -24,6 +24,9 @@ export interface ReporteAlimento {
   alimento_id: number;
   usuario_id: number;
   campos: string[];
+  detalle_macros: string[];
+  detalle_ingredientes: string[];
+  marca_correcta: string;
   comentario: string;
   estado: 'pendiente' | 'resuelto' | 'descartado';
   created_at: string | null;

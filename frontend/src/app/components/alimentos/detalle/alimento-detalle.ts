@@ -16,6 +16,21 @@ export const CAMPOS_REPORTE = [
   { key: 'otro', label: 'Otro' },
 ];
 
+export const MACROS_REPORTE = [
+  { key: 'calorias', label: 'Calorías' },
+  { key: 'proteinas', label: 'Proteínas' },
+  { key: 'grasas', label: 'Grasas' },
+  { key: 'grasas_saturadas', label: 'Grasas saturadas' },
+  { key: 'hidratos_carbono', label: 'Hidratos de carbono' },
+  { key: 'azucares', label: 'Azúcares' },
+  { key: 'fibra', label: 'Fibra' },
+  { key: 'sal', label: 'Sal' },
+  { key: 'sodio', label: 'Sodio' },
+  { key: 'potasio', label: 'Potasio' },
+  { key: 'calcio', label: 'Calcio' },
+  { key: 'hierro', label: 'Hierro' },
+];
+
 export const CATEGORIAS = [
   'Carnes y Aves', 'Pescados y Mariscos', 'Lácteos y Huevos', 'Frutas',
   'Verduras y Hortalizas', 'Cereales y Derivados', 'Legumbres', 'Grasas y Aceites',
@@ -80,8 +95,12 @@ export class AlimentoDetalle implements OnChanges {
   ocrMacrosEstado: OcrEstado = 'idle';
 
   readonly camposReporte = CAMPOS_REPORTE;
+  readonly macrosReporte = MACROS_REPORTE;
   mostrarModalReportar = false;
   reportarCampos: string[] = [];
+  reportarDetalleMacros: string[] = [];
+  reportarDetalleIngredientes: string[] = [];
+  reportarMarcaCorrecta = '';
   reportarComentario = '';
   enviandoReporte = false;
 
@@ -94,8 +113,15 @@ export class AlimentoDetalle implements OnChanges {
     private cdr: ChangeDetectorRef
   ) {}
 
+  nombreIngrediente(ing: any): string {
+    return typeof ing === 'string' ? ing : ing.nombre;
+  }
+
   abrirModalReportar(): void {
     this.reportarCampos = [];
+    this.reportarDetalleMacros = [];
+    this.reportarDetalleIngredientes = [];
+    this.reportarMarcaCorrecta = '';
     this.reportarComentario = '';
     this.mostrarModalReportar = true;
   }
@@ -110,11 +136,38 @@ export class AlimentoDetalle implements OnChanges {
     else this.reportarCampos.push(key);
   }
 
+  toggleDetalleMacro(key: string): void {
+    const idx = this.reportarDetalleMacros.indexOf(key);
+    if (idx >= 0) this.reportarDetalleMacros.splice(idx, 1);
+    else this.reportarDetalleMacros.push(key);
+  }
+
+  toggleDetalleIngrediente(nombre: string): void {
+    const idx = this.reportarDetalleIngredientes.indexOf(nombre);
+    if (idx >= 0) this.reportarDetalleIngredientes.splice(idx, 1);
+    else this.reportarDetalleIngredientes.push(nombre);
+  }
+
+  get reporteValido(): boolean {
+    if (this.reportarCampos.length === 0) return false;
+    if (this.reportarCampos.includes('macros') && this.reportarDetalleMacros.length === 0) return false;
+    if (this.reportarCampos.includes('ingredientes') && this.reportarDetalleIngredientes.length === 0) return false;
+    if (this.reportarCampos.includes('marca') && !this.reportarMarcaCorrecta.trim()) return false;
+    if (this.reportarCampos.includes('otro') && !this.reportarComentario.trim()) return false;
+    return true;
+  }
+
   enviarReporte(): void {
-    if (!this.detalle || this.reportarCampos.length === 0 || this.enviandoReporte) return;
+    if (!this.detalle || !this.reporteValido || this.enviandoReporte) return;
     this.enviandoReporte = true;
-    this.reportesService.crearReporte(this.detalle.id, this.reportarCampos, this.reportarComentario.trim())
-      .subscribe({
+    this.reportesService.crearReporte({
+      alimentoId: this.detalle.id,
+      campos: this.reportarCampos,
+      comentario: this.reportarComentario.trim(),
+      detalleMacros: this.reportarDetalleMacros,
+      detalleIngredientes: this.reportarDetalleIngredientes,
+      marcaCorrecta: this.reportarMarcaCorrecta.trim()
+    }).subscribe({
         next: () => {
           this.enviandoReporte = false;
           this.mostrarModalReportar = false;
