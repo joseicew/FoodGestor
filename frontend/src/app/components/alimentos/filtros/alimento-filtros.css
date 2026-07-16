@@ -1,13 +1,16 @@
+/* Separación uniforme de 12px entre cada bloque (pestañas, buscador,
+   categorías, chips y lista): el hueco superior lo pone .tab-panel, y cada
+   bloque de aquí solo añade sus 12px inferiores. */
 .panel-filtros {
   flex-shrink: 0;
   background: var(--bg-surface);
-  padding: 8px 0;
+  padding: 0 0 12px;
 }
 
 .search-bar {
   background: transparent;
-  padding: 8px 0;
-  margin-bottom: 10px;
+  padding: 0;
+  margin-bottom: 12px;
 }
 
 .search-bar input {
@@ -25,7 +28,7 @@
 
 .filtro-categoria {
   background: transparent;
-  padding: 0 0 8px 0;
+  padding: 0 0 12px 0;
 }
 
 .filtro-categoria select {
@@ -49,7 +52,6 @@
 .filtros-toggles {
   display: flex;
   gap: 8px;
-  padding-bottom: 4px;
   flex-wrap: wrap;
 }
 

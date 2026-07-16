@@ -181,13 +181,14 @@
 }
 
 /* .tab-panel en vez de .panel para no heredar la regla global .card,.panel
-   (margin-bottom, border, box-shadow, border-radius, hover transform...). */
+   (margin-bottom, border, box-shadow, border-radius, hover transform...).
+   padding-top 12px = separación estándar entre bloques de esta pantalla. */
 .tab-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding: 3px 8px 3px 8px;
+  padding: 12px 8px 3px 8px;
   min-height: 0;
 }
 
