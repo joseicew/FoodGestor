@@ -13,6 +13,7 @@ import { BusquedaAlimentoComponent } from '../shared/busqueda-alimento/busqueda-
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { PageHeaderComponent } from '../shared/page-header/page-header';
 import { ModalCantidadAlimentoComponent } from '../shared/modal-cantidad-alimento/modal-cantidad-alimento';
+import { normalizarTexto } from '../../utils/texto';
 
 @Component({
   selector: 'app-calendario',
@@ -379,13 +380,13 @@ export class Calendario implements OnInit {
   // ── Modales ──
 
   buscarRaciones() {
-    const t = this.terminoBusquedaRacion.toLowerCase().trim();
+    const t = normalizarTexto(this.terminoBusquedaRacion.trim());
     let lista = this.raciones;
     if (this.filtroCategoriaRacion) {
       lista = lista.filter(r => (r.categorias || []).includes(this.filtroCategoriaRacion));
     }
     if (t) {
-      lista = lista.filter(r => r.nombre.toLowerCase().includes(t));
+      lista = lista.filter(r => normalizarTexto(r.nombre).includes(t));
     }
     this.racionesFiltradas = lista;
   }

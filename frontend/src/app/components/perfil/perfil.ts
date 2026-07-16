@@ -11,6 +11,7 @@ import { AutoSyncService } from '../../services/auto-sync';
 import { AllergensService } from '../../services/allergens';
 import { IngredientesService } from '../../services/ingredientes';
 import { BiometricAuthService } from '../../services/biometric-auth';
+import { normalizarTexto } from '../../utils/texto';
 
 @Component({
   selector: 'app-perfil',
@@ -477,10 +478,10 @@ export class Perfil implements OnInit {
   // ── Ingredientes no deseados ──
 
   get ingredientesFiltrados(): any[] {
-    const termino = this.busquedaIngNoDeseado.trim().toLowerCase();
+    const termino = normalizarTexto(this.busquedaIngNoDeseado.trim());
     if (termino.length < 2) return [];
     return this.todosIngredientes
-      .filter(i => !this.ingredientes_no_deseados.includes(i.id) && i.nombre.toLowerCase().includes(termino))
+      .filter(i => !this.ingredientes_no_deseados.includes(i.id) && normalizarTexto(i.nombre).includes(termino))
       .slice(0, 10);
   }
 

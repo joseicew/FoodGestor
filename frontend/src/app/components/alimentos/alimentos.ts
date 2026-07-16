@@ -13,6 +13,7 @@ import { CalendarioService } from '../../services/calendario';
 import { AlimentoFiltros } from './filtros/alimento-filtros';
 import { AlimentoLista } from './lista/alimento-lista';
 import { AlimentoDetalle, CATEGORIAS } from './detalle/alimento-detalle';
+import { normalizarTexto } from '../../utils/texto';
 
 @Component({
   selector: 'app-alimentos',
@@ -122,11 +123,11 @@ export class Alimentos implements OnInit {
   buscarAlimento() {
     let resultado = this.alimentos;
     if (this.terminoBusqueda.trim()) {
-      const t = this.terminoBusqueda.toLowerCase();
+      const t = normalizarTexto(this.terminoBusqueda);
       resultado = resultado.filter(a =>
-        a.nombre.toLowerCase().includes(t) ||
-        a.marca.toLowerCase().includes(t) ||
-        (a.categoria && a.categoria.toLowerCase().includes(t))
+        normalizarTexto(a.nombre).includes(t) ||
+        normalizarTexto(a.marca).includes(t) ||
+        normalizarTexto(a.categoria).includes(t)
       );
     }
     if (this.categoriaFiltro) {
