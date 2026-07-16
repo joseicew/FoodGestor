@@ -320,12 +320,22 @@ export class CacheService {
   }
 
   /**
-   * Limpia toda la caché (útil al logout)
+   * Limpia toda la caché (llamado desde AuthService.logout()). Incluye las
+   * entradas de calendario por fecha (cache_dia_*, claves dinámicas), para
+   * que tras un cierre de sesión (p.ej. forzado por pérdida de conexión) el
+   * siguiente login siempre cargue datos frescos, sin restos de la sesión
+   * anterior.
    */
   limpiar(): void {
     localStorage.removeItem(this.CACHE_KEYS.alimentos);
     localStorage.removeItem(this.CACHE_KEYS.raciones);
     localStorage.removeItem(this.CACHE_KEYS.calendario);
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(this.CACHE_DIA_PREFIX)) {
+        localStorage.removeItem(key);
+      }
+    }
     this.alimentosSubject.next([]);
     this.racionesSubject.next([]);
     this.calendarioSubject.next([]);

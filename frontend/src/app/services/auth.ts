@@ -5,6 +5,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SessionService } from './session';
 import { IngredientesService } from './ingredientes';
+import { CacheService } from './cache';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -19,7 +20,8 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private sessionService: SessionService,
-    private ingredientesService: IngredientesService
+    private ingredientesService: IngredientesService,
+    private cacheService: CacheService
   ) {
     // No cargar usuario en el constructor
     // El PerfilComponent lo hará en ngOnInit
@@ -155,6 +157,7 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
     this.sessionService.limpiar();
     this.ingredientesService.limpiar();
+    this.cacheService.limpiar();
     this.usuarioSubject.next(null);
   }
 
