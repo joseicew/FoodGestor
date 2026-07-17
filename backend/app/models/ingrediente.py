@@ -36,7 +36,8 @@ ALIMENTOS_CATEGORIAS = [
     'Azúcares y dulces',
     'Bebidas',
     'Condimentos y especias',
-    'Aditivos'
+    'Aditivos',
+    'Vitaminas'
 ]
 
 
