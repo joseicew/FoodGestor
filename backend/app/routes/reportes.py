@@ -36,14 +36,26 @@ def crear_reporte():
 
         detalle_macros = []
         if 'macros' in campos:
-            detalle_macros = [m for m in (data.get('detalle_macros') or []) if m in MACROS_VALIDOS]
+            for item in (data.get('detalle_macros') or []):
+                campo = item.get('campo') if isinstance(item, dict) else None
+                if campo in MACROS_VALIDOS:
+                    detalle_macros.append({
+                        'campo': campo,
+                        'valor': (item.get('valor') or '').strip()
+                    })
             if not detalle_macros:
                 return jsonify({'error': 'Indica qué macro(s) están mal'}), 400
 
         detalle_ingredientes = []
         if 'ingredientes' in campos:
             ingredientes_alimento = set(alimento.to_dict()['ingredientes'])
-            detalle_ingredientes = [i for i in (data.get('detalle_ingredientes') or []) if i in ingredientes_alimento]
+            for item in (data.get('detalle_ingredientes') or []):
+                nombre = item.get('nombre') if isinstance(item, dict) else None
+                if nombre in ingredientes_alimento:
+                    detalle_ingredientes.append({
+                        'nombre': nombre,
+                        'correccion': (item.get('correccion') or '').strip()
+                    })
             if not detalle_ingredientes:
                 return jsonify({'error': 'Indica qué ingrediente(s) están mal'}), 400
 

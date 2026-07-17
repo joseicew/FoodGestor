@@ -98,8 +98,8 @@ export class AlimentoDetalle implements OnChanges {
   readonly macrosReporte = MACROS_REPORTE;
   mostrarModalReportar = false;
   reportarCampos: string[] = [];
-  reportarDetalleMacros: string[] = [];
-  reportarDetalleIngredientes: string[] = [];
+  reportarDetalleMacros: { campo: string; valor: string }[] = [];
+  reportarDetalleIngredientes: { nombre: string; correccion: string }[] = [];
   reportarMarcaCorrecta = '';
   reportarComentario = '';
   enviandoReporte = false;
@@ -115,6 +115,10 @@ export class AlimentoDetalle implements OnChanges {
 
   nombreIngrediente(ing: any): string {
     return typeof ing === 'string' ? ing : ing.nombre;
+  }
+
+  etiquetaMacro(key: string): string {
+    return this.macrosReporte.find(m => m.key === key)?.label || key;
   }
 
   abrirModalReportar(): void {
@@ -137,15 +141,23 @@ export class AlimentoDetalle implements OnChanges {
   }
 
   toggleDetalleMacro(key: string): void {
-    const idx = this.reportarDetalleMacros.indexOf(key);
+    const idx = this.reportarDetalleMacros.findIndex(m => m.campo === key);
     if (idx >= 0) this.reportarDetalleMacros.splice(idx, 1);
-    else this.reportarDetalleMacros.push(key);
+    else this.reportarDetalleMacros.push({ campo: key, valor: '' });
+  }
+
+  detalleMacroSeleccionado(key: string): boolean {
+    return this.reportarDetalleMacros.some(m => m.campo === key);
   }
 
   toggleDetalleIngrediente(nombre: string): void {
-    const idx = this.reportarDetalleIngredientes.indexOf(nombre);
+    const idx = this.reportarDetalleIngredientes.findIndex(i => i.nombre === nombre);
     if (idx >= 0) this.reportarDetalleIngredientes.splice(idx, 1);
-    else this.reportarDetalleIngredientes.push(nombre);
+    else this.reportarDetalleIngredientes.push({ nombre, correccion: '' });
+  }
+
+  detalleIngredienteSeleccionado(nombre: string): boolean {
+    return this.reportarDetalleIngredientes.some(i => i.nombre === nombre);
   }
 
   get reporteValido(): boolean {

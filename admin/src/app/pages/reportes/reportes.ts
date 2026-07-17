@@ -65,10 +65,22 @@ const ETIQUETAS_MACRO: Record<string, string> = {
                 @for (c of r.campos; track c) { <span class="badge badge-campo">{{ etiqueta(c) }}</span> }
               </div>
               @if (r.detalle_macros.length) {
-                <p class="subdetalle"><strong>Macros:</strong> {{ etiquetasMacros(r.detalle_macros) }}</p>
+                <div class="subdetalle-lista">
+                  <strong>Macros:</strong>
+                  @for (m of r.detalle_macros; track m.campo) {
+                    <span class="corregir-item">
+                      {{ etiquetaMacro(m.campo) }}: {{ valorActualMacro(r, m.campo) }} → {{ m.valor || '(sin especificar)' }}
+                    </span>
+                  }
+                </div>
               }
               @if (r.detalle_ingredientes.length) {
-                <p class="subdetalle"><strong>Ingredientes:</strong> {{ r.detalle_ingredientes.join(', ') }}</p>
+                <div class="subdetalle-lista">
+                  <strong>Ingredientes:</strong>
+                  @for (i of r.detalle_ingredientes; track i.nombre) {
+                    <span class="corregir-item">{{ i.nombre }} → {{ i.correccion || '(sin especificar)' }}</span>
+                  }
+                </div>
               }
               @if (r.marca_correcta) {
                 <p class="subdetalle"><strong>Marca correcta:</strong> {{ r.marca_correcta }}</p>
@@ -106,6 +118,8 @@ const ETIQUETAS_MACRO: Record<string, string> = {
     .badge-warning { background: var(--warning-soft); color: var(--warning); }
     .badge-success { background: var(--primary-soft); color: var(--primary-dark); }
     .subdetalle { margin: 0; font-size: 13px; color: var(--text); }
+    .subdetalle-lista { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--text); }
+    .corregir-item { padding-left: 12px; }
     .comentario { margin: 0; font-size: 13px; color: var(--text); font-style: italic; }
     .meta { margin: 0; font-size: 12px; color: var(--text-muted); }
     .fila-acciones { display: flex; gap: 8px; flex-shrink: 0; }
@@ -145,8 +159,13 @@ export class ReportesComponent implements OnInit {
     return ETIQUETAS_CAMPO[campo] || campo;
   }
 
-  etiquetasMacros(campos: string[]): string {
-    return campos.map((c) => ETIQUETAS_MACRO[c] || c).join(', ');
+  etiquetaMacro(campo: string): string {
+    return ETIQUETAS_MACRO[campo] || campo;
+  }
+
+  valorActualMacro(reporte: ReporteAlimento, campo: string): string {
+    const valor = reporte.alimento?.[campo];
+    return valor === null || valor === undefined ? '?' : String(valor);
   }
 
   cambiarEstado(reporte: ReporteAlimento, estado: string): void {

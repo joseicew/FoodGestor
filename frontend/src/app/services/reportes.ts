@@ -28,8 +28,8 @@ export class ReportesService {
     alimentoId: number;
     campos: string[];
     comentario: string;
-    detalleMacros?: string[];
-    detalleIngredientes?: string[];
+    detalleMacros?: { campo: string; valor: string }[];
+    detalleIngredientes?: { nombre: string; correccion: string }[];
     marcaCorrecta?: string;
   }): Observable<any> {
     return this.http.post(API, {

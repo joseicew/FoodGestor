@@ -96,7 +96,7 @@ def listar_reportes():
         d = r.to_dict()
         alimento = alimentos.get(r.alimento_id)
         usuario = usuarios.get(r.usuario_id)
-        d['alimento'] = {'id': alimento.id, 'nombre': alimento.nombre, 'marca': alimento.marca} if alimento else None
+        d['alimento'] = alimento.to_dict() if alimento else None
         d['usuario_email'] = usuario.email if usuario else None
         resultado.append(d)
 

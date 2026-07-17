@@ -357,13 +357,24 @@
               @for (macro of macrosReporte; track macro.key) {
                 <button type="button"
                         (click)="toggleDetalleMacro(macro.key)"
-                        [style.background]="reportarDetalleMacros.includes(macro.key) ? '#fff3cd' : '#f5f5f5'"
-                        [style.border]="reportarDetalleMacros.includes(macro.key) ? '1px solid #ffc107' : '1px solid #ddd'"
+                        [style.background]="detalleMacroSeleccionado(macro.key) ? '#fff3cd' : '#f5f5f5'"
+                        [style.border]="detalleMacroSeleccionado(macro.key) ? '1px solid #ffc107' : '1px solid #ddd'"
                         style="padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; color: #333;">
                   {{ macro.label }}
                 </button>
               }
             </div>
+            @if (reportarDetalleMacros.length > 0) {
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
+                @for (m of reportarDetalleMacros; track m.campo) {
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 12px; color: #666; width: 130px; flex-shrink: 0;">{{ etiquetaMacro(m.campo) }}</span>
+                    <input type="text" [(ngModel)]="m.valor" placeholder="Valor correcto (opcional)"
+                           style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 6px 10px; font-size: 12px; box-sizing: border-box;" />
+                  </div>
+                }
+              </div>
+            }
           </div>
         }
 
@@ -374,13 +385,24 @@
               @for (ing of detalle.ingredientes; track $index) {
                 <button type="button"
                         (click)="toggleDetalleIngrediente(nombreIngrediente(ing))"
-                        [style.background]="reportarDetalleIngredientes.includes(nombreIngrediente(ing)) ? '#fff3cd' : '#f5f5f5'"
-                        [style.border]="reportarDetalleIngredientes.includes(nombreIngrediente(ing)) ? '1px solid #ffc107' : '1px solid #ddd'"
+                        [style.background]="detalleIngredienteSeleccionado(nombreIngrediente(ing)) ? '#fff3cd' : '#f5f5f5'"
+                        [style.border]="detalleIngredienteSeleccionado(nombreIngrediente(ing)) ? '1px solid #ffc107' : '1px solid #ddd'"
                         style="padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; color: #333;">
                   {{ nombreIngrediente(ing) }}
                 </button>
               }
             </div>
+            @if (reportarDetalleIngredientes.length > 0) {
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
+                @for (i of reportarDetalleIngredientes; track i.nombre) {
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 12px; color: #666; width: 130px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ i.nombre }}</span>
+                    <input type="text" [(ngModel)]="i.correccion" placeholder="¿Cuál es el correcto? (opcional)"
+                           style="flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 6px 10px; font-size: 12px; box-sizing: border-box;" />
+                  </div>
+                }
+              </div>
+            }
           </div>
         }
 

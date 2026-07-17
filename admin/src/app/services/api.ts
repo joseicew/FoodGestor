@@ -19,18 +19,37 @@ export interface TipoLimpieza {
   ia: boolean;
 }
 
+export interface AlimentoResumen {
+  id: number;
+  nombre: string;
+  marca: string;
+  calorias: number | null;
+  proteinas: number | null;
+  grasas: number | null;
+  grasas_saturadas: number | null;
+  hidratos_carbono: number | null;
+  azucares: number | null;
+  fibra: number | null;
+  sal: number | null;
+  sodio: number | null;
+  potasio: number | null;
+  calcio: number | null;
+  hierro: number | null;
+  [key: string]: any;
+}
+
 export interface ReporteAlimento {
   id: number;
   alimento_id: number;
   usuario_id: number;
   campos: string[];
-  detalle_macros: string[];
-  detalle_ingredientes: string[];
+  detalle_macros: { campo: string; valor: string }[];
+  detalle_ingredientes: { nombre: string; correccion: string }[];
   marca_correcta: string;
   comentario: string;
   estado: 'pendiente' | 'resuelto' | 'descartado';
   created_at: string | null;
-  alimento: { id: number; nombre: string; marca: string } | null;
+  alimento: AlimentoResumen | null;
   usuario_email: string | null;
 }
 
