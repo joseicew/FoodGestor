@@ -7,7 +7,7 @@ import {
   HttpErrorResponse
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { AuthService } from '../services/auth';
 import { Router } from '@angular/router';
 
@@ -16,6 +16,13 @@ export class AuthInterceptor implements HttpInterceptor {
   private authService = inject(AuthService);
   private router = inject(Router);
   private cerrandoSesionPorConexion = false;
+
+  // Nº de fallos de red/BD consecutivos antes de forzar el cierre de sesión.
+  // En redes móviles/VPN un parpadeo aislado (status 0) es normal y se
+  // recupera solo; forzar logout+borrado de caché en el primer fallo dejaba
+  // pantallas vacías (p.ej. Raciones) tras un simple hipo de conexión.
+  private readonly UMBRAL_FALLOS_CONEXION = 3;
+  private fallosConsecutivos = 0;
 
   constructor() {
     console.log('[AuthInterceptor] Inicializado');
@@ -49,6 +56,7 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     return next.handle(request).pipe(
+      tap(() => { this.fallosConsecutivos = 0; }),
       catchError((error: HttpErrorResponse) => {
         console.error(`[AuthInterceptor] Error ${error.status}:`, error.error);
 
@@ -62,11 +70,16 @@ export class AuthInterceptor implements HttpInterceptor {
           // para evitar que la app siga operando con datos a medias o errores
           // en cascada. status 0 = sin red/servidor caído; 5xx = fallo del backend
           // (normalmente la conexión a la base de datos, ver errorhandler global).
-          if (!this.cerrandoSesionPorConexion) {
+          // Solo se dispara tras varios fallos consecutivos: en redes móviles/VPN
+          // un único parpadeo (status 0) es normal y no debe tirar la sesión ni
+          // vaciar la caché local.
+          this.fallosConsecutivos++;
+          if (this.fallosConsecutivos >= this.UMBRAL_FALLOS_CONEXION && !this.cerrandoSesionPorConexion) {
             this.cerrandoSesionPorConexion = true;
-            console.warn(`[AuthInterceptor] Sin acceso al servidor/BD (status ${error.status}) - cerrando sesión`);
+            console.warn(`[AuthInterceptor] Sin acceso al servidor/BD tras ${this.fallosConsecutivos} fallos (status ${error.status}) - cerrando sesión`);
             this.authService.logout();
             this.router.navigate(['/login'], { queryParams: { motivo: 'sin_conexion' } });
+            this.fallosConsecutivos = 0;
             setTimeout(() => { this.cerrandoSesionPorConexion = false; }, 3000);
           }
         }
