@@ -8,6 +8,7 @@ from datetime import datetime
 from app import db
 from app.models.alimento import Alimento
 from app.models.ingrediente import Ingrediente
+from app.models.porcion_habitual import PorcionHabitual
 
 alimentos_bp = Blueprint('alimentos', __name__, url_prefix='/api/alimentos')
 
@@ -403,6 +404,46 @@ def toggle_favorito(id):
             'mensaje': 'Favorito actualizado',
             'alimento': alimento.to_dict()
         }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@alimentos_bp.route('/<int:id>/porcion-habitual', methods=['GET'])
+@jwt_required()
+def obtener_porcion_habitual(id):
+    """Cantidad (g/ml) que el usuario actual suele añadir de este alimento, si la ha guardado."""
+    try:
+        usuario_id = int(get_jwt_identity())
+        porcion = PorcionHabitual.query.filter_by(usuario_id=usuario_id, alimento_id=id).first()
+        return jsonify({'porcion': porcion.to_dict() if porcion else None}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@alimentos_bp.route('/<int:id>/porcion-habitual', methods=['PUT'])
+@jwt_required()
+def guardar_porcion_habitual(id):
+    """Guarda (o actualiza) la cantidad habitual del usuario actual para este alimento."""
+    try:
+        usuario_id = int(get_jwt_identity())
+        data = request.get_json() or {}
+        cantidad = data.get('cantidad')
+        if not cantidad or cantidad <= 0:
+            return jsonify({'error': 'Cantidad inválida'}), 400
+
+        if not Alimento.query.get(id):
+            return jsonify({'error': 'Alimento no encontrado'}), 404
+
+        porcion = PorcionHabitual.query.filter_by(usuario_id=usuario_id, alimento_id=id).first()
+        if porcion:
+            porcion.cantidad = cantidad
+        else:
+            porcion = PorcionHabitual(usuario_id=usuario_id, alimento_id=id, cantidad=cantidad)
+            db.session.add(porcion)
+        db.session.commit()
+
+        return jsonify({'mensaje': 'Porción habitual guardada', 'porcion': porcion.to_dict()}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

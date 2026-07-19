@@ -147,6 +147,7 @@ def create_app():
             from app.models.racion import Racion
             from app.models.comida_diaria import ComidaDiaria
             from app.models.reporte_alimento import ReporteAlimento
+            from app.models.porcion_habitual import PorcionHabitual
 
             # Crear tablas basado en los modelos definidos
             db.create_all()

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AlimentosService } from '../../../services/alimentos';
 
@@ -17,13 +17,39 @@ export class ModalCantidadAlimentoComponent implements OnChanges {
   modo: 'gramos' | 'unidades' = 'gramos';
   actualizandoFavorito = false;
 
-  constructor(private alimentosService: AlimentosService) {}
+  /** Porción (g/ml) que el usuario ya tiene guardada para este alimento, si existe */
+  porcionHabitual: number | null = null;
+  /** Pregunta "¿es tu porción habitual?" pendiente de responder tras pulsar Agregar */
+  mostrarSugerenciaGuardar = false;
+  guardandoPorcion = false;
+  private cantidadPendiente: number | null = null;
+
+  constructor(private alimentosService: AlimentosService, private cdr: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['alimento']?.currentValue) {
       const tienePorciones = !!(this.alimento?.peso_unidad && this.alimento?.nombre_unidad);
       this.modo = tienePorciones ? 'unidades' : 'gramos';
       this.cantidad = tienePorciones ? 1 : 100;
+      this.porcionHabitual = null;
+      this.mostrarSugerenciaGuardar = false;
+      this.cantidadPendiente = null;
+
+      const alimentoId = this.alimento.id;
+      this.alimentosService.obtenerPorcionHabitual(alimentoId).subscribe({
+        next: (res) => {
+          // El usuario pudo cerrar el modal o abrir otro alimento antes de que llegue la respuesta
+          if (this.alimento?.id !== alimentoId) return;
+          const cantidadGuardada = res?.porcion?.cantidad;
+          if (cantidadGuardada) {
+            this.porcionHabitual = cantidadGuardada;
+            this.modo = 'gramos';
+            this.cantidad = cantidadGuardada;
+            this.cdr.detectChanges();
+          }
+        },
+        error: () => {}
+      });
     }
   }
 
@@ -46,7 +72,42 @@ export class ModalCantidadAlimentoComponent implements OnChanges {
     const gramos = this.modo === 'unidades'
       ? cantidadNum * (this.alimento.peso_unidad || 100)
       : cantidadNum;
+
+    // Primera vez que se añade en gr/ml (sin porción habitual guardada): preguntar
+    // antes de confirmar si esta es la cantidad que suele consumir, para que la
+    // próxima vez ya salga sugerida.
+    if (this.modo === 'gramos' && !this.porcionHabitual) {
+      this.cantidadPendiente = gramos;
+      this.mostrarSugerenciaGuardar = true;
+      return;
+    }
+
     this.confirmar.emit(gramos);
+  }
+
+  confirmarSinGuardarPorcion() {
+    const gramos = this.cantidadPendiente;
+    this.mostrarSugerenciaGuardar = false;
+    this.cantidadPendiente = null;
+    if (gramos != null) this.confirmar.emit(gramos);
+  }
+
+  confirmarYGuardarPorcion() {
+    if (this.guardandoPorcion || this.cantidadPendiente == null) return;
+    const gramos = this.cantidadPendiente;
+    this.guardandoPorcion = true;
+    this.alimentosService.guardarPorcionHabitual(this.alimento.id, gramos).subscribe({
+      next: () => this.finalizarConfirmacionConPorcion(gramos),
+      error: () => this.finalizarConfirmacionConPorcion(gramos)
+    });
+  }
+
+  private finalizarConfirmacionConPorcion(gramos: number) {
+    this.guardandoPorcion = false;
+    this.mostrarSugerenciaGuardar = false;
+    this.cantidadPendiente = null;
+    this.confirmar.emit(gramos);
+    this.cdr.detectChanges();
   }
 
   onCancelar() {
@@ -62,10 +123,12 @@ export class ModalCantidadAlimentoComponent implements OnChanges {
       next: (res) => {
         this.alimento.favorito = res.alimento.favorito;
         this.actualizandoFavorito = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.alimento.favorito = favoritoPrevio;
         this.actualizandoFavorito = false;
+        this.cdr.detectChanges();
       }
     });
   }

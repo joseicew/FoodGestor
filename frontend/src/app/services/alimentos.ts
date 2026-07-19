@@ -82,6 +82,15 @@ export class AlimentosService {
     return this.http.post<any>(`${API}/${id}/favorito`, {}, this.getHeaders());
   }
 
+  /** Porción (g/ml) que el usuario actual suele añadir de este alimento, si la ha guardado */
+  obtenerPorcionHabitual(id: number): Observable<{ porcion: { alimento_id: number; cantidad: number } | null }> {
+    return this.http.get<{ porcion: { alimento_id: number; cantidad: number } | null }>(`${API}/${id}/porcion-habitual`, this.getHeaders());
+  }
+
+  guardarPorcionHabitual(id: number, cantidad: number): Observable<any> {
+    return this.http.put<any>(`${API}/${id}/porcion-habitual`, { cantidad }, this.getHeaders());
+  }
+
   obtenerFavoritos(): Observable<any[]> {
     return this.http.get<any[]>(`${API}/favoritos/lista`, this.getHeaders());
   }
