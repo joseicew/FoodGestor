@@ -11,6 +11,13 @@ import os
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 
+@auth_bp.route('/health', methods=['GET'])
+def health():
+    """Comprobación ligera de conectividad (sin autenticación); usada por la
+    app al volver de segundo plano para saber si hay que forzar cierre de sesión."""
+    return jsonify({'status': 'ok'}), 200
+
+
 @auth_bp.route('/registro', methods=['POST'])
 def registro():
     """Registra un nuevo usuario"""

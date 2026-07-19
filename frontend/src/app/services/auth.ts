@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, timeout, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SessionService } from './session';
 import { IngredientesService } from './ingredientes';
@@ -159,6 +159,19 @@ export class AuthService {
     this.ingredientesService.limpiar();
     this.cacheService.limpiar();
     this.usuarioSubject.next(null);
+  }
+
+  /**
+   * Comprueba si el backend es alcanzable ahora mismo (sin autenticación).
+   * Se usa al volver la app a primer plano: si no hay respuesta en el tiempo
+   * dado, se asume que no hay conexión.
+   */
+  servidorAlcanzable(timeoutMs = 6000): Observable<boolean> {
+    return this.http.get(`${this.apiUrl}/health`).pipe(
+      timeout(timeoutMs),
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
   /**
