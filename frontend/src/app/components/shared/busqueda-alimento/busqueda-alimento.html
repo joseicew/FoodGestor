@@ -4,6 +4,9 @@
            [(ngModel)]="termino"
            (ngModelChange)="filtrar()"
            placeholder="🔍 Filtrar por nombre..." />
+    @if (termino) {
+      <button type="button" class="ba-clear" (click)="limpiar()" title="Borrar búsqueda">✕</button>
+    }
   </div>
 
   @if (filtrados.length > 0 || (termino.trim() && filtrados.length === 0)) {
@@ -12,7 +15,7 @@
         <p class="ba-sin-resultados">Sin resultados</p>
       }
       @for (alimento of filtrados; track alimento.id) {
-        <button class="ba-fila" (click)="seleccionar.emit(alimento)" [class.favorito]="alimento.favorito">
+        <button class="ba-fila" (click)="onSeleccionar(alimento)" [class.favorito]="alimento.favorito">
           @if (alimento.favorito) {
             <span class="ba-star">⭐</span>
           }

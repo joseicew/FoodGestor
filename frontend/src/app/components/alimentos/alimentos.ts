@@ -317,14 +317,28 @@ export class Alimentos implements OnInit {
       .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
   }
 
+  favoritosActualizando = new Set<number>();
+
   toggleFavorito(alimento: any) {
+    if (this.favoritosActualizando.has(alimento.id)) return;
+    const favoritoPrevio = alimento.favorito;
+    alimento.favorito = !favoritoPrevio;
+    this.favoritosActualizando.add(alimento.id);
+    this.flash.mostrar(alimento.favorito ? '⭐ Agregado a favoritos' : '☆ Removido de favoritos', 'exito');
+    this.cdr.detectChanges();
+
     this.alimentosService.toggleFavorito(alimento.id).subscribe({
       next: (res) => {
         alimento.favorito = res.alimento.favorito;
-        this.flash.mostrar(alimento.favorito ? '⭐ Agregado a favoritos' : '☆ Removido de favoritos', 'exito');
+        this.favoritosActualizando.delete(alimento.id);
         this.cdr.detectChanges();
       },
-      error: () => this.flash.mostrar('Error al actualizar favorito', 'error')
+      error: () => {
+        alimento.favorito = favoritoPrevio;
+        this.favoritosActualizando.delete(alimento.id);
+        this.flash.mostrar('Error al actualizar favorito', 'error');
+        this.cdr.detectChanges();
+      }
     });
   }
 

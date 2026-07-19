@@ -207,11 +207,16 @@
                         </button>
                       }
                     </div>
-                    <input class="inline-input" type="text"
-                           [(ngModel)]="terminoBusquedaRacion"
-                           (ngModelChange)="buscarRaciones()"
-                           placeholder="Buscar ración..."
-                           autofocus />
+                    <div class="inline-input-wrapper">
+                      <input class="inline-input" type="text"
+                             [(ngModel)]="terminoBusquedaRacion"
+                             (ngModelChange)="buscarRaciones()"
+                             placeholder="Buscar ración..."
+                             autofocus />
+                      @if (terminoBusquedaRacion) {
+                        <button type="button" class="inline-input-clear" (click)="limpiarBusquedaRacion()" title="Borrar búsqueda">✕</button>
+                      }
+                    </div>
                     @if (racionesFiltradas.length > 0) {
                       <div class="inline-lista">
                         @for (racion of racionesFiltradas; track racion.id) {
@@ -249,4 +254,11 @@
     (confirmar)="onConfirmarCantidadAlimento($event)"
     (cancelar)="onCancelarCantidadAlimento()">
   </app-modal-cantidad-alimento>
+
+  <!-- Modal cantidad ración (presets 0.5/1/2/3 + valor personalizado) -->
+  <app-modal-cantidad-racion
+    [racion]="racionParaAgregar"
+    (confirmar)="onConfirmarCantidadRacion($event)"
+    (cancelar)="onCancelarCantidadRacion()">
+  </app-modal-cantidad-racion>
 </div>

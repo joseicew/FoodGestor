@@ -22,6 +22,8 @@ export class AlimentoLista {
   @Input() tieneIngNoDeseado: (alimento: any) => boolean = () => false;
   /** Función externa opcional que devuelve una etiqueta destacada por alimento (ej. aporte de un macro), o null para no mostrar nada. */
   @Input() etiquetaExtra: (alimento: any) => string | null = () => null;
+  /** Ids de alimentos cuyo favorito se está guardando ahora mismo (feedback visual + evita doble click). */
+  @Input() idsActualizandoFavorito: Set<number> = new Set();
 
   @Output() seleccionar = new EventEmitter<any>();
   @Output() toggleFavorito = new EventEmitter<{ alimento: any; event: Event }>();

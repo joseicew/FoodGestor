@@ -1,8 +1,8 @@
-.ba-search { margin-bottom: 8px; }
+.ba-search { margin-bottom: 8px; position: relative; }
 
 .ba-search input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 34px 10px 12px;
   border: 1.5px solid #e0e0e0;
   border-radius: 8px;
   font-size: 14px;
@@ -12,6 +12,22 @@
 }
 
 .ba-search input:focus { border-color: #4CAF50; }
+
+.ba-clear {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #999;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.ba-clear:hover { color: #333; }
 
 .ba-lista {
   background: #f9f9f9;

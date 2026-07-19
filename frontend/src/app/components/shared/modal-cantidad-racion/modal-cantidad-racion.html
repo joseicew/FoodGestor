@@ -1,0 +1,48 @@
+@if (racion) {
+  <div class="modal-overlay" style="justify-content:center;" (click)="onCancelar()">
+    <div class="modal-box" style="position:relative;" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="onCancelar()" style="position:absolute; top:0; right:0;">✕</button>
+
+      <div style="padding: 16px;">
+        <h3 style="margin: 0 0 4px 0;">{{ racion.nombre }}</h3>
+        <p style="margin: 0 0 16px 0; font-size: 13px; color: #666;">¿Cuántas raciones añades?</p>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+          @for (p of presets; track p) {
+            <button (click)="elegirPreset(p)"
+                    [style.background]="!mostrarPersonalizado && cantidad === p ? '#4CAF50' : '#f0f0f0'"
+                    [style.color]="!mostrarPersonalizado && cantidad === p ? '#fff' : '#666'"
+                    style="flex: 1; min-width: 50px; padding: 10px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+              {{ p }}
+            </button>
+          }
+          <button (click)="abrirPersonalizado()"
+                  [style.background]="mostrarPersonalizado ? '#4CAF50' : '#f0f0f0'"
+                  [style.color]="mostrarPersonalizado ? '#fff' : '#666'"
+                  style="flex: 1; min-width: 50px; padding: 10px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+            Otra
+          </button>
+        </div>
+
+        @if (mostrarPersonalizado) {
+          <input type="text"
+                 [(ngModel)]="valorPersonalizado"
+                 placeholder="Ej: 1.5"
+                 autofocus
+                 style="width: 100%; box-sizing: border-box; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 16px; font-weight: 600; text-align: center; margin-bottom: 16px;" />
+        }
+
+        <div style="display: flex; gap: 8px;">
+          <button (click)="onConfirmar()"
+                  style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+            ✓ Agregar
+          </button>
+          <button (click)="onCancelar()"
+                  style="flex: 1; padding: 10px; background: #f0f0f0; color: #666; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+            ← Atrás
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -171,7 +171,14 @@
 }
 
 .btn-favorito:hover { opacity: 1; transform: scale(1.2); }
-.btn-favorito.favorito { opacity: 1; color: #FFC107; }
+.btn-favorito.favorito { opacity: 1; color: #FFC107; animation: favorito-bounce 0.3s ease; }
+.btn-favorito.actualizando { opacity: 0.4; cursor: default; }
+
+@keyframes favorito-bounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
 
 .empty-state {
   text-align: center;

@@ -29,6 +29,16 @@ export class BusquedaAlimentoComponent implements OnChanges {
     return (s || '').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
   }
 
+  onSeleccionar(alimento: any) {
+    this.seleccionar.emit(alimento);
+    this.limpiar();
+  }
+
+  limpiar() {
+    this.termino = '';
+    this.filtrar();
+  }
+
   filtrar() {
     let lista = this.excluirIds.length > 0
       ? this.alimentos.filter(a => !this.excluirIds.includes(a.id))

@@ -33,6 +33,8 @@
         }
         <button class="btn-favorito"
                 [class.favorito]="favoritosFijos || alimento.favorito"
+                [class.actualizando]="idsActualizandoFavorito.has(alimento.id)"
+                [disabled]="idsActualizandoFavorito.has(alimento.id)"
                 (click)="onToggleFavorito(alimento, $event)"
                 title="Favorito">
           {{ (favoritosFijos || alimento.favorito) ? '⭐' : '☆' }}

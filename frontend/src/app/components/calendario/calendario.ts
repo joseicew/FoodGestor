@@ -13,11 +13,12 @@ import { BusquedaAlimentoComponent } from '../shared/busqueda-alimento/busqueda-
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { PageHeaderComponent } from '../shared/page-header/page-header';
 import { ModalCantidadAlimentoComponent } from '../shared/modal-cantidad-alimento/modal-cantidad-alimento';
+import { ModalCantidadRacionComponent } from '../shared/modal-cantidad-racion/modal-cantidad-racion';
 import { normalizarTexto } from '../../utils/texto';
 
 @Component({
   selector: 'app-calendario',
-  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent, ModalCantidadAlimentoComponent],
+  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent, ModalCantidadAlimentoComponent, ModalCantidadRacionComponent],
   templateUrl: './calendario.html',
   styleUrl: './calendario.css'
 })
@@ -84,6 +85,9 @@ export class Calendario implements OnInit {
   // Modal de cantidad al añadir un alimento a una comida
   alimentoParaAgregar: any = null;
   private tipoComidaParaAgregar: string | null = null;
+  // Modal de cantidad al añadir una ración a una comida
+  racionParaAgregar: any = null;
+  private tipoComidaParaAgregarRacion: string | null = null;
   // Alergias del usuario
   intoleranciaUsuario: string[] = [];
 
@@ -391,6 +395,11 @@ export class Calendario implements OnInit {
     this.racionesFiltradas = lista;
   }
 
+  limpiarBusquedaRacion() {
+    this.terminoBusquedaRacion = '';
+    this.buscarRaciones();
+  }
+
   toggleFiltroCategoriaRacion(categoria: string) {
     this.filtroCategoriaRacion = this.filtroCategoriaRacion === categoria ? null : categoria;
     this.buscarRaciones();
@@ -417,19 +426,29 @@ export class Calendario implements OnInit {
 
   onSeleccionarRacionInline(tipoComida: string, racion: any) {
     this.panelActivo = null;
+    this.limpiarBusquedaRacion();
+    this.tipoComidaParaAgregarRacion = tipoComida;
+    this.racionParaAgregar = racion;
+  }
+
+  onConfirmarCantidadRacion(cantidad: number) {
+    const tipoComida = this.tipoComidaParaAgregarRacion;
+    const racion = this.racionParaAgregar;
+    if (!tipoComida || !racion) return;
+    this.onCancelarCantidadRacion();
 
     // Actualización visual instantánea
     if (this.diaActual?.[tipoComida]) {
       const yaExiste = this.diaActual[tipoComida].raciones.some((r: any) => r.id === racion.id);
       if (!yaExiste) {
-        this.diaActual[tipoComida].raciones.push({ ...racion, cantidad: 1 });
+        this.diaActual[tipoComida].raciones.push({ ...racion, cantidad });
         this.cdr.detectChanges();
       }
     }
 
     const fechaStr = this.formatoFecha(this.fechaSeleccionada);
     this.optimisticUpdateService.encolar({
-      accion: () => this.calendarioService.agregarRacionAlComida(fechaStr, tipoComida, racion.id, 1),
+      accion: () => this.calendarioService.agregarRacionAlComida(fechaStr, tipoComida, racion.id, cantidad),
       enExito: () => {
         this.flash.mostrar(`${racion.nombre} agregado`, 'exito');
         this.cargarDia(this.fechaSeleccionada);
@@ -439,6 +458,11 @@ export class Calendario implements OnInit {
         this.cargarDia(this.fechaSeleccionada);
       }
     });
+  }
+
+  onCancelarCantidadRacion() {
+    this.racionParaAgregar = null;
+    this.tipoComidaParaAgregarRacion = null;
   }
 
   onSeleccionarAlimentoInline(tipoComida: string, alimento: any) {

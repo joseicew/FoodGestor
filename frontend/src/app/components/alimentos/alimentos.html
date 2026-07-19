@@ -38,6 +38,7 @@
         [resaltarAlergias]="true"
         [tieneAlergia]="tieneAlergiaUsuario"
         [tieneIngNoDeseado]="tieneIngNoDeseadoUsuario"
+        [idsActualizandoFavorito]="favoritosActualizando"
         (seleccionar)="abrirDetalle($event, false)"
         (toggleFavorito)="toggleFavorito($event.alimento)"
         [style.opacity]="perfilCargado ? 1 : 0"
@@ -55,6 +56,7 @@
         [resaltarAlergias]="true"
         [tieneAlergia]="tieneAlergiaUsuario"
         [tieneIngNoDeseado]="tieneIngNoDeseadoUsuario"
+        [idsActualizandoFavorito]="favoritosActualizando"
         textoVacio="No hay favoritos aún. ⭐ Marca productos para acceso rápido"
         (seleccionar)="abrirDetalle($event, false)"
         (toggleFavorito)="toggleFavorito($event.alimento)">
@@ -107,6 +109,8 @@
                   <span class="etiqueta-extra">{{ etiquetaSugerencia(alimento) }}</span>
                 </div>
                 <button class="btn-favorito" [class.favorito]="alimento.favorito"
+                        [class.actualizando]="favoritosActualizando.has(alimento.id)"
+                        [disabled]="favoritosActualizando.has(alimento.id)"
                         (click)="toggleFavorito(alimento); $event.stopPropagation()" title="Favorito">
                   {{ alimento.favorito ? '⭐' : '☆' }}
                 </button>

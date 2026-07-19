@@ -426,9 +426,13 @@
   color: color-mix(in srgb, var(--chip-color, #4CAF50) 75%, #1a1a1a);
 }
 
+.inline-input-wrapper {
+  position: relative;
+}
+
 .inline-input {
   width: 100%;
-  padding: 8px 12px;
+  padding: 8px 34px 8px 12px;
   border: 1.5px solid #ddd;
   border-radius: 8px;
   font-size: 13px;
@@ -440,6 +444,22 @@
 .inline-input:focus {
   border-color: #4CAF50;
 }
+
+.inline-input-clear {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #999;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.inline-input-clear:hover { color: #333; }
 
 .inline-lista {
   max-height: 200px;

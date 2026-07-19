@@ -55,13 +55,18 @@ export class ModalCantidadAlimentoComponent implements OnChanges {
 
   toggleFavorito() {
     if (!this.alimento || this.actualizandoFavorito) return;
+    const favoritoPrevio = this.alimento.favorito;
+    this.alimento.favorito = true;
     this.actualizandoFavorito = true;
     this.alimentosService.toggleFavorito(this.alimento.id).subscribe({
       next: (res) => {
         this.alimento.favorito = res.alimento.favorito;
         this.actualizandoFavorito = false;
       },
-      error: () => { this.actualizandoFavorito = false; }
+      error: () => {
+        this.alimento.favorito = favoritoPrevio;
+        this.actualizandoFavorito = false;
+      }
     });
   }
 }
