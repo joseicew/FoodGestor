@@ -85,8 +85,11 @@ def crear_ingrediente():
         if not data or 'nombre' not in data:
             return jsonify({'error': 'nombre es requerido'}), 400
 
-        # Verificar que no exista
-        if Ingrediente.query.filter_by(nombre=data['nombre']).first():
+        # Verificar que no exista (case-insensitive, mismo criterio que la
+        # limpieza de duplicados) para no crear "Tomate" y "tomate" aparte
+        if Ingrediente.query.filter(
+            db.func.lower(Ingrediente.nombre) == data['nombre'].strip().lower()
+        ).first():
             return jsonify({'error': 'Este ingrediente ya existe'}), 409
 
         ingrediente = Ingrediente(

@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 from sqlalchemy import text
 from app import db
 from app.models.ingrediente import Ingrediente, ALERGENO_CATEGORIAS
+from app.services.ingredientes_helper import obtener_o_crear_ingrediente
 
 _ENV_PATH = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
@@ -81,14 +82,7 @@ def _es_seguro_eliminar(ingrediente: Ingrediente):
 
 
 def _buscar_o_crear_ingrediente(nombre: str) -> Ingrediente:
-    nombre = nombre.strip()
-    existente = Ingrediente.query.filter(db.func.lower(Ingrediente.nombre) == nombre.lower()).first()
-    if existente:
-        return existente
-    nuevo = Ingrediente(nombre=nombre, verificado=False)
-    db.session.add(nuevo)
-    db.session.flush()
-    return nuevo
+    return obtener_o_crear_ingrediente(nombre, verificado=False)
 
 
 def _vincular_alimentos(origen: Ingrediente, destinos: list):

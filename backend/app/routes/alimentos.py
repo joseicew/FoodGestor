@@ -9,6 +9,7 @@ from app import db
 from app.models.alimento import Alimento
 from app.models.ingrediente import Ingrediente
 from app.models.porcion_habitual import PorcionHabitual
+from app.services.ingredientes_helper import obtener_o_crear_ingrediente, limpiar_huerfanos_por_ids
 
 alimentos_bp = Blueprint('alimentos', __name__, url_prefix='/api/alimentos')
 
@@ -45,8 +46,15 @@ def _vincular_ingredientes(alimento, nombres):
     Vincula ingredientes a un alimento, deduplicando automáticamente.
     Si un ingrediente ya existe en la BD con el mismo nombre (case-insensitive),
     lo reutiliza. De lo contrario, lo crea nuevo.
+
+    Al reemplazar la lista, los ingredientes que se desvinculan y se
+    quedan sin ningún alimento asociado se borran en el acto (hook de
+    limpieza de huérfanos), en vez de esperar a la limpieza manual.
     """
-    # Limpiar ingredientes existentes para actualizar la lista
+    # Recordar quién estaba vinculado antes de reemplazar la lista, para
+    # poder detectar huérfanos justo después.
+    ids_previos = [i.id for i in alimento.ingredientes]
+
     alimento.ingredientes.clear()
 
     for item in nombres:
@@ -59,22 +67,19 @@ def _vincular_ingredientes(alimento, nombres):
         if not nombre:
             continue
 
-        # Buscar ingrediente existente (case-insensitive)
-        ingrediente = Ingrediente.query.filter(
-            db.func.lower(Ingrediente.nombre) == nombre.lower()
-        ).first()
-
+        ingrediente = obtener_o_crear_ingrediente(nombre, capitalizar=True)
         if not ingrediente:
-            # Crear nuevo ingrediente con el nombre normalizado
-            ingrediente = Ingrediente(nombre=nombre.capitalize())
-            db.session.add(ingrediente)
-            db.session.flush()  # Asegurar que se guarde antes de vincularlo
-            print(f'[NEW] Nuevo ingrediente creado: {nombre}')
+            continue
 
         # Vincular al alimento (evita duplicados automáticamente)
         if ingrediente not in alimento.ingredientes:
             alimento.ingredientes.append(ingrediente)
-            print(f'[OK] Ingrediente vinculado: {ingrediente.nombre}')
+
+    if ids_previos:
+        db.session.flush()
+        borrados = limpiar_huerfanos_por_ids(ids_previos)
+        if borrados:
+            print(f'[LIMPIEZA] {borrados} ingrediente(s) huérfano(s) eliminados tras editar "{alimento.nombre}"')
 
 
 def _calcular_similitud_macros(macros1: dict, macros2: dict, tolerancia: float = 0.1) -> bool:
@@ -535,13 +540,15 @@ def actualizar_alergenos(id):
             alergenos_categorias = ing_data.get('alergenos_categorias', [])
             verificado = ing_data.get('verificado', False)
 
-            # Obtener o crear ingrediente
-            ingrediente = Ingrediente.query.get(ing_id)
+            # Obtener o crear ingrediente. Si no viene id, reutilizar por
+            # nombre (case-insensitive) en vez de crear a ciegas: evita
+            # duplicar un ingrediente que ya existe con otra combinación
+            # de mayúsculas/espacios.
+            ingrediente = Ingrediente.query.get(ing_id) if ing_id else None
             if not ingrediente:
-                # Si no existe, crear uno nuevo
-                ingrediente = Ingrediente(nombre=nombre, categoria=categoria)
-                db.session.add(ingrediente)
-                db.session.flush()
+                ingrediente = obtener_o_crear_ingrediente(nombre, categoria=categoria or '')
+                if not ingrediente:
+                    continue
             else:
                 # Actualizar nombre y categoría
                 if nombre:
