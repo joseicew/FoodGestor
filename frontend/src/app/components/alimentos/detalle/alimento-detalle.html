@@ -68,6 +68,39 @@
           </div>
         </div>
 
+        <!-- Porción habitual (personal, por usuario) -->
+        <div class="info-seccion">
+          <h3>⭐ Tu porción habitual</h3>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text"
+                   [(ngModel)]="porcionHabitualEditando"
+                   placeholder="Ej: 80"
+                   [disabled]="guardandoPorcionHabitual"
+                   style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-weight: 600; text-align: right;" />
+            <span style="font-size: 13px; color: #666; min-width: 24px;">{{ detalle.medida_unidad === 'ml' ? 'ml' : 'g' }}</span>
+            <button (click)="guardarPorcionHabitual()" [disabled]="guardandoPorcionHabitual || !porcionHabitualEditando.trim()"
+                    style="padding: 8px 14px; background: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+              Guardar
+            </button>
+            @if (porcionHabitual) {
+              <button (click)="eliminarPorcionHabitual()" [disabled]="guardandoPorcionHabitual"
+                      title="Quitar porción habitual"
+                      style="padding: 8px 10px; background: #f5f5f5; color: #999; border: none; border-radius: 8px; font-size: 13px; cursor: pointer;">
+                ✕
+              </button>
+            }
+          </div>
+          @if (porcionHabitual) {
+            <p style="margin: 6px 0 0 0; font-size: 12px; color: #4CAF50;">
+              ★ Se usará como cantidad sugerida al añadirlo
+            </p>
+          } @else {
+            <p style="margin: 6px 0 0 0; font-size: 12px; color: #999;">
+              Sin guardar todavía. Se sugerirá esta cantidad la próxima vez que añadas este alimento en gr/ml.
+            </p>
+          }
+        </div>
+
         <!-- Macronutrientes -->
         <div class="info-seccion">
           <div style="display: flex; align-items: center; margin-bottom: 8px;">

@@ -94,6 +94,11 @@ export class AlimentoDetalle implements OnChanges {
   ocrIngredientesEstado: OcrEstado = 'idle';
   ocrMacrosEstado: OcrEstado = 'idle';
 
+  // Porción habitual (personal, por usuario)
+  porcionHabitual: number | null = null;
+  porcionHabitualEditando = '';
+  guardandoPorcionHabitual = false;
+
   readonly camposReporte = CAMPOS_REPORTE;
   readonly macrosReporte = MACROS_REPORTE;
   mostrarModalReportar = false;
@@ -202,7 +207,63 @@ export class AlimentoDetalle implements OnChanges {
       this.unidadOriginal = this.detalle.nombre_unidad || null;
       this.medidaOriginal = this.detalle.medida_unidad || 'g';
       this.enriquecerIngredientes();
+      this.cargarPorcionHabitual();
     }
+  }
+
+  // ── Porción habitual (personal, por usuario) ──
+  private cargarPorcionHabitual(): void {
+    const alimentoId = this.detalle.id;
+    this.porcionHabitual = null;
+    this.porcionHabitualEditando = '';
+    this.alimentosService.obtenerPorcionHabitual(alimentoId).subscribe({
+      next: (res) => {
+        if (this.detalle?.id !== alimentoId) return;
+        const cantidad = res?.porcion?.cantidad ?? null;
+        this.porcionHabitual = cantidad;
+        this.porcionHabitualEditando = cantidad != null ? String(cantidad) : '';
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
+
+  guardarPorcionHabitual(): void {
+    const valor = parseFloat(this.porcionHabitualEditando.replace(',', '.'));
+    if (!valor || isNaN(valor) || valor <= 0 || this.guardandoPorcionHabitual) return;
+    this.guardandoPorcionHabitual = true;
+    this.alimentosService.guardarPorcionHabitual(this.detalle.id, valor).subscribe({
+      next: () => {
+        this.porcionHabitual = valor;
+        this.guardandoPorcionHabitual = false;
+        this.mensaje.emit({ texto: 'Porción habitual guardada', tipo: 'exito' });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.guardandoPorcionHabitual = false;
+        this.mensaje.emit({ texto: err.error?.error || 'No se pudo guardar', tipo: 'error' });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  eliminarPorcionHabitual(): void {
+    if (!this.porcionHabitual || this.guardandoPorcionHabitual) return;
+    this.guardandoPorcionHabitual = true;
+    this.alimentosService.eliminarPorcionHabitual(this.detalle.id).subscribe({
+      next: () => {
+        this.porcionHabitual = null;
+        this.porcionHabitualEditando = '';
+        this.guardandoPorcionHabitual = false;
+        this.mensaje.emit({ texto: 'Porción habitual eliminada', tipo: 'exito' });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.guardandoPorcionHabitual = false;
+        this.mensaje.emit({ texto: err.error?.error || 'No se pudo eliminar', tipo: 'error' });
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   // ── Enriquecimiento de ingredientes desde el caché ──

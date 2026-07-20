@@ -91,6 +91,10 @@ export class AlimentosService {
     return this.http.put<any>(`${API}/${id}/porcion-habitual`, { cantidad }, this.getHeaders());
   }
 
+  eliminarPorcionHabitual(id: number): Observable<any> {
+    return this.http.delete<any>(`${API}/${id}/porcion-habitual`, this.getHeaders());
+  }
+
   obtenerFavoritos(): Observable<any[]> {
     return this.http.get<any[]>(`${API}/favoritos/lista`, this.getHeaders());
   }

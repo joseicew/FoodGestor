@@ -449,6 +449,22 @@ def guardar_porcion_habitual(id):
         return jsonify({'error': str(e)}), 500
 
 
+@alimentos_bp.route('/<int:id>/porcion-habitual', methods=['DELETE'])
+@jwt_required()
+def eliminar_porcion_habitual(id):
+    """Quita la cantidad habitual guardada por el usuario actual para este alimento."""
+    try:
+        usuario_id = int(get_jwt_identity())
+        porcion = PorcionHabitual.query.filter_by(usuario_id=usuario_id, alimento_id=id).first()
+        if porcion:
+            db.session.delete(porcion)
+            db.session.commit()
+        return jsonify({'mensaje': 'Porción habitual eliminada'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @alimentos_bp.route('/favoritos/lista', methods=['GET'])
 @jwt_required()
 def obtener_favoritos():
