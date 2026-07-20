@@ -1,10 +1,7 @@
 from flask import Blueprint, request, jsonify
-from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.orm import selectinload
 import json
-import os
-from datetime import datetime
 from app import db
 from app.models.alimento import Alimento
 from app.models.ingrediente import Ingrediente
@@ -22,23 +19,6 @@ STOPWORDS_NOMBRE = {
 
 def _palabras_significativas(texto: str) -> set:
     return {p for p in texto.lower().split() if p not in STOPWORDS_NOMBRE and len(p) > 2}
-
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '..', '..', 'uploads', 'alimentos')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def _guardar_foto(file, prefijo):
-    if file and file.filename and allowed_file(file.filename):
-        filename = secure_filename(f"{prefijo}_{datetime.now().timestamp()}_{file.filename}")
-        file.save(os.path.join(UPLOAD_FOLDER, filename))
-        return f'uploads/alimentos/{filename}'
-    return None
 
 
 def _vincular_ingredientes(alimento, nombres):
@@ -295,14 +275,6 @@ def crear_alimento():
             medida_unidad=data.get('medida_unidad', 'g').strip() or 'g',
         )
 
-        ruta_ing = _guardar_foto(request.files.get('foto_ingredientes'), 'ingredientes')
-        if ruta_ing:
-            alimento.foto_ingredientes = ruta_ing
-
-        ruta_mac = _guardar_foto(request.files.get('foto_macros'), 'macros')
-        if ruta_mac:
-            alimento.foto_macros = ruta_mac
-
         db.session.add(alimento)
 
         nombres_ingredientes = json.loads(data.get('ingredientes', '[]') or '[]')
@@ -351,14 +323,6 @@ def actualizar_alimento(id):
         alimento.peso_unidad = f('peso_unidad', alimento.peso_unidad)
         alimento.nombre_unidad = data.get('nombre_unidad', alimento.nombre_unidad).strip() or None if data.get('nombre_unidad') else alimento.nombre_unidad
         alimento.medida_unidad = data.get('medida_unidad', alimento.medida_unidad).strip() or alimento.medida_unidad if data.get('medida_unidad') else alimento.medida_unidad
-
-        ruta_ing = _guardar_foto(request.files.get('foto_ingredientes'), 'ingredientes')
-        if ruta_ing:
-            alimento.foto_ingredientes = ruta_ing
-
-        ruta_mac = _guardar_foto(request.files.get('foto_macros'), 'macros')
-        if ruta_mac:
-            alimento.foto_macros = ruta_mac
 
         # Actualizar ingredientes si se proporcionan
         ingredientes_json = data.get('ingredientes', '[]')
