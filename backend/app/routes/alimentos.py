@@ -385,7 +385,18 @@ def eliminar_alimento(id):
         alimento = Alimento.query.get(id)
         if not alimento:
             return jsonify({'error': 'Alimento no encontrado'}), 404
+
+        # Recordar sus ingredientes para poder limpiar los que se queden
+        # huérfanos tras el borrado (el DELETE solo quita las filas de la
+        # tabla puente, no los ingredientes en sí).
+        ids_ingredientes = [i.id for i in alimento.ingredientes]
+
         db.session.delete(alimento)
+        db.session.flush()
+        borrados = limpiar_huerfanos_por_ids(ids_ingredientes)
+        if borrados:
+            print(f'[LIMPIEZA] {borrados} ingrediente(s) huérfano(s) eliminados tras borrar "{alimento.nombre}"')
+
         db.session.commit()
         return jsonify({'mensaje': 'Alimento eliminado exitosamente'}), 200
     except Exception as e:

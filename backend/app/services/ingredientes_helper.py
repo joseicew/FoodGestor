@@ -7,13 +7,28 @@ solo de las limpiezas manuales/periodicas del panel de administracion.
   espacios en el momento de crear (mismo criterio que la limpieza de
   duplicados: nombre.lower().strip()).
 - `limpiar_huerfanos_por_ids`: tras desvincular ingredientes de un
-  alimento (p.ej. al editar su lista), borra los que se hayan quedado
-  sin ningun alimento asociado, sin esperar a la limpieza periodica.
+  alimento (p.ej. al editar su lista o borrarlo), borra los que se hayan
+  quedado sin ningun alimento asociado, sin esperar a la limpieza
+  periodica.
+
+Al crear, tambien se detectan automaticamente los aditivos con codigo E
+(p.ej. "E-330", "Colorante e150d") y se marcan `es_aditivo=True` /
+categoria "Aditivos" en el momento, en vez de acumularse pendientes de
+la limpieza de IA "aditivos sin categorizar".
 """
+import re
 from sqlalchemy import exists
 from app import db
 from app.models.ingrediente import Ingrediente
 from app.models.alimento import alimento_ingrediente
+
+# Mismo patron usado para detectar codigos E ya existentes en la BD
+# (E330, E-330, E 330, con sufijo de letra opcional como E472e).
+_PATRON_CODIGO_E = re.compile(r'(^|\s)e[\s-]?\d{3,4}[a-z]{0,2}(\s|$)', re.IGNORECASE)
+
+
+def _es_codigo_aditivo(nombre: str) -> bool:
+    return bool(_PATRON_CODIGO_E.search(nombre))
 
 
 def obtener_o_crear_ingrediente(nombre, capitalizar=False, **campos):
@@ -35,6 +50,12 @@ def obtener_o_crear_ingrediente(nombre, capitalizar=False, **campos):
         return existente
 
     nombre_final = nombre_normalizado.capitalize() if capitalizar else nombre_normalizado
+
+    if _es_codigo_aditivo(nombre_normalizado):
+        campos.setdefault('es_aditivo', True)
+        if not campos.get('categoria'):
+            campos['categoria'] = 'Aditivos'
+
     nuevo = Ingrediente(nombre=nombre_final, **campos)
     db.session.add(nuevo)
     db.session.flush()
