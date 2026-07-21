@@ -6,15 +6,17 @@ import {
   HttpRequest,
   HttpErrorResponse
 } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Observable, throwError, timer } from 'rxjs';
+import { catchError, retry, tap } from 'rxjs/operators';
 import { AuthService } from '../services/auth';
+import { ServerWakeupService } from '../services/server-wakeup';
 import { Router } from '@angular/router';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private serverWakeup = inject(ServerWakeupService);
   private cerrandoSesionPorConexion = false;
 
   // Nº de fallos de red/BD consecutivos antes de forzar el cierre de sesión.
@@ -23,6 +25,15 @@ export class AuthInterceptor implements HttpInterceptor {
   // pantallas vacías (p.ej. Raciones) tras un simple hipo de conexión.
   private readonly UMBRAL_FALLOS_CONEXION = 3;
   private fallosConsecutivos = 0;
+
+  // El plan gratuito de Render duerme el backend tras ~15 min sin trafico;
+  // la primera peticion tras despertar puede tardar 30-50s y mientras tanto
+  // llega como status 0 (conexion rechazada o preflight de CORS bloqueado,
+  // ya que el error real no tiene cabeceras CORS). Solo tiene sentido
+  // reintentar ese caso: un 401/404/500 significa que el servidor SI
+  // respondio, y reintentar ahi no arreglaria nada.
+  private readonly REINTENTOS_DESPERTAR = 8;
+  private readonly INTERVALO_REINTENTO_MS = 5000;
 
   constructor() {
     console.log('[AuthInterceptor] Inicializado');
@@ -56,8 +67,23 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     return next.handle(request).pipe(
-      tap(() => { this.fallosConsecutivos = 0; }),
+      retry({
+        count: this.REINTENTOS_DESPERTAR,
+        delay: (error: HttpErrorResponse, intento: number) => {
+          if (error.status !== 0) {
+            return throwError(() => error);
+          }
+          this.serverWakeup.marcarDespertando();
+          console.warn(`[AuthInterceptor] Sin respuesta (posible cold start de Render), reintento ${intento}/${this.REINTENTOS_DESPERTAR}...`);
+          return timer(this.INTERVALO_REINTENTO_MS);
+        }
+      }),
+      tap(() => {
+        this.fallosConsecutivos = 0;
+        this.serverWakeup.marcarListo();
+      }),
       catchError((error: HttpErrorResponse) => {
+        this.serverWakeup.marcarListo();
         console.error(`[AuthInterceptor] Error ${error.status}:`, error.error);
 
         // Si recibimos 401 (no autorizado), limpiar token y redirigir a login

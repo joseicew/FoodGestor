@@ -3,6 +3,7 @@ import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/rou
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth';
 import { SyncStatusService, SyncStatus } from './services/sync-status';
+import { ServerWakeupService } from './services/server-wakeup';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -14,6 +15,7 @@ import { Observable } from 'rxjs';
 export class App implements OnInit, OnDestroy {
   authService = inject(AuthService);
   syncStatusService = inject(SyncStatusService);
+  serverWakeupService = inject(ServerWakeupService);
   private router = inject(Router);
   syncStatus$!: Observable<SyncStatus>;
 

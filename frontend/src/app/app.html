@@ -1,4 +1,12 @@
 <div class="app-container">
+  <!-- Aviso de "despertando servidor" (cold start de Render) -->
+  @if (serverWakeupService.despertando$ | async) {
+    <div class="sync-indicator syncing">
+      <span class="sync-icon">🔄</span>
+      <span class="sync-text">Despertando el servidor, puede tardar unos segundos...</span>
+    </div>
+  }
+
   <!-- Indicador de sincronización -->
   @if (authService.estaAutenticado()) {
     @let status = syncStatus$ | async;
