@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -65,7 +65,8 @@ export class OnboardingComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private allergensService: AllergensService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -81,10 +82,12 @@ export class OnboardingComponent implements OnInit {
         this.opcionesAlergenos = alergenos;
         this.cargandoAlergenos = false;
         console.log('✅ Alergenos cargados para selector:', alergenos.length);
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error cargando alergenos:', err);
         this.cargandoAlergenos = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -237,6 +240,7 @@ export class OnboardingComponent implements OnInit {
         this.cargando = false;
         const mensaje = error.error?.error || 'Error al completar el onboarding';
         this.flash.mostrar(mensaje, 'error');
+        this.cdr.detectChanges();
       }
     });
   }
