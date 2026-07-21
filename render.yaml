@@ -36,3 +36,17 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+
+  - type: web
+    name: foodgestor-admin
+    runtime: static
+    rootDir: admin
+    buildCommand: npm ci && npm run build -- --configuration=production
+    staticPublishPath: dist/admin/browser
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
