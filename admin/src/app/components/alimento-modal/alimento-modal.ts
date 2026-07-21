@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
@@ -25,7 +25,7 @@ import { CATEGORIAS_ALIMENTO, UNIDADES_COMUNES, MACROS_ALIMENTO } from '../../co
 
           @if (mensaje) { <div class="aviso" [class.error]="esError">{{ mensaje }}</div> }
 
-          <section>
+          <section [class.resaltada]="esSeccionResaltada('datos')" data-seccion="datos">
             <h4>Datos</h4>
             <div class="campos">
               <label class="campo full"><span>Nombre</span><input [(ngModel)]="edit.nombre" /></label>
@@ -50,7 +50,7 @@ import { CATEGORIAS_ALIMENTO, UNIDADES_COMUNES, MACROS_ALIMENTO } from '../../co
             </div>
           </section>
 
-          <section>
+          <section [class.resaltada]="esSeccionResaltada('macros')" data-seccion="macros">
             <h4>Macronutrientes (por 100g)</h4>
             <div class="campos macros">
               @for (m of macros; track m.key) {
@@ -59,7 +59,7 @@ import { CATEGORIAS_ALIMENTO, UNIDADES_COMUNES, MACROS_ALIMENTO } from '../../co
             </div>
           </section>
 
-          <section>
+          <section [class.resaltada]="esSeccionResaltada('ingredientes')" data-seccion="ingredientes">
             <h4>Ingredientes ({{ edit.ingredientes.length }})</h4>
             <div class="chips">
               @for (ing of edit.ingredientes; track $index) {
@@ -104,6 +104,8 @@ import { CATEGORIAS_ALIMENTO, UNIDADES_COMUNES, MACROS_ALIMENTO } from '../../co
     .aviso.error { background: var(--danger-soft); color: var(--danger); }
     section { padding: 12px 0; border-top: 1px solid var(--border); }
     section h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted); margin-bottom: 10px; }
+    section.resaltada { background: var(--warning-soft); border: 1px solid var(--warning); border-radius: 8px; padding: 12px; margin: 4px 0; }
+    section.resaltada h4 { color: var(--warning); }
     .campos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .campos.macros { grid-template-columns: repeat(3, 1fr); }
     .campo { display: flex; flex-direction: column; gap: 4px; }
@@ -124,6 +126,8 @@ import { CATEGORIAS_ALIMENTO, UNIDADES_COMUNES, MACROS_ALIMENTO } from '../../co
 })
 export class AlimentoModalComponent implements OnChanges {
   @Input() alimentoId!: number;
+  // Secciones a resaltar/enfocar al abrir (p.ej. desde un reporte de error: 'macros', 'ingredientes', 'datos')
+  @Input() seccionesResaltadas: string[] = [];
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardado = new EventEmitter<any>();
 
@@ -142,7 +146,7 @@ export class AlimentoModalComponent implements OnChanges {
   readonly categorias = CATEGORIAS_ALIMENTO;
   readonly unidadesComunes = UNIDADES_COMUNES;
 
-  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef, private elRef: ElementRef<HTMLElement>) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['alimentoId'] && this.alimentoId) {
@@ -159,9 +163,20 @@ export class AlimentoModalComponent implements OnChanges {
         this.edit = { ...a, ingredientes: Array.isArray(a.ingredientes) ? [...a.ingredientes] : [] };
         this.cargando = false;
         this.cdr.markForCheck();
+        setTimeout(() => this.enfocarSeccionResaltada(), 0);
       },
       error: () => { this.cargando = false; this.cdr.markForCheck(); }
     });
+  }
+
+  esSeccionResaltada(seccion: string): boolean {
+    return this.seccionesResaltadas.includes(seccion);
+  }
+
+  private enfocarSeccionResaltada(): void {
+    const primera = this.seccionesResaltadas[0];
+    if (!primera) return;
+    this.elRef.nativeElement.querySelector(`[data-seccion="${primera}"]`)?.scrollIntoView({ block: 'nearest' });
   }
 
   onCerrar(): void {

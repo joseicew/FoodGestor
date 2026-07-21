@@ -2,12 +2,20 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, ReporteAlimento } from '../../services/api';
+import { AlimentoModalComponent } from '../../components/alimento-modal/alimento-modal';
 
 const ETIQUETAS_CAMPO: Record<string, string> = {
   macros: 'Macros',
   ingredientes: 'Ingredientes',
   marca: 'Marca',
   otro: 'Otro',
+};
+
+// A qué sección del editor de alimento corresponde cada "campo" reportado
+const SECCION_POR_CAMPO: Record<string, string> = {
+  macros: 'macros',
+  ingredientes: 'ingredientes',
+  marca: 'datos',
 };
 
 const ETIQUETAS_MACRO: Record<string, string> = {
@@ -28,7 +36,7 @@ const ETIQUETAS_MACRO: Record<string, string> = {
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AlimentoModalComponent],
   template: `
     <header class="page-head">
       <h2>Reportes de alimentos</h2>
@@ -90,6 +98,9 @@ const ETIQUETAS_MACRO: Record<string, string> = {
             </div>
             @if (r.estado === 'pendiente') {
               <div class="fila-acciones">
+                @if (r.alimento) {
+                  <button class="btn" (click)="editarAlimento(r)" [disabled]="actualizandoId === r.id">✏️ Editar alimento</button>
+                }
                 <button class="btn" (click)="cambiarEstado(r, 'descartado')" [disabled]="actualizandoId === r.id">Descartar</button>
                 <button class="btn btn-primary" (click)="cambiarEstado(r, 'resuelto')" [disabled]="actualizandoId === r.id">Marcar resuelto</button>
               </div>
@@ -97,6 +108,15 @@ const ETIQUETAS_MACRO: Record<string, string> = {
           </div>
         }
       </div>
+    }
+
+    @if (alimentoModalId) {
+      <app-alimento-modal
+        [alimentoId]="alimentoModalId"
+        [seccionesResaltadas]="seccionesResaltadas"
+        (cerrar)="cerrarAlimentoModal()"
+        (guardado)="onAlimentoGuardado($event)">
+      </app-alimento-modal>
     }
   `,
   styles: [`
@@ -122,7 +142,7 @@ const ETIQUETAS_MACRO: Record<string, string> = {
     .corregir-item { padding-left: 12px; }
     .comentario { margin: 0; font-size: 13px; color: var(--text); font-style: italic; }
     .meta { margin: 0; font-size: 12px; color: var(--text-muted); }
-    .fila-acciones { display: flex; gap: 8px; flex-shrink: 0; }
+    .fila-acciones { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
     .vacio { padding: 24px; color: var(--text-muted); text-align: center; }
   `]
 })
@@ -133,6 +153,9 @@ export class ReportesComponent implements OnInit {
   actualizandoId: number | null = null;
   mensaje = '';
   esError = false;
+
+  alimentoModalId: number | null = null;
+  seccionesResaltadas: string[] = [];
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
@@ -166,6 +189,37 @@ export class ReportesComponent implements OnInit {
   valorActualMacro(reporte: ReporteAlimento, campo: string): string {
     const valor = reporte.alimento?.[campo];
     return valor === null || valor === undefined ? '?' : String(valor);
+  }
+
+  // Abre la ficha de edición del alimento reportado, resaltando la(s) sección(es)
+  // a la(s) que corresponde el error (macros, ingredientes, datos/marca).
+  editarAlimento(reporte: ReporteAlimento): void {
+    if (!reporte.alimento) return;
+    const secciones = new Set<string>();
+    for (const campo of reporte.campos) {
+      const seccion = SECCION_POR_CAMPO[campo];
+      if (seccion) secciones.add(seccion);
+    }
+    this.seccionesResaltadas = Array.from(secciones);
+    this.alimentoModalId = reporte.alimento.id;
+  }
+
+  cerrarAlimentoModal(): void {
+    this.alimentoModalId = null;
+    this.seccionesResaltadas = [];
+  }
+
+  onAlimentoGuardado(actualizado: any): void {
+    // Reflejar los nuevos valores en la fila del reporte (para que el diff
+    // "valor actual → corrección" se actualice sin recargar toda la lista).
+    for (const r of this.reportes) {
+      const alimento = r.alimento;
+      if (alimento && alimento.id === actualizado?.id) {
+        Object.assign(alimento, actualizado);
+      }
+    }
+    this.mostrar('Alimento actualizado. Ya puedes marcar el reporte como resuelto.', false);
+    this.cdr.markForCheck();
   }
 
   cambiarEstado(reporte: ReporteAlimento, estado: string): void {
