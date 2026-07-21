@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../environments/environment';
 
 interface OcrJob {
   job_id: string;
@@ -36,7 +37,7 @@ export class OcrAsyncService {
 
   private async iniciarOcr(endpoint: string, formData: FormData): Promise<string> {
     // Usar URL absoluta del backend
-    const backendUrl = `http://192.168.1.17:5000${endpoint}`;
+    const backendUrl = `${environment.apiUrl}${endpoint}`;
 
     const response = await fetch(backendUrl, {
       method: 'POST',
@@ -66,7 +67,7 @@ export class OcrAsyncService {
         }
 
         try {
-          const response = await fetch(`http://192.168.1.17:5000/api/ocr/job/${jobId}`);
+          const response = await fetch(`${environment.apiUrl}/api/ocr/job/${jobId}`);
           if (!response.ok) {
             reject(new Error('Job no encontrado'));
             return;

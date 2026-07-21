@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RacionesService {
-  private apiUrl = 'http://192.168.1.17:5000/api/raciones';
+  private apiUrl = `${environment.apiUrl}/api/raciones`;
 
   constructor(
     private http: HttpClient,
