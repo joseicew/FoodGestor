@@ -98,6 +98,10 @@ def create_app():
         if request.method == 'OPTIONS':
             return '', 200
 
+    @app.route('/api/health')
+    def health_check():
+        return jsonify({'status': 'ok'}), 200
+
     # Error handler global: garantiza que los errores no capturados devuelvan JSON (no HTML)
     @app.errorhandler(Exception)
     def handle_unhandled_exception(e):
