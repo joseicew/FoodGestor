@@ -6,7 +6,7 @@ on:
       api_url:
         description: 'URL del backend (ej: http://100.x.x.x:5000)'
         required: true
-        default: 'http://TU_IP_TAILSCALE:5000'
+        default: 'https://foodgestor-backend.onrender.com'
 
 jobs:
   build-android:
@@ -36,7 +36,7 @@ jobs:
       - name: Set API URL
         working-directory: frontend
         run: |
-          sed -i "s|http://TU_IP_AQUI:5000|${{ github.event.inputs.api_url }}|g" src/environments/environment.prod.ts
+          sed -i "s|https://foodgestor-backend.onrender.com|${{ github.event.inputs.api_url }}|g" src/environments/environment.prod.ts
 
       - name: Build Angular (production)
         working-directory: frontend
