@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, current_app
 from sqlalchemy import exists
 from app import db
 from app.models.ingrediente import Ingrediente
-from app.models.alimento import alimento_ingrediente
+from app.models.alimento import Alimento, alimento_ingrediente
 from app.routes.admin import requiere_rol
 from app.services.job_queue import crear_job, obtener_job, actualizar_job, JobStatus
 from app.services.limpieza_agente import TIPOS_LIMPIEZA, ejecutar_limpieza
@@ -25,6 +25,11 @@ def _contar_duplicados():
     for (nombre,) in db.session.query(Ingrediente.nombre).all():
         grupos[nombre.lower().strip()] += 1
     return sum(cantidad - 1 for cantidad in grupos.values() if cantidad > 1)
+
+
+def _contar_sin_ingredientes():
+    tiene_ingrediente = exists().where(alimento_ingrediente.c.alimento_id == Alimento.id)
+    return Alimento.query.filter(~tiene_ingrediente).count()
 
 
 @limpiezas_bp.route('/tipos', methods=['GET'])
@@ -55,6 +60,13 @@ def listar_tipos():
             'nombre': 'Ingredientes duplicados',
             'descripcion': 'Fusiona ingredientes con el mismo nombre (case-insensitive) en uno solo.',
             'pendientes': _contar_duplicados(),
+            'ia': False,
+        })
+        tipos.insert(2, {
+            'tipo': 'sin_ingredientes',
+            'nombre': 'Alimentos sin ingredientes',
+            'descripcion': 'Alimentos que no tienen ningún ingrediente asociado. Casi siempre son errores al crearlos; revísalos y añade sus ingredientes.',
+            'pendientes': _contar_sin_ingredientes(),
             'ia': False,
         })
 

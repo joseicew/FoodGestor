@@ -165,6 +165,10 @@ export class ApiService {
     return this.http.post(`${this.base}/api/ingredientes/limpieza/duplicados`, {});
   }
 
+  listarAlimentosSinIngredientes(): Observable<any> {
+    return this.http.post(`${this.base}/api/alimentos/limpieza/sin-ingredientes`, {});
+  }
+
   // ── Reportes de alimentos ──
   listarReportes(estado?: string): Observable<ReporteAlimento[]> {
     const params: Record<string, string> = estado ? { estado } : {};

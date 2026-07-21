@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService, TipoLimpieza } from '../../services/api';
+import { AlimentoModalComponent } from '../../components/alimento-modal/alimento-modal';
 
 interface EstadoLimpieza {
   info: TipoLimpieza;
@@ -18,12 +19,13 @@ const ICONOS_TIPO: Record<string, string> = {
   alergenos_faltantes: '⚠️',
   compuestos_descripciones: '✂️',
   aditivos_sin_nota: '🧪',
+  sin_ingredientes: '🍽️',
 };
 
 @Component({
   selector: 'app-limpiezas',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AlimentoModalComponent],
   template: `
     <header class="page-head">
       <h2>🧹 Limpiezas</h2>
@@ -128,10 +130,31 @@ const ICONOS_TIPO: Record<string, string> = {
                   }
                 </div>
               }
+
+              @if (item.expandido && item.resultado.alimentos?.length) {
+                <div class="detalle-acciones">
+                  @for (a of item.resultado.alimentos; track a.id) {
+                    <button type="button" class="accion-fila accion-fila-click" (click)="editarAlimento(a.id)">
+                      <span class="accion-icono">🍽️</span>
+                      <span class="accion-nombre">{{ a.nombre }}</span>
+                      <span class="accion-detalle">{{ a.marca || 'Sin marca' }} · click para editar</span>
+                    </button>
+                  }
+                </div>
+              }
             }
           </div>
         }
       </div>
+    }
+
+    @if (alimentoModalId) {
+      <app-alimento-modal
+        [alimentoId]="alimentoModalId"
+        [seccionesResaltadas]="['ingredientes']"
+        (cerrar)="cerrarAlimentoModal()"
+        (guardado)="onAlimentoGuardado()">
+      </app-alimento-modal>
     }
   `,
   styles: [`
@@ -206,6 +229,8 @@ const ICONOS_TIPO: Record<string, string> = {
       display: flex; align-items: center; gap: 10px; font-size: 12.5px; padding: 6px 8px; border-radius: 6px;
     }
     .accion-fila:nth-child(odd) { background: var(--surface-2); }
+    .accion-fila-click { border: none; width: 100%; text-align: left; cursor: pointer; font: inherit; color: inherit; background: transparent; }
+    .accion-fila-click:hover { background: var(--primary-soft) !important; }
     .accion-icono { flex-shrink: 0; font-size: 13px; }
     .accion-nombre { font-weight: 600; flex: 1 1 40%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .accion-detalle { color: var(--text-muted); flex: 1 1 55%; min-width: 0; }
@@ -215,6 +240,8 @@ export class LimpiezasComponent implements OnInit, OnDestroy {
   estados: EstadoLimpieza[] = [];
   cargando = true;
   errorCarga = '';
+
+  alimentoModalId: number | null = null;
 
   private intervalos = new Map<string, any>();
 
@@ -264,13 +291,21 @@ export class LimpiezasComponent implements OnInit, OnDestroy {
     if (!item.info.ia) {
       const llamada = item.info.tipo === 'huerfanos'
         ? this.api.limpiarHuerfanos()
-        : this.api.consolidarDuplicados();
+        : item.info.tipo === 'duplicados'
+          ? this.api.consolidarDuplicados()
+          : this.api.listarAlimentosSinIngredientes();
+
+      // "sin_ingredientes" es solo un listado para revisar a mano, no una
+      // limpieza automatica: no toca datos, asi que no se dan por resueltos
+      // los pendientes hasta que el admin edite cada alimento.
+      const marcaComoResuelto = item.info.tipo !== 'sin_ingredientes';
 
       llamada.subscribe({
         next: (resultado) => {
           item.ejecutando = false;
           item.resultado = resultado;
-          item.info.pendientes = 0;
+          item.expandido = true;
+          if (marcaComoResuelto) item.info.pendientes = 0;
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -331,5 +366,26 @@ export class LimpiezasComponent implements OnInit, OnDestroy {
     }, 2000);
 
     this.intervalos.set(jobId, intervalo);
+  }
+
+  editarAlimento(id: number): void {
+    this.alimentoModalId = id;
+  }
+
+  cerrarAlimentoModal(): void {
+    this.alimentoModalId = null;
+  }
+
+  onAlimentoGuardado(): void {
+    // Tras añadir ingredientes, refrescar el contador de "sin_ingredientes"
+    // por si este alimento ya deja de aparecer en la lista.
+    const item = this.estados.find((e) => e.info.tipo === 'sin_ingredientes');
+    if (item) {
+      this.api.listarAlimentosSinIngredientes().subscribe((resultado) => {
+        item.resultado = resultado;
+        item.info.pendientes = resultado.total ?? 0;
+        this.cdr.detectChanges();
+      });
+    }
   }
 }

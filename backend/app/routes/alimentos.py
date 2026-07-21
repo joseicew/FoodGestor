@@ -1,12 +1,14 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy import exists
 from sqlalchemy.orm import selectinload
 import json
 from app import db
-from app.models.alimento import Alimento
+from app.models.alimento import Alimento, alimento_ingrediente
 from app.models.ingrediente import Ingrediente
 from app.models.porcion_habitual import PorcionHabitual
 from app.services.ingredientes_helper import obtener_o_crear_ingrediente, limpiar_huerfanos_por_ids
+from app.routes.admin import requiere_rol
 
 alimentos_bp = Blueprint('alimentos', __name__, url_prefix='/api/alimentos')
 
@@ -565,6 +567,33 @@ def verificar_cambios_alimentos():
             'hay_cambios': hay_cambios,
             'count_servidor': total_alimentos,
             'count_cliente': cliente_count
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@alimentos_bp.route('/limpieza/sin-ingredientes', methods=['POST'])
+@requiere_rol('superadmin', 'admin')
+def listar_alimentos_sin_ingredientes():
+    """
+    Alimentos sin ningún ingrediente asociado: casi siempre un error al
+    crearlos (no tiene sentido que exista un alimento "vacío"). No hay
+    forma automática de arreglarlo (no se pueden inventar ingredientes),
+    así que solo se lista para que el admin los revise y edite a mano.
+    """
+    try:
+        tiene_ingrediente = exists().where(alimento_ingrediente.c.alimento_id == Alimento.id)
+        sin_ingredientes = Alimento.query.filter(~tiene_ingrediente).all()
+
+        alimentos = [
+            {'id': a.id, 'nombre': a.nombre, 'marca': a.marca}
+            for a in sin_ingredientes
+        ]
+
+        return jsonify({
+            'mensaje': f'{len(alimentos)} alimento(s) sin ingredientes asociados',
+            'total': len(alimentos),
+            'alimentos': alimentos,
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
