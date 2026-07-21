@@ -87,7 +87,7 @@
   gap: 16px;
 }
 
-.form-group label {
+.form-group > label {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-label);
@@ -260,32 +260,36 @@
   background: #bbb;
 }
 
-/* Sección de Intolerancias */
+/* Sección de Intolerancias (mismo formato que la edición de perfil) */
 .intolerancias-group {
   background: #f9f9f9;
+  border: 1px solid #e8e8e8;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin: 20px 0;
 }
 
-.intolerancias-group label:first-child {
+.intolerancias-group > label:first-child {
   display: block;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
   color: #2d2d2d;
 }
 
 .form-hint {
   font-size: 12px;
-  color: #666;
-  margin: 0 0 12px 0;
+  color: #999;
+  font-style: italic;
+  margin: -8px 0 12px 0;
   line-height: 1.4;
 }
 
 .intolerancias-lista {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
+  margin-top: 12px;
 }
 
 .checkbox-label {
@@ -293,28 +297,41 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  font-size: 14px;
-  color: #333;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2d2d2d;
   user-select: none;
-  padding: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 2px solid #e0e0e0;
   border-radius: 8px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .checkbox-label:hover {
-  background-color: #f0f0f0;
+  border-color: #667eea;
+  background: #f9f9ff;
 }
 
 .checkbox-label input[type="checkbox"] {
   cursor: pointer;
-  width: 16px;
-  height: 16px;
-  accent-color: #6B9117;
+  width: 18px;
+  height: 18px;
+  accent-color: #667eea;
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+  accent-color: #4CAF50;
 }
 
 .checkbox-label input[type="checkbox"]:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+}
+
+.checkbox-label input[type="checkbox"]:checked ~ span {
+  color: #4CAF50;
+  font-weight: 600;
 }
 
 .checkbox-label span {
