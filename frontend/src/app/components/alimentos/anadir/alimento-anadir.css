@@ -176,9 +176,9 @@ input.ocr-filled {
 }
 
 .btn-info-mini {
-  background: var(--bg-tertiary, #384B28);
-  border: none;
-  border-radius: 12px;
+  background: transparent;
+  border: 1.5px solid #A5D6A7;
+  border-radius: 50%;
   font-size: 18px;
   line-height: 1;
   padding: 8px;
