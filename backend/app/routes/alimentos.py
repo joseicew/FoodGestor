@@ -2,7 +2,9 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import exists
 from sqlalchemy.orm import selectinload
+from collections import defaultdict
 import json
+import unicodedata
 from app import db
 from app.models.alimento import Alimento, alimento_ingrediente
 from app.models.ingrediente import Ingrediente
@@ -21,6 +23,63 @@ STOPWORDS_NOMBRE = {
 
 def _palabras_significativas(texto: str) -> set:
     return {p for p in texto.lower().split() if p not in STOPWORDS_NOMBRE and len(p) > 2}
+
+
+def _normalizar_texto(texto):
+    texto = (texto or '').strip().lower()
+    texto = unicodedata.normalize('NFD', texto)
+    texto = ''.join(c for c in texto if unicodedata.category(c) != 'Mn')
+    return ' '.join(texto.split())
+
+
+def _agrupar_alimentos_duplicados():
+    """
+    Detecta alimentos que probablemente son el mismo producto en distinto
+    formato (paquete, cartón, botella, lata...) -la leche o un refresco se
+    venden así habitualmente-, agrupando los que tienen el mismo nombre +
+    marca (normalizado, sin acentos ni mayúsculas).
+
+    Se probó también agrupar por "misma marca + macros por 100g
+    idénticos" para pillar variantes con el nombre ligeramente distinto,
+    pero en la práctica genera demasiados falsos positivos: toda la
+    pasta seca de una marca comparte los mismos macros típicos, todos
+    los refrescos "zero" comparten 0 kcal, los huevos de cualquier
+    tamaño tienen la misma composición... nada de eso son duplicados
+    reales. El nombre+marca exacto es la única señal lo bastante fiable
+    para no generar ruido.
+    """
+    alimentos = Alimento.query.with_entities(
+        Alimento.id, Alimento.nombre, Alimento.marca,
+        Alimento.calorias, Alimento.proteinas, Alimento.grasas, Alimento.hidratos_carbono
+    ).all()
+
+    grupos_nombre = defaultdict(list)
+    for a in alimentos:
+        clave = (_normalizar_texto(a.marca), _normalizar_texto(a.nombre))
+        grupos_nombre[clave].append(a)
+
+    grupos = []
+    for miembros in grupos_nombre.values():
+        if len(miembros) < 2:
+            continue
+        grupos.append({
+            'criterio': 'nombre',
+            'alimentos': [
+                {
+                    'id': a.id,
+                    'nombre': a.nombre,
+                    'marca': a.marca,
+                    'calorias': a.calorias,
+                    'proteinas': a.proteinas,
+                    'grasas': a.grasas,
+                    'hidratos_carbono': a.hidratos_carbono,
+                }
+                for a in miembros
+            ],
+        })
+
+    grupos.sort(key=lambda g: -len(g['alimentos']))
+    return grupos
 
 
 def _vincular_ingredientes(alimento, nombres):
@@ -643,6 +702,29 @@ def vincular_ingrediente_sugerido(id):
         return jsonify({'mensaje': 'Ingrediente vinculado', 'alimento': alimento.to_dict()}), 200
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@alimentos_bp.route('/limpieza/posibles-duplicados', methods=['POST'])
+@requiere_rol('superadmin', 'admin')
+def listar_alimentos_duplicados():
+    """
+    Alimentos que probablemente son el mismo producto vendido en distinto
+    formato (p.ej. leche en cartón vs en pack, refresco en lata vs
+    botella): mismo nombre+marca, o misma marca con macros por 100g
+    identicos. No se fusiona nada automaticamente (a diferencia de los
+    ingredientes duplicados, borrar/fusionar un alimento afecta a
+    raciones y calendario ya guardados), solo se lista para revision.
+    """
+    try:
+        grupos = _agrupar_alimentos_duplicados()
+        total = sum(len(g['alimentos']) - 1 for g in grupos)
+        return jsonify({
+            'mensaje': f'{len(grupos)} grupo(s) de posibles duplicados ({total} alimento(s) de más)',
+            'total': total,
+            'grupos': grupos,
+        }), 200
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 

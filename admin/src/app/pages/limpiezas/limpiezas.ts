@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Observable } from 'rxjs';
 import { ApiService, TipoLimpieza } from '../../services/api';
 import { AlimentoModalComponent } from '../../components/alimento-modal/alimento-modal';
 
@@ -20,6 +21,7 @@ const ICONOS_TIPO: Record<string, string> = {
   compuestos_descripciones: '✂️',
   aditivos_sin_nota: '🧪',
   sin_ingredientes: '🍽️',
+  alimentos_duplicados: '📦',
 };
 
 @Component({
@@ -151,6 +153,24 @@ const ICONOS_TIPO: Record<string, string> = {
                   }
                 </div>
               }
+
+              @if (item.expandido && item.resultado.grupos?.length) {
+                <div class="grupos-duplicados">
+                  @for (grupo of item.resultado.grupos; track $index) {
+                    <div class="grupo-duplicado">
+                      <span class="grupo-etiqueta">{{ etiquetaCriterio(grupo.criterio) }}</span>
+                      @for (a of grupo.alimentos; track a.id) {
+                        <button type="button" class="accion-fila-click grupo-item" (click)="editarAlimento(a.id)">
+                          <span class="accion-nombre">{{ a.nombre }}</span>
+                          <span class="accion-detalle">
+                            {{ a.marca || 'Sin marca' }} · {{ a.calorias ?? '?' }} kcal · P {{ a.proteinas ?? '?' }} · G {{ a.grasas ?? '?' }} · HC {{ a.hidratos_carbono ?? '?' }}
+                          </span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             }
           </div>
         }
@@ -243,6 +263,17 @@ const ICONOS_TIPO: Record<string, string> = {
     .accion-fila-click:hover { text-decoration: underline; }
     .btn-sugerido { flex-shrink: 0; font-size: 11.5px; padding: 4px 10px; background: var(--warning-soft); color: var(--warning); border-color: var(--warning); }
     .btn-sugerido:hover:not(:disabled) { background: var(--warning); color: #fff; }
+
+    .grupos-duplicados {
+      display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto;
+      border-top: 1px solid var(--border); padding-top: 10px; margin-top: 2px;
+    }
+    .grupo-duplicado {
+      display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px; background: var(--surface-2);
+    }
+    .grupo-etiqueta { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+    .grupo-item { border-radius: 6px; padding: 6px 8px !important; background: var(--surface); }
     .accion-icono { flex-shrink: 0; font-size: 13px; }
     .accion-nombre { font-weight: 600; flex: 1 1 40%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .accion-detalle { color: var(--text-muted); flex: 1 1 55%; min-width: 0; }
@@ -302,16 +333,19 @@ export class LimpiezasComponent implements OnInit, OnDestroy {
     item.resultado = null;
 
     if (!item.info.ia) {
-      const llamada = item.info.tipo === 'huerfanos'
-        ? this.api.limpiarHuerfanos()
-        : item.info.tipo === 'duplicados'
-          ? this.api.consolidarDuplicados()
-          : this.api.listarAlimentosSinIngredientes();
+      const llamadasPorTipo: Record<string, () => Observable<any>> = {
+        huerfanos: () => this.api.limpiarHuerfanos(),
+        duplicados: () => this.api.consolidarDuplicados(),
+        sin_ingredientes: () => this.api.listarAlimentosSinIngredientes(),
+        alimentos_duplicados: () => this.api.listarAlimentosDuplicados(),
+      };
+      const llamada = llamadasPorTipo[item.info.tipo]();
 
-      // "sin_ingredientes" es solo un listado para revisar a mano, no una
-      // limpieza automatica: no toca datos, asi que no se dan por resueltos
-      // los pendientes hasta que el admin edite cada alimento.
-      const marcaComoResuelto = item.info.tipo !== 'sin_ingredientes';
+      // "sin_ingredientes" y "alimentos_duplicados" son solo un listado para
+      // revisar a mano, no una limpieza automatica: no tocan datos, asi que
+      // no se dan por resueltos los pendientes hasta que el admin actue.
+      const SOLO_REVISION = new Set(['sin_ingredientes', 'alimentos_duplicados']);
+      const marcaComoResuelto = !SOLO_REVISION.has(item.info.tipo);
 
       llamada.subscribe({
         next: (resultado) => {
@@ -383,6 +417,10 @@ export class LimpiezasComponent implements OnInit, OnDestroy {
 
   editarAlimento(id: number): void {
     this.alimentoModalId = id;
+  }
+
+  etiquetaCriterio(_criterio: string): string {
+    return 'Mismo nombre y marca';
   }
 
   vincularSugerido(item: EstadoLimpieza, alimento: any): void {

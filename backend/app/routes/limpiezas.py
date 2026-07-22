@@ -5,6 +5,7 @@ from sqlalchemy import exists
 from app import db
 from app.models.ingrediente import Ingrediente
 from app.models.alimento import Alimento, alimento_ingrediente
+from app.routes.alimentos import _agrupar_alimentos_duplicados
 from app.routes.admin import requiere_rol
 from app.services.job_queue import crear_job, obtener_job, actualizar_job, JobStatus
 from app.services.limpieza_agente import TIPOS_LIMPIEZA, ejecutar_limpieza
@@ -30,6 +31,11 @@ def _contar_duplicados():
 def _contar_sin_ingredientes():
     tiene_ingrediente = exists().where(alimento_ingrediente.c.alimento_id == Alimento.id)
     return Alimento.query.filter(~tiene_ingrediente).count()
+
+
+def _contar_alimentos_duplicados():
+    grupos = _agrupar_alimentos_duplicados()
+    return sum(len(g['alimentos']) - 1 for g in grupos)
 
 
 @limpiezas_bp.route('/tipos', methods=['GET'])
@@ -67,6 +73,13 @@ def listar_tipos():
             'nombre': 'Alimentos sin ingredientes',
             'descripcion': 'Alimentos que no tienen ningún ingrediente asociado. Casi siempre son errores al crearlos; revísalos y añade sus ingredientes.',
             'pendientes': _contar_sin_ingredientes(),
+            'ia': False,
+        })
+        tipos.insert(3, {
+            'tipo': 'alimentos_duplicados',
+            'nombre': 'Posibles alimentos duplicados',
+            'descripcion': 'Alimentos con el mismo nombre y marca -probablemente el mismo producto en otro formato: paquete, cartón, botella, lata...-. Revísalos a mano.',
+            'pendientes': _contar_alimentos_duplicados(),
             'ia': False,
         })
 
