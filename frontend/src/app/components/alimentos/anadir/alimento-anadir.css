@@ -88,6 +88,22 @@
   background: #fff;
 }
 
+/* ── Campo en linea (label + input/select en la misma fila) ── */
+.campo-inline { display: flex; align-items: center; gap: 10px; }
+.campo-inline label {
+  flex-shrink: 0;
+  width: 96px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.campo-inline input,
+.campo-inline select {
+  flex: 1;
+  min-width: 0;
+}
+
 .campo-error { border-color: #e53935 !important; background: #fff8f8 !important; }
 
 .error-hint { display: block; font-size: 11px; color: #e53935; margin-top: 3px; }

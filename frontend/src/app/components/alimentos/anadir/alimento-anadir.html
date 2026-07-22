@@ -42,10 +42,12 @@
     </div>
 
     <div class="form-group">
-      <label>Nombre <span class="obligatorio">*</span></label>
-      <input type="text" [(ngModel)]="nuevoAlimento.nombre" placeholder="Ej: Pechuga de pollo"
-             (blur)="onNombreBlur()"
-             [class.campo-error]="(intentoGuardar && !nuevoAlimento.nombre.trim()) || !!nombreDuplicado" />
+      <div class="campo-inline">
+        <label>Nombre <span class="obligatorio">*</span></label>
+        <input type="text" [(ngModel)]="nuevoAlimento.nombre" placeholder="Ej: Pechuga de pollo"
+               (blur)="onNombreBlur()"
+               [class.campo-error]="(intentoGuardar && !nuevoAlimento.nombre.trim()) || !!nombreDuplicado" />
+      </div>
       @if (intentoGuardar && !nuevoAlimento.nombre.trim()) {
         <span class="error-hint">El nombre es obligatorio</span>
       }
@@ -55,22 +57,26 @@
     </div>
 
     <div class="form-group">
-      <label>Marca <span class="obligatorio">*</span></label>
-      <input type="text" [(ngModel)]="nuevoAlimento.marca" placeholder="Ej: Marca X, Sin marca"
-             [class.campo-error]="intentoGuardar && !nuevoAlimento.marca.trim()" />
+      <div class="campo-inline">
+        <label>Marca <span class="obligatorio">*</span></label>
+        <input type="text" [(ngModel)]="nuevoAlimento.marca" placeholder="Ej: Marca X, Sin marca"
+               [class.campo-error]="intentoGuardar && !nuevoAlimento.marca.trim()" />
+      </div>
       @if (intentoGuardar && !nuevoAlimento.marca.trim()) {
         <span class="error-hint">La marca es obligatoria</span>
       }
     </div>
 
     <div class="form-group">
-      <label>Categoría <span class="obligatorio">*</span></label>
-      <select [(ngModel)]="nuevoAlimento.categoria" [class.campo-error]="intentoGuardar && !nuevoAlimento.categoria">
-        <option value="">✨ Seleccionar categoría</option>
-        @for (cat of categorias; track cat) {
-          <option [value]="cat">{{ cat }}</option>
-        }
-      </select>
+      <div class="campo-inline">
+        <label>Categoría <span class="obligatorio">*</span></label>
+        <select [(ngModel)]="nuevoAlimento.categoria" [class.campo-error]="intentoGuardar && !nuevoAlimento.categoria">
+          <option value="">✨ Seleccionar categoría</option>
+          @for (cat of categorias; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
       @if (intentoGuardar && !nuevoAlimento.categoria) {
         <span class="error-hint">Selecciona una categoría</span>
       }
