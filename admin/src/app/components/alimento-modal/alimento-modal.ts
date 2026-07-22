@@ -330,8 +330,8 @@ export class AlimentoModalComponent implements OnChanges {
         const actualizado = res.alimento || this.edit;
         Object.assign(this.alimento, actualizado);
         this.guardando = false;
-        this.mostrar('Alimento actualizado', false);
         this.guardado.emit(actualizado);
+        this.cerrar.emit();
       },
       error: (err) => { this.guardando = false; this.mostrar(err.error?.error || 'No se pudo guardar', true); }
     });

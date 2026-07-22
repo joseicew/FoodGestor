@@ -446,13 +446,24 @@ export class LimpiezasComponent implements OnInit, OnDestroy {
   }
 
   onAlimentoGuardado(): void {
-    // Tras añadir ingredientes, refrescar el contador de "sin_ingredientes"
-    // por si este alimento ya deja de aparecer en la lista.
-    const item = this.estados.find((e) => e.info.tipo === 'sin_ingredientes');
-    if (item) {
+    // El modal se pudo abrir tanto desde "sin_ingredientes" como desde
+    // "alimentos_duplicados" (mismo boton, mismo modal): refrescar
+    // cualquiera de las dos listas que ya estuviera cargada, por si el
+    // alimento editado ya deja de aparecer en ella.
+    const sinIngredientes = this.estados.find((e) => e.info.tipo === 'sin_ingredientes');
+    if (sinIngredientes?.resultado) {
       this.api.listarAlimentosSinIngredientes().subscribe((resultado) => {
-        item.resultado = resultado;
-        item.info.pendientes = resultado.total ?? 0;
+        sinIngredientes.resultado = resultado;
+        sinIngredientes.info.pendientes = resultado.total ?? 0;
+        this.cdr.detectChanges();
+      });
+    }
+
+    const duplicados = this.estados.find((e) => e.info.tipo === 'alimentos_duplicados');
+    if (duplicados?.resultado) {
+      this.api.listarAlimentosDuplicados().subscribe((resultado) => {
+        duplicados.resultado = resultado;
+        duplicados.info.pendientes = resultado.total ?? 0;
         this.cdr.detectChanges();
       });
     }
