@@ -25,7 +25,7 @@ export class AlimentoAnadir implements OnInit {
   readonly categorias = CATEGORIAS;
   readonly unidadesComunes = UNIDADES_COMUNES;
   mostrarAyuda = false;
-  ayudaFotoActiva: 'completa' | 'ingredientes' | 'macros' | null = null;
+  ayudaFotoActiva: 'completa' | 'ingredientes' | 'macros' | 'codigo' | null = null;
 
   alimentos: any[] = [];
 
@@ -91,7 +91,7 @@ export class AlimentoAnadir implements OnInit {
     }
   }
 
-  toggleAyudaFoto(id: 'completa' | 'ingredientes' | 'macros', event: MouseEvent): void {
+  toggleAyudaFoto(id: 'completa' | 'ingredientes' | 'macros' | 'codigo', event: MouseEvent): void {
     event.stopPropagation();
     this.ayudaFotoActiva = this.ayudaFotoActiva === id ? null : id;
   }

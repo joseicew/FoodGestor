@@ -163,25 +163,35 @@ input.ocr-filled {
   min-width: 0;
 }
 
-.foto-label-row { display: flex; align-items: center; gap: 4px; }
-
 .foto-label { display: block; font-size: 11px; font-weight: 600; color: #555; }
+
+/* Icono "i" fuera de la barra (bien separado del boton de camara) para que
+   el area de toque de cada uno sea mas grande y facil de acertar. */
+.ayuda-icono-wrap {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .btn-info-mini {
   background: none;
   border: none;
-  font-size: 12px;
+  font-size: 18px;
   line-height: 1;
-  padding: 2px 4px;
+  padding: 8px;
+  min-width: 32px;
+  min-height: 32px;
   cursor: pointer;
-  flex-shrink: 0;
 }
 
 .bocadillo-ayuda {
   position: absolute;
   top: calc(100% + 6px);
-  left: 0;
   right: 0;
+  width: 220px;
+  max-width: 70vw;
   z-index: 20;
   background: var(--bg-tertiary, #384B28);
   color: var(--text-primary, #fff);
@@ -197,7 +207,7 @@ input.ocr-filled {
   content: '';
   position: absolute;
   bottom: 100%;
-  left: 16px;
+  right: 10px;
   border: 6px solid transparent;
   border-bottom-color: var(--bg-tertiary, #384B28);
 }

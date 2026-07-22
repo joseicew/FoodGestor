@@ -18,10 +18,10 @@
   <div class="tab-panel">
     <div class="ocr-top-section">
       <div class="foto-upload">
-        <span class="foto-label-row">
-          <span class="foto-label">📷 Foto con todos los datos</span>
-          <button type="button" class="btn-info-mini" (click)="toggleAyudaFoto('completa', $event)" title="¿Qué foto hace falta?">ℹ️</button>
-        </span>
+        <span class="foto-label">📷 Foto con todos los datos</span>
+      </div>
+      <div class="ayuda-icono-wrap">
+        <button type="button" class="btn-info-mini" (click)="toggleAyudaFoto('completa', $event)" title="¿Qué foto hace falta?">ℹ️</button>
         @if (ayudaFotoActiva === 'completa') {
           <div class="bocadillo-ayuda" (click)="$event.stopPropagation()">Una única foto donde se vean a la vez el nombre del producto, la lista de ingredientes y la tabla de valores nutricionales. Solo funciona bien si todo cabe legible en una misma cara del envase.</div>
         }
@@ -78,6 +78,12 @@
                (blur)="onCodigoBlur()"
                [class.campo-error]="!!codigoDuplicado"
                [class.ocr-filled]="codigoRellenado" />
+        <div class="ayuda-icono-wrap">
+          <button type="button" class="btn-info-mini" (click)="toggleAyudaFoto('codigo', $event)" title="¿Qué foto hace falta?">ℹ️</button>
+          @if (ayudaFotoActiva === 'codigo') {
+            <div class="bocadillo-ayuda" (click)="$event.stopPropagation()">Encuadra bien el código de barras, sin reflejos ni cortes, para que se lea el EAN automáticamente.</div>
+          }
+        </div>
         <label class="btn-scan"
                [class.scanning]="ocrCodigoEstado === 'preparando' || ocrCodigoEstado === 'analizando'"
                title="Escanear código desde foto">
@@ -99,9 +105,6 @@
       @if (ocrCodigoEstado === 'error') {
         <span class="ocr-hint error-ocr">❌ No se detectó el código</span>
       }
-      @if (ocrCodigoEstado !== 'listo' && ocrCodigoEstado !== 'error') {
-        <span class="ocr-hint">📷 Encuadra bien el código de barras, sin reflejos ni cortes, para que se lea el EAN automáticamente.</span>
-      }
     </div>
 
     <div class="seccion-separador"></div>
@@ -111,10 +114,10 @@
       <div class="fotos-row">
         <div class="foto-col">
           <div class="foto-upload">
-            <span class="foto-label-row">
-              <span class="foto-label">📸 Lista ingredientes</span>
-              <button type="button" class="btn-info-mini" (click)="toggleAyudaFoto('ingredientes', $event)" title="¿Qué foto hace falta?">ℹ️</button>
-            </span>
+            <span class="foto-label">📸 Lista ingredientes</span>
+          </div>
+          <div class="ayuda-icono-wrap">
+            <button type="button" class="btn-info-mini" (click)="toggleAyudaFoto('ingredientes', $event)" title="¿Qué foto hace falta?">ℹ️</button>
             @if (ayudaFotoActiva === 'ingredientes') {
               <div class="bocadillo-ayuda" (click)="$event.stopPropagation()">Foto nítida y legible de la lista completa de ingredientes del envase (la letra pequeña). Sin reflejos, sin recortar y con buena luz.</div>
             }
@@ -174,10 +177,10 @@
     <div>
       <div class="foto-col">
         <div class="foto-upload">
-          <span class="foto-label-row">
-            <span class="foto-label">📊 Tabla macros</span>
-            <button type="button" class="btn-info-mini" (click)="toggleAyudaFoto('macros', $event)" title="¿Qué foto hace falta?">ℹ️</button>
-          </span>
+          <span class="foto-label">📊 Tabla macros</span>
+        </div>
+        <div class="ayuda-icono-wrap">
+          <button type="button" class="btn-info-mini" (click)="toggleAyudaFoto('macros', $event)" title="¿Qué foto hace falta?">ℹ️</button>
           @if (ayudaFotoActiva === 'macros') {
             <div class="bocadillo-ayuda" (click)="$event.stopPropagation()">Foto de la tabla de "Información nutricional" (valores por 100g/100ml), con todos los números visibles y sin recortar.</div>
           }
