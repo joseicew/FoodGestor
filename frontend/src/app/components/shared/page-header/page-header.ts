@@ -44,12 +44,15 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     .page-header-info {
       position: absolute;
       right: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: none;
       border: none;
-      font-size: 17px;
+      font-size: 28px;
       line-height: 1;
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 0;
       opacity: 0.85;
     }
     .page-header-info:hover { opacity: 1; }
