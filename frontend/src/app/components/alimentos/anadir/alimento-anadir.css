@@ -121,9 +121,9 @@ input.ocr-filled {
 .btn-scan:hover { opacity: 1; }
 .btn-scan.scanning { opacity: 0.5; cursor: not-allowed; }
 
-.ocr-hint { display: block; font-size: 11px; margin-top: 3px; }
-.ocr-hint.exito { color: #2e7d32; }
-.ocr-hint.error-ocr { color: #c62828; }
+.ocr-hint { display: block; font-size: 11px; margin-top: 3px; color: var(--text-secondary, #888); }
+.ocr-hint.exito { color: #4CAF50; }
+.ocr-hint.error-ocr { color: #FF6B6B; }
 
 /* ── Fotos ── */
 .fotos-section { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 10px; width: 100%; }
