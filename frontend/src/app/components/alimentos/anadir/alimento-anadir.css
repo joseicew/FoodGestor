@@ -71,28 +71,7 @@
 }
 
 /* ── OCR superior ── */
-.ocr-top-section { display: flex; justify-content: center; padding: 0; }
-
-.ocr-top-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, var(--primary, #4CAF50) 0%, var(--primary-dark, #388E3C) 100%);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  margin-top: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  user-select: none;
-  line-height: 1;
-}
-
-.ocr-top-button:hover:not(.scanning) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(164, 198, 57, 0.4); }
-.ocr-top-button.scanning { opacity: 0.7; cursor: not-allowed; }
+.ocr-top-section { width: 100%; display: flex; flex-direction: row; gap: 8px; align-items: flex-start; margin-top: 8px; }
 
 /* ── Form group overrides ── */
 .form-group { margin-bottom: 8px; }
@@ -184,6 +163,8 @@ input.ocr-filled {
 }
 
 .foto-label { display: block; font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; }
+
+.foto-explicacion { display: block; font-size: 11px; line-height: 1.4; color: #888; }
 
 /* ── Bloque ingredientes detectados ── */
 .ingredientes-bloque {
