@@ -585,10 +585,24 @@ def listar_alimentos_sin_ingredientes():
         tiene_ingrediente = exists().where(alimento_ingrediente.c.alimento_id == Alimento.id)
         sin_ingredientes = Alimento.query.filter(~tiene_ingrediente).all()
 
-        alimentos = [
-            {'id': a.id, 'nombre': a.nombre, 'marca': a.marca}
-            for a in sin_ingredientes
-        ]
+        # Muchos de estos son alimentos "simples" (una fruta, una verdura...)
+        # donde el propio alimento ES el ingrediente (p.ej. alimento "Naranja"
+        # e ingrediente "Naranja" ya existente). Se busca de una sola vez
+        # (sin N+1) para sugerir el vinculo en vez de obligar a escribirlo.
+        ingredientes_por_nombre = {
+            nombre.strip().lower(): (ing_id, nombre)
+            for ing_id, nombre in db.session.query(Ingrediente.id, Ingrediente.nombre).all()
+        }
+
+        alimentos = []
+        for a in sin_ingredientes:
+            sugerido = ingredientes_por_nombre.get((a.nombre or '').strip().lower())
+            alimentos.append({
+                'id': a.id,
+                'nombre': a.nombre,
+                'marca': a.marca,
+                'ingrediente_sugerido': {'id': sugerido[0], 'nombre': sugerido[1]} if sugerido else None,
+            })
 
         return jsonify({
             'mensaje': f'{len(alimentos)} alimento(s) sin ingredientes asociados',
@@ -596,6 +610,39 @@ def listar_alimentos_sin_ingredientes():
             'alimentos': alimentos,
         }), 200
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@alimentos_bp.route('/<int:id>/vincular-ingrediente', methods=['POST'])
+@requiere_rol('superadmin', 'admin')
+def vincular_ingrediente_sugerido(id):
+    """
+    Vincula un ingrediente ya existente a un alimento con un solo click,
+    para el caso "el alimento es el ingrediente" (p.ej. alimento "Naranja"
+    con el ingrediente "Naranja" ya en la BD) detectado en la limpieza de
+    alimentos sin ingredientes.
+    """
+    try:
+        data = request.get_json() or {}
+        ingrediente_id = data.get('ingrediente_id')
+        if not ingrediente_id:
+            return jsonify({'error': 'Falta ingrediente_id'}), 400
+
+        alimento = Alimento.query.get(id)
+        if not alimento:
+            return jsonify({'error': 'Alimento no encontrado'}), 404
+
+        ingrediente = Ingrediente.query.get(ingrediente_id)
+        if not ingrediente:
+            return jsonify({'error': 'Ingrediente no encontrado'}), 404
+
+        if ingrediente not in alimento.ingredientes:
+            alimento.ingredientes.append(ingrediente)
+            db.session.commit()
+
+        return jsonify({'mensaje': 'Ingrediente vinculado', 'alimento': alimento.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 

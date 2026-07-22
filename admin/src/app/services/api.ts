@@ -169,6 +169,10 @@ export class ApiService {
     return this.http.post(`${this.base}/api/alimentos/limpieza/sin-ingredientes`, {});
   }
 
+  vincularIngredienteSugerido(alimentoId: number, ingredienteId: number): Observable<any> {
+    return this.http.post(`${this.base}/api/alimentos/${alimentoId}/vincular-ingrediente`, { ingrediente_id: ingredienteId });
+  }
+
   // ── Reportes de alimentos ──
   listarReportes(estado?: string): Observable<ReporteAlimento[]> {
     const params: Record<string, string> = estado ? { estado } : {};

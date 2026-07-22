@@ -134,11 +134,20 @@ const ICONOS_TIPO: Record<string, string> = {
               @if (item.expandido && item.resultado.alimentos?.length) {
                 <div class="detalle-acciones">
                   @for (a of item.resultado.alimentos; track a.id) {
-                    <button type="button" class="accion-fila accion-fila-click" (click)="editarAlimento(a.id)">
-                      <span class="accion-icono">🍽️</span>
-                      <span class="accion-nombre">{{ a.nombre }}</span>
-                      <span class="accion-detalle">{{ a.marca || 'Sin marca' }} · click para editar</span>
-                    </button>
+                    <div class="accion-fila accion-fila-sin-ing">
+                      <button type="button" class="accion-fila-click" (click)="editarAlimento(a.id)">
+                        <span class="accion-icono">🍽️</span>
+                        <span class="accion-nombre">{{ a.nombre }}</span>
+                        <span class="accion-detalle">{{ a.marca || 'Sin marca' }} · click para editar</span>
+                      </button>
+                      @if (a.ingrediente_sugerido) {
+                        <button type="button" class="btn btn-sugerido"
+                                (click)="vincularSugerido(item, a)" [disabled]="vinculando === a.id"
+                                title="El alimento y el ingrediente parecen ser lo mismo (mismo nombre)">
+                          {{ vinculando === a.id ? '...' : '✅ ¿Es "' + a.ingrediente_sugerido.nombre + '"?' }}
+                        </button>
+                      }
+                    </div>
                   }
                 </div>
               }
@@ -229,8 +238,11 @@ const ICONOS_TIPO: Record<string, string> = {
       display: flex; align-items: center; gap: 10px; font-size: 12.5px; padding: 6px 8px; border-radius: 6px;
     }
     .accion-fila:nth-child(odd) { background: var(--surface-2); }
-    .accion-fila-click { border: none; width: 100%; text-align: left; cursor: pointer; font: inherit; color: inherit; background: transparent; }
-    .accion-fila-click:hover { background: var(--primary-soft) !important; }
+    .accion-fila-sin-ing { gap: 8px; }
+    .accion-fila-click { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; border: none; text-align: left; cursor: pointer; font: inherit; color: inherit; background: transparent; padding: 0; }
+    .accion-fila-click:hover { text-decoration: underline; }
+    .btn-sugerido { flex-shrink: 0; font-size: 11.5px; padding: 4px 10px; background: var(--warning-soft); color: var(--warning); border-color: var(--warning); }
+    .btn-sugerido:hover:not(:disabled) { background: var(--warning); color: #fff; }
     .accion-icono { flex-shrink: 0; font-size: 13px; }
     .accion-nombre { font-weight: 600; flex: 1 1 40%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .accion-detalle { color: var(--text-muted); flex: 1 1 55%; min-width: 0; }
@@ -242,6 +254,7 @@ export class LimpiezasComponent implements OnInit, OnDestroy {
   errorCarga = '';
 
   alimentoModalId: number | null = null;
+  vinculando: number | null = null;
 
   private intervalos = new Map<string, any>();
 
@@ -370,6 +383,24 @@ export class LimpiezasComponent implements OnInit, OnDestroy {
 
   editarAlimento(id: number): void {
     this.alimentoModalId = id;
+  }
+
+  vincularSugerido(item: EstadoLimpieza, alimento: any): void {
+    if (!alimento.ingrediente_sugerido) return;
+    this.vinculando = alimento.id;
+    this.api.vincularIngredienteSugerido(alimento.id, alimento.ingrediente_sugerido.id).subscribe({
+      next: () => {
+        this.vinculando = null;
+        item.resultado.alimentos = item.resultado.alimentos.filter((a: any) => a.id !== alimento.id);
+        item.info.pendientes = Math.max(0, item.info.pendientes - 1);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.vinculando = null;
+        item.error = err.error?.error || 'No se pudo vincular el ingrediente';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   cerrarAlimentoModal(): void {
