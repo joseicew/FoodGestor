@@ -21,6 +21,16 @@
   background: var(--bg-surface);
   overflow: hidden;
   transition: background-color 0.3s ease;
+  /* En navegador de escritorio la ventana es más ancha que la app (que
+     queda centrada en esta columna de 480px). Sin esto, cualquier
+     descendiente con position:fixed (botón atrás, FAB, botones de ayuda...)
+     se posiciona respecto a TODA la ventana, apareciendo pegado a los
+     bordes reales del navegador en vez de a los bordes de la app. Un
+     transform en el propio contenedor lo convierte en el "containing
+     block" de sus hijos fixed (regla del spec de CSS), así que a partir
+     de aquí left/right/top/bottom de esos hijos se miden desde esta
+     columna, no desde el viewport completo. */
+  transform: translateZ(0);
 }
 
 .content {
