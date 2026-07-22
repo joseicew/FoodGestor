@@ -71,7 +71,7 @@
 }
 
 /* ── OCR superior ── */
-.ocr-top-section { width: 100%; display: flex; flex-direction: row; gap: 8px; align-items: flex-start; margin-top: 8px; }
+.ocr-top-section { width: 100%; display: flex; flex-direction: row; gap: 8px; align-items: center; margin-top: 8px; }
 
 /* ── Form group overrides ── */
 .form-group { margin-bottom: 8px; }
@@ -130,7 +130,7 @@ input.ocr-filled {
 .seccion-separador { height: 1px; background: #e0e0e0; margin: 12px 0; width: 100%; }
 .fotos-row { display: flex; flex-direction: column; gap: 12px; align-items: center; margin: 0 auto 8px; width: 100%; }
 
-.foto-col { width: 100%; display: flex; flex-direction: row; gap: 8px; align-items: flex-start; }
+.foto-col { width: 100%; display: flex; flex-direction: row; gap: 8px; align-items: center; }
 
 .btn-scan-side {
   width: auto;
@@ -177,13 +177,10 @@ input.ocr-filled {
 
 .btn-info-mini {
   background: transparent;
-  border: 1.5px solid #A5D6A7;
-  border-radius: 50%;
-  font-size: 18px;
+  border: none;
+  font-size: 32px;
   line-height: 1;
-  padding: 8px;
-  min-width: 32px;
-  min-height: 32px;
+  padding: 0;
   cursor: pointer;
 }
 
