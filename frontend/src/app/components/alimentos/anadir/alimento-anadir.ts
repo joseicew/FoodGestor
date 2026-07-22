@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -25,6 +25,7 @@ export class AlimentoAnadir implements OnInit {
   readonly categorias = CATEGORIAS;
   readonly unidadesComunes = UNIDADES_COMUNES;
   mostrarAyuda = false;
+  ayudaFotoActiva: 'completa' | 'ingredientes' | 'macros' | null = null;
 
   alimentos: any[] = [];
 
@@ -88,6 +89,19 @@ export class AlimentoAnadir implements OnInit {
     if (!this.ingredientesService.estaCargado()) {
       this.ingredientesService.cargarTodosLosIngredientes().subscribe();
     }
+  }
+
+  toggleAyudaFoto(id: 'completa' | 'ingredientes' | 'macros', event: MouseEvent): void {
+    event.stopPropagation();
+    this.ayudaFotoActiva = this.ayudaFotoActiva === id ? null : id;
+  }
+
+  // Cualquier click fuera del bocadillo o del botón "i" lo cierra (ambos
+  // detienen la propagación en su propio handler, así que este listener
+  // solo llega a dispararse para clicks realmente "fuera").
+  @HostListener('document:click')
+  cerrarAyudaFoto(): void {
+    this.ayudaFotoActiva = null;
   }
 
   volver() {

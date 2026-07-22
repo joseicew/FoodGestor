@@ -153,6 +153,7 @@ input.ocr-filled {
 .btn-scan-side.scanning { opacity: 0.5; cursor: not-allowed; }
 
 .foto-upload {
+  position: relative;
   flex: 1;
   width: 100%;
   background: #f9f9f9;
@@ -162,9 +163,44 @@ input.ocr-filled {
   min-width: 0;
 }
 
-.foto-label { display: block; font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; }
+.foto-label-row { display: flex; align-items: center; gap: 4px; }
 
-.foto-explicacion { display: block; font-size: 11px; line-height: 1.4; color: #888; }
+.foto-label { display: block; font-size: 11px; font-weight: 600; color: #555; }
+
+.btn-info-mini {
+  background: none;
+  border: none;
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.bocadillo-ayuda {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--bg-tertiary, #384B28);
+  color: var(--text-primary, #fff);
+  border: 1px solid var(--border-color, #4A5A38);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.bocadillo-ayuda::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 16px;
+  border: 6px solid transparent;
+  border-bottom-color: var(--bg-tertiary, #384B28);
+}
 
 /* ── Bloque ingredientes detectados ── */
 .ingredientes-bloque {
