@@ -14,11 +14,12 @@ import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { PageHeaderComponent } from '../shared/page-header/page-header';
 import { ModalCantidadAlimentoComponent } from '../shared/modal-cantidad-alimento/modal-cantidad-alimento';
 import { ModalCantidadRacionComponent } from '../shared/modal-cantidad-racion/modal-cantidad-racion';
+import { ModalAyudaComponent } from '../shared/modal-ayuda/modal-ayuda';
 import { normalizarTexto } from '../../utils/texto';
 
 @Component({
   selector: 'app-calendario',
-  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent, ModalCantidadAlimentoComponent, ModalCantidadRacionComponent],
+  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent, ModalCantidadAlimentoComponent, ModalCantidadRacionComponent, ModalAyudaComponent],
   templateUrl: './calendario.html',
   styleUrl: './calendario.css'
 })
@@ -28,6 +29,7 @@ export class Calendario implements OnInit {
   // Estado de fecha
   fechaSeleccionada: Date = new Date();
   mostrarDatepicker = false;
+  mostrarAyuda = false;
 
   // Datos del día
   diaActual: any = null;

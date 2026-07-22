@@ -1,5 +1,12 @@
 <div class="raciones-container">
-  <app-page-header titulo="🍽️ Raciones" />
+  <app-page-header titulo="🍽️ Raciones" [mostrarAyuda]="true" (ayudaClick)="mostrarAyuda = true" />
+
+  @if (mostrarAyuda) {
+    <app-modal-ayuda titulo="Raciones" imagen="assets/ayuda/raciones.png" (cerrar)="mostrarAyuda = false">
+      <p>Una <strong>ración</strong> es un conjunto de alimentos que sueles comer juntos (por ejemplo, tu desayuno habitual).</p>
+      <p>Créala una vez con sus alimentos y cantidades, y luego añádela al <strong>calendario</strong> con un solo toque, en vez de tener que buscar cada alimento cada día.</p>
+    </app-modal-ayuda>
+  }
 
   <app-mensaje-flash />
 
@@ -239,7 +246,15 @@
               <h2 class="modal-titulo">Nuevo Ración</h2>
               <p class="modal-subtitulo">Dale un nombre a tu ración</p>
             </div>
+            <button type="button" class="btn-info-ayuda-modal" (click)="mostrarAyudaCrear = true; $event.stopPropagation()" title="¿Qué es esto?" aria-label="Ayuda">ℹ️</button>
           </div>
+
+          @if (mostrarAyudaCrear) {
+            <app-modal-ayuda titulo="Añadir ración" imagen="assets/ayuda/anadir-racion.png" (cerrar)="mostrarAyudaCrear = false">
+              <p>Dale un nombre a tu ración y, si quieres, asígnale una o varias <strong>categorías</strong> (Desayuno, Comida, Snack, Cena) para encontrarla más rápido.</p>
+              <p>Después podrás añadirle los alimentos y las cantidades desde su ficha.</p>
+            </app-modal-ayuda>
+          }
 
           <div class="modal-form">
             <input type="text" [(ngModel)]="nuevoRacionNombre"

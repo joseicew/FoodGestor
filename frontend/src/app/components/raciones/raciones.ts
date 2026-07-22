@@ -13,12 +13,13 @@ import { ModalCantidadAlimentoComponent } from '../shared/modal-cantidad-aliment
 import { BusquedaAlimentoComponent } from '../shared/busqueda-alimento/busqueda-alimento';
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { PageHeaderComponent } from '../shared/page-header/page-header';
+import { ModalAyudaComponent } from '../shared/modal-ayuda/modal-ayuda';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-raciones',
-  imports: [CommonModule, FormsModule, ModalCantidadAlimentoComponent, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, ModalCantidadAlimentoComponent, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent, ModalAyudaComponent],
   templateUrl: './raciones.html',
   styleUrl: './raciones.css',
 })
@@ -33,6 +34,8 @@ export class Raciones implements OnInit, AfterViewInit {
 
   activePanel: 'lista' | 'editar' = 'lista';
   racionSeleccionada: any = null;
+  mostrarAyuda = false;
+  mostrarAyudaCrear = false;
 
   readonly categoriasComida: { key: string; label: string; icono: string; color: string }[] = [
     { key: 'desayuno', label: 'Desayunos', icono: '🌅', color: '#F59E0B' },

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { PageHeaderComponent } from '../shared/page-header/page-header';
+import { ModalAyudaComponent } from '../shared/modal-ayuda/modal-ayuda';
 import { AlimentosService } from '../../services/alimentos';
 import { IngredientesService } from '../../services/ingredientes';
 import { AuthService } from '../../services/auth';
@@ -18,7 +19,7 @@ import { normalizarTexto } from '../../utils/texto';
 @Component({
   selector: 'app-alimentos',
   standalone: true,
-  imports: [CommonModule, FormsModule, AlimentoFiltros, AlimentoLista, AlimentoDetalle, MensajeFlash, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, AlimentoFiltros, AlimentoLista, AlimentoDetalle, MensajeFlash, PageHeaderComponent, ModalAyudaComponent],
   templateUrl: './alimentos.html',
   styleUrl: './alimentos.css',
 })
@@ -26,6 +27,7 @@ export class Alimentos implements OnInit {
   @ViewChild(MensajeFlash) flash!: MensajeFlash;
 
   activePanel: 'buscar' | 'favoritos' | 'sugerir' = 'buscar';
+  mostrarAyuda = false;
 
   readonly categorias = CATEGORIAS;
 

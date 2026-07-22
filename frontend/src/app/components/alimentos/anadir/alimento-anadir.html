@@ -2,7 +2,16 @@
   <button class="btn-volver" (click)="volver()" title="Volver" aria-label="Volver">←</button>
   <div class="header">
     <h1>➕ Añadir alimento</h1>
+    <button class="btn-info-ayuda" (click)="mostrarAyuda = true" title="¿Qué es esto?" aria-label="Ayuda">ℹ️</button>
   </div>
+
+  @if (mostrarAyuda) {
+    <app-modal-ayuda titulo="Añadir alimento" imagen="assets/ayuda/anadir-alimento.png" (cerrar)="mostrarAyuda = false">
+      <p>Crea un alimento nuevo indicando su nombre, marca, categoría y los macronutrientes por 100g/ml.</p>
+      <p>Puedes escanear una foto de la etiqueta (ingredientes o tabla de macros) para que se rellene automáticamente, o escribirlo a mano.</p>
+      <p>Añade también sus <strong>ingredientes</strong> uno a uno — así podremos avisarte si contiene algo a lo que eres alérgico.</p>
+    </app-modal-ayuda>
+  }
 
   <app-mensaje-flash />
 

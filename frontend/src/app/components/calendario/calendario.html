@@ -1,5 +1,12 @@
 <div class="calendario-container">
-  <app-page-header titulo="📅 Calendario" />
+  <app-page-header titulo="📅 Calendario" [mostrarAyuda]="true" (ayudaClick)="mostrarAyuda = true" />
+
+  @if (mostrarAyuda) {
+    <app-modal-ayuda titulo="Calendario" imagen="assets/ayuda/calendario.png" (cerrar)="mostrarAyuda = false">
+      <p>El calendario muestra lo que has comido cada día, organizado por Desayuno, Comida, Snack y Cena.</p>
+      <p>Ahí ves tus <strong>calorías y macros</strong> consumidos frente a tus objetivos diarios, y puedes añadir raciones o alimentos sueltos a cualquier día, no solo a hoy.</p>
+    </app-modal-ayuda>
+  }
 
   <app-mensaje-flash />
 

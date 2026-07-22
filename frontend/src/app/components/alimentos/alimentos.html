@@ -1,5 +1,13 @@
 <div class="alimentos-container">
-  <app-page-header titulo="🥗 Alimentos" />
+  <app-page-header titulo="🥗 Alimentos" [mostrarAyuda]="true" (ayudaClick)="mostrarAyuda = true" />
+
+  @if (mostrarAyuda) {
+    <app-modal-ayuda titulo="Alimentos" imagen="assets/ayuda/alimentos.png" (cerrar)="mostrarAyuda = false">
+      <p>Aquí puedes ver todos los alimentos disponibles: busca por nombre o marca, filtra por categoría, y marca tus favoritos con la estrella ⭐.</p>
+      <p>Los alimentos con <strong>borde rojo</strong> contienen algo a lo que eres alérgico o intolerante, según lo que indicaste en tu perfil.</p>
+      <p>Pulsa el botón <strong>➕</strong> para añadir un alimento nuevo que no exista todavía.</p>
+    </app-modal-ayuda>
+  }
 
   <div class="tabs">
     <button class="tab" [class.active]="activePanel === 'buscar'" (click)="cambiarPanel('buscar')">🔍 Buscar</button>

@@ -5,7 +5,12 @@
 
       <div style="padding: 16px;">
         <div style="margin-bottom: 16px;">
-          <h3 style="margin: 0 0 8px 0;">{{ alimento.nombre }}</h3>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <h3 style="margin: 0 0 8px 0;">{{ alimento.nombre }}</h3>
+            <button type="button" (click)="mostrarAyuda = true"
+                    style="background: none; border: none; font-size: 15px; cursor: pointer; padding: 0 0 8px 0; line-height: 1;"
+                    title="¿Qué son las porciones?" aria-label="Ayuda">ℹ️</button>
+          </div>
           @if (alimento.marca) {
             <p style="margin: 0; font-size: 13px; color: #666;">{{ alimento.marca }}</p>
           }
@@ -96,4 +101,11 @@
       </div>
     </div>
   </div>
+}
+
+@if (mostrarAyuda) {
+  <app-modal-ayuda titulo="Porciones" imagen="assets/ayuda/porciones.png" (cerrar)="mostrarAyuda = false">
+    <p>Puedes indicar la cantidad en <strong>gramos/ml</strong> o, si el alimento tiene una unidad definida (como "1 plátano"), en <strong>porciones</strong>.</p>
+    <p>La primera vez que uses una cantidad en gramos, te preguntamos si es tu <strong>porción habitual</strong>. Si dices que sí, la próxima vez ya aparecerá sugerida automáticamente, para no tener que escribirla cada vez.</p>
+  </app-modal-ayuda>
 }

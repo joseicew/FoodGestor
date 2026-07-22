@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MensajeFlash } from '../../shared/mensaje-flash/mensaje-flash';
+import { ModalAyudaComponent } from '../../shared/modal-ayuda/modal-ayuda';
 import { AlimentosService } from '../../../services/alimentos';
 import { IngredientesService } from '../../../services/ingredientes';
 import { AiVisionService } from '../../../services/ai-vision';
@@ -15,7 +16,7 @@ type OcrEstado = 'idle' | 'preparando' | 'analizando' | 'listo' | 'error';
 @Component({
   selector: 'app-alimento-anadir',
   standalone: true,
-  imports: [CommonModule, FormsModule, MensajeFlash],
+  imports: [CommonModule, FormsModule, MensajeFlash, ModalAyudaComponent],
   templateUrl: './alimento-anadir.html',
   styleUrl: './alimento-anadir.css',
 })
@@ -23,6 +24,7 @@ export class AlimentoAnadir implements OnInit {
   @ViewChild(MensajeFlash) flash!: MensajeFlash;
   readonly categorias = CATEGORIAS;
   readonly unidadesComunes = UNIDADES_COMUNES;
+  mostrarAyuda = false;
 
   alimentos: any[] = [];
 

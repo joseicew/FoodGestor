@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AlimentosService } from '../../../services/alimentos';
+import { ModalAyudaComponent } from '../modal-ayuda/modal-ayuda';
 
 @Component({
   selector: 'app-modal-cantidad-alimento',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ModalAyudaComponent],
   templateUrl: './modal-cantidad-alimento.html'
 })
 export class ModalCantidadAlimentoComponent implements OnChanges {
@@ -16,6 +17,7 @@ export class ModalCantidadAlimentoComponent implements OnChanges {
   cantidad: string | number = 100;
   modo: 'gramos' | 'unidades' = 'gramos';
   actualizandoFavorito = false;
+  mostrarAyuda = false;
 
   /** Porción (g/ml) que el usuario ya tiene guardada para este alimento, si existe */
   porcionHabitual: number | null = null;
