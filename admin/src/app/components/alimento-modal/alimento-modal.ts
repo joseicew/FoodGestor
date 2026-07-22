@@ -72,7 +72,18 @@ import { CATEGORIAS_ALIMENTO, UNIDADES_COMUNES, MACROS_ALIMENTO } from '../../co
             </div>
             <p class="chips-ayuda">Haz click en un ingrediente para editarlo directamente.</p>
             <div class="add-ing">
-              <input [(ngModel)]="nuevoIngrediente" (keyup.enter)="agregarIngrediente()" placeholder="Añadir ingrediente y Enter" />
+              <div class="add-ing-buscador">
+                <input [(ngModel)]="nuevoIngrediente" (ngModelChange)="onBuscarIngrediente()"
+                       (keyup.enter)="agregarIngrediente()" (blur)="ocultarSugerenciasConRetraso()"
+                       placeholder="Buscar o añadir ingrediente..." autocomplete="off" />
+                @if (sugerenciasIngrediente.length) {
+                  <div class="sugerencias-ingrediente">
+                    @for (s of sugerenciasIngrediente; track s) {
+                      <button type="button" class="sugerencia-item" (mousedown)="seleccionarSugerencia(s)">{{ s }}</button>
+                    }
+                  </div>
+                }
+              </div>
               <button class="btn" (click)="agregarIngrediente()">Añadir</button>
             </div>
           </section>
@@ -119,7 +130,18 @@ import { CATEGORIAS_ALIMENTO, UNIDADES_COMUNES, MACROS_ALIMENTO } from '../../co
     .chips-ayuda { margin: 0 0 8px; font-size: 12px; color: var(--text-muted); }
     .sin { color: var(--text-muted); font-size: 13px; }
     .add-ing { display: flex; gap: 8px; }
-    .add-ing input { flex: 1; }
+    .add-ing-buscador { position: relative; flex: 1; }
+    .add-ing-buscador input { width: 100%; }
+    .sugerencias-ingrediente {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 10;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      box-shadow: var(--shadow); max-height: 220px; overflow-y: auto; padding: 4px;
+    }
+    .sugerencia-item {
+      display: block; width: 100%; text-align: left; border: none; background: none;
+      padding: 7px 10px; font-size: 13px; color: var(--text); cursor: pointer; border-radius: 6px;
+    }
+    .sugerencia-item:hover { background: var(--primary-soft); color: var(--primary-dark); }
     .acciones { display: flex; gap: 10px; justify-content: flex-end; padding-top: 14px; border-top: 1px solid var(--border); }
     @media (max-width: 600px) { .campos, .campos.macros { grid-template-columns: 1fr 1fr; } }
   `]
@@ -136,6 +158,14 @@ export class AlimentoModalComponent implements OnChanges {
   edit: any = { ingredientes: [] };
   nuevoIngrediente = '';
   guardando = false;
+
+  // Cache de nombres de ingredientes existentes, para sugerir en vez de
+  // dejar que se escriba a mano y se acabe creando un duplicado por una
+  // diferencia minima de texto. Compartida entre instancias del modal
+  // (static) para no volver a pedir ~3000 ingredientes cada vez que se abre.
+  private static ingredientesCache: string[] | null = null;
+  todosIngredientes: string[] = [];
+  sugerenciasIngrediente: string[] = [];
 
   ingredienteModalId: number | null = null;
 
@@ -167,6 +197,47 @@ export class AlimentoModalComponent implements OnChanges {
       },
       error: () => { this.cargando = false; this.cdr.markForCheck(); }
     });
+    this.cargarNombresIngredientes();
+  }
+
+  private cargarNombresIngredientes(): void {
+    if (AlimentoModalComponent.ingredientesCache) {
+      this.todosIngredientes = AlimentoModalComponent.ingredientesCache;
+      return;
+    }
+    this.api.listarIngredientes().subscribe({
+      next: (lista) => {
+        const nombres = lista.map((i: any) => i.nombre);
+        AlimentoModalComponent.ingredientesCache = nombres;
+        this.todosIngredientes = nombres;
+      },
+      error: () => {}
+    });
+  }
+
+  onBuscarIngrediente(): void {
+    const termino = this.nuevoIngrediente.trim().toLowerCase();
+    if (termino.length < 2) {
+      this.sugerenciasIngrediente = [];
+      return;
+    }
+    const yaAgregados = new Set(this.edit.ingredientes.map((n: string) => n.toLowerCase()));
+    this.sugerenciasIngrediente = this.todosIngredientes
+      .filter((n) => n.toLowerCase().includes(termino) && !yaAgregados.has(n.toLowerCase()))
+      .slice(0, 8);
+  }
+
+  seleccionarSugerencia(nombre: string): void {
+    if (!this.edit.ingredientes.includes(nombre)) this.edit.ingredientes.push(nombre);
+    this.nuevoIngrediente = '';
+    this.sugerenciasIngrediente = [];
+  }
+
+  ocultarSugerenciasConRetraso(): void {
+    setTimeout(() => {
+      this.sugerenciasIngrediente = [];
+      this.cdr.markForCheck();
+    }, 150);
   }
 
   esSeccionResaltada(seccion: string): boolean {
@@ -187,6 +258,7 @@ export class AlimentoModalComponent implements OnChanges {
     const n = this.nuevoIngrediente.trim();
     if (n && !this.edit.ingredientes.includes(n)) this.edit.ingredientes.push(n);
     this.nuevoIngrediente = '';
+    this.sugerenciasIngrediente = [];
   }
 
   quitarIngrediente(i: number): void {
