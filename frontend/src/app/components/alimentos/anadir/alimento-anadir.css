@@ -135,7 +135,9 @@ input.ocr-filled {
 .foto-col { width: 100%; display: flex; flex-direction: row; gap: 8px; align-items: center; }
 
 .btn-scan-side {
-  width: auto;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -171,6 +173,8 @@ input.ocr-filled {
    el area de toque de cada uno sea mas grande y facil de acertar. */
 .ayuda-icono-wrap {
   position: relative;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -178,11 +182,17 @@ input.ocr-filled {
 }
 
 .btn-info-mini {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
+  padding: 0;
   font-size: 32px;
   line-height: 1;
-  padding: 0;
   cursor: pointer;
 }
 
