@@ -458,6 +458,74 @@ def actualizar_cantidad_alimento(fecha, tipo_comida, alimento_id):
         return jsonify({'error': str(e)}), 500
 
 
+MAPEO_SECCIONES_CATEGORIA = {
+    'Cereales y Derivados': 'carbohidratos',
+    'Legumbres': 'carbohidratos',
+    'Carnes y Aves': 'proteinas',
+    'Pescados y Mariscos': 'proteinas',
+    'Lácteos y Huevos': 'proteinas',
+    'Suplementos': 'proteinas',
+    'Grasas y Aceites': 'grasas',
+    'Frutos Secos': 'grasas',
+    'Frutas': 'frutas_verduras',
+    'Verduras y Hortalizas': 'frutas_verduras',
+    'Snacks y Aperitivos': 'snacks',
+    'Dulces y Repostería': 'snacks',
+    'Bebidas': 'snacks',
+}
+SECCIONES_ORDEN = ['carbohidratos', 'proteinas', 'grasas', 'frutas_verduras', 'snacks', 'otros']
+
+
+def _seccion_para_categoria(categoria):
+    return MAPEO_SECCIONES_CATEGORIA.get(categoria, 'otros')
+
+
+@calendario_bp.route('/resumen-categorias', methods=['GET'])
+@jwt_required()
+def obtener_resumen_categorias():
+    """Devuelve los gramos consumidos hoy (o en la fecha indicada) agrupados
+    por seccion (carbohidratos, proteinas, grasas, frutas_verduras, snacks, otros)"""
+    try:
+        usuario_id = int(get_jwt_identity())
+        fecha_str = request.args.get('fecha') or date.today().isoformat()
+        fecha_obj = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+
+        gramos = {s: 0.0 for s in SECCIONES_ORDEN}
+
+        comidas = ComidaDiaria.query.filter_by(fecha=fecha_obj, usuario_id=usuario_id).all()
+        for comida in comidas:
+            for alimento in comida.alimentos:
+                cantidad = comida.get_cantidad_alimento(alimento.id)
+                seccion = _seccion_para_categoria(alimento.categoria)
+                gramos[seccion] += cantidad
+
+            for racion in comida.raciones:
+                multiplicador = comida.get_cantidad_racion(racion.id)
+                cantidades_racion = {
+                    row[0]: row[1]
+                    for row in db.session.execute(
+                        db.text('SELECT alimento_id, cantidad FROM racion_alimentos WHERE racion_id = :rid'),
+                        {'rid': racion.id}
+                    ).fetchall()
+                }
+                for alimento in racion.alimentos:
+                    cantidad = cantidades_racion.get(alimento.id, 100) * multiplicador
+                    seccion = _seccion_para_categoria(alimento.categoria)
+                    gramos[seccion] += cantidad
+
+        gramos = {s: round(g, 1) for s, g in gramos.items()}
+
+        return jsonify({
+            'fecha': fecha_str,
+            'secciones': gramos
+        }), 200
+
+    except ValueError:
+        return jsonify({'error': 'Formato de fecha inválido (use YYYY-MM-DD)'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @calendario_bp.route('/stats', methods=['GET'])
 @jwt_required()
 def obtener_stats():

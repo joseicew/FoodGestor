@@ -15,26 +15,33 @@
     </div>
   </div>
 
-  <!-- Selector de rango -->
-  <div class="rango-selector">
-    @for (d of [7, 14, 30, 60]; track d) {
-      <button class="btn-rango" [class.active]="dias === d" (click)="cambiarDias(d)">{{ d }}d</button>
-    }
-  </div>
-
   <div class="stats-scroll">
-    <!-- Gráfica -->
-    <div class="grafica-wrapper">
-      @if (cargando) {
+    <!-- Resumen de lo comido hoy por sección -->
+    <div class="resumen-card">
+      <h3 class="resumen-titulo">Lo que has comido hoy</h3>
+
+      @if (cargandoResumen) {
         <div class="loading">Cargando datos…</div>
+      } @else if (totalGramosHoy === 0) {
+        <p class="resumen-vacio">Todavía no has registrado ningún alimento hoy.</p>
       } @else {
-        <canvas #graficaCanvas></canvas>
+        <div class="secciones-lista">
+          @for (s of secciones; track s.key) {
+            @if (s.gramos > 0) {
+              <div class="seccion-item">
+                <div class="seccion-cabecera">
+                  <span class="seccion-nombre">{{ s.icono }} {{ s.label }}</span>
+                  <span class="seccion-gramos">{{ s.gramos | number:'1.0-0' }} g</span>
+                </div>
+                <div class="seccion-barra-fondo">
+                  <div class="seccion-barra" [style.width.%]="s.porcentaje" [style.background]="s.color"></div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+        <p class="resumen-total">Total: <strong>{{ totalGramosHoy | number:'1.0-0' }} g</strong></p>
       }
     </div>
-
-    <!-- Leyenda objetivo -->
-    @if (!cargando && objetivoKcal > 0) {
-      <p class="objetivo-texto">Objetivo diario: <strong>{{ objetivoKcal | number:'1.0-0' }} kcal</strong></p>
-    }
   </div>
 </div>

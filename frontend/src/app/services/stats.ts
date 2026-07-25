@@ -28,4 +28,9 @@ export class StatsService {
   obtenerStatsKcal(dias = 30): Observable<{ dias: any[], objetivo_kcal: number }> {
     return this.http.get<any>(`${this.calUrl}/stats?dias=${dias}`, { headers: this.headers() });
   }
+
+  obtenerResumenCategorias(fecha?: string): Observable<{ fecha: string, secciones: Record<string, number> }> {
+    const query = fecha ? `?fecha=${fecha}` : '';
+    return this.http.get<any>(`${this.calUrl}/resumen-categorias${query}`, { headers: this.headers() });
+  }
 }

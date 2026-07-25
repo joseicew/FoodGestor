@@ -10,7 +10,7 @@
   gap: 12px;
 }
 
-.header, app-page-header, .peso-card, .rango-selector { flex-shrink: 0; }
+.header, app-page-header, .peso-card { flex-shrink: 0; }
 .header h1 { font-size: 22px; font-weight: 700; color: var(--text-primary); padding: 12px 0 4px; }
 
 .stats-scroll {
@@ -67,57 +67,66 @@
 .btn-guardar-peso:hover { background: #388E3C; }
 .btn-guardar-peso:disabled { background: #888; cursor: not-allowed; }
 
-/* ── Selector de rango ── */
-.rango-selector {
-  display: flex;
-  gap: 8px;
+/* ── Resumen de categorías ── */
+.resumen-card {
+  background: var(--bg-surface);
+  border-radius: 16px;
+  padding: 16px;
   flex-shrink: 0;
 }
 
-.btn-rango {
-  flex: 1;
-  padding: 7px 0;
-  border: 1.5px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-surface);
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+.resumen-titulo {
+  margin: 0 0 14px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
 }
-.btn-rango.active {
-  background: #4CAF50;
-  border-color: #4CAF50;
-  color: #fff;
-}
-
-/* ── Gráfica ── */
-.grafica-wrapper {
-  flex: 1;
-  min-height: 260px;
-  background: var(--bg-surface);
-  border-radius: 16px;
-  padding: 12px;
-  position: relative;
-}
-
-.grafica-wrapper canvas { width: 100% !important; height: 100% !important; }
 
 .loading {
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 24px 0;
   color: var(--text-secondary);
   font-size: 14px;
 }
 
-.objetivo-texto {
+.resumen-vacio {
   text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 16px 0;
+}
+
+.secciones-lista { display: flex; flex-direction: column; gap: 14px; }
+
+.seccion-item { display: flex; flex-direction: column; gap: 5px; }
+
+.seccion-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.seccion-nombre { color: var(--text-primary); font-weight: 600; }
+.seccion-gramos { color: var(--text-secondary); font-weight: 600; }
+
+.seccion-barra-fondo {
+  height: 10px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+.seccion-barra {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.resumen-total {
+  text-align: right;
+  margin: 14px 0 0;
   font-size: 13px;
   color: var(--text-secondary);
-  flex-shrink: 0;
 }
-.objetivo-texto strong { color: #FF9800; }
+.resumen-total strong { color: var(--text-primary); }
