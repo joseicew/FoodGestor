@@ -583,7 +583,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  min-width: 70px;
+  min-width: 92px;
 }
 
 .alimento-cantidad input {
@@ -595,7 +595,7 @@
   text-align: center;
 }
 
-.cantidad-unidad { font-size: 12px; color: #888; font-weight: 600; }
+.cantidad-unidad { font-size: 12px; color: #888; font-weight: 600; white-space: nowrap; }
 
 .macros-badge { display: flex; gap: 6px; flex-shrink: 0; }
 

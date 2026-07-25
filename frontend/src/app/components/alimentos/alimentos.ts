@@ -277,7 +277,7 @@ export class Alimentos implements OnInit {
     const valor = alimento?.[this.macroPrioridad];
     if (!macro || valor == null) return null;
     const unidad = this.macroPrioridad === 'calorias' ? 'kcal' : 'g';
-    return `${macro.icono} ${valor}${unidad} / 100g`;
+    return `${macro.icono} ${valor}${unidad} / 100g/ml`;
   };
 
   ajustarCantidad(alimento: any, delta: number) {

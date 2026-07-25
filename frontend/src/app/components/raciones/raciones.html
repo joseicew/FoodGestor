@@ -150,7 +150,7 @@
                   <input type="number" [value]="alimento.cantidad" min="1" step="10"
                          (change)="actualizarCantidad(alimento.id, $any($event.target).value)"
                          placeholder="100" />
-                  <span class="cantidad-unidad">g</span>
+                  <span class="cantidad-unidad">gr/ml</span>
                 </div>
                 <div class="kcal-display">
                   <span class="kcal-valor">{{ (alimento.calorias * alimento.cantidad / 100) | number:'1.0-0' }}</span>

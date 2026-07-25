@@ -76,10 +76,10 @@
                    [(ngModel)]="porcionHabitualEditando"
                    placeholder="Ej: 80"
                    [disabled]="guardandoPorcionHabitual"
-                   style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-weight: 600; text-align: right;" />
-            <span style="font-size: 13px; color: #666; min-width: 24px;">{{ detalle.medida_unidad === 'ml' ? 'ml' : 'g' }}</span>
+                   style="flex: 1; min-width: 0; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-weight: 600; text-align: right;" />
+            <span style="font-size: 13px; color: #666; white-space: nowrap; flex-shrink: 0;">gr/ml</span>
             <button (click)="guardarPorcionHabitual()" [disabled]="guardandoPorcionHabitual || !porcionHabitualEditando.trim()"
-                    style="padding: 8px 14px; background: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                    style="flex-shrink: 0; padding: 8px 14px; background: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
               Guardar
             </button>
             @if (porcionHabitual) {
@@ -115,7 +115,7 @@
                 }
               </div>
             }
-            <h3 style="margin: 0; display: inline;">📊 Macronutrientes (por 100g)</h3>
+            <h3 style="margin: 0; display: inline;">📊 Macronutrientes (por 100g/ml)</h3>
           </div>
           <div class="macros-grid">
             @if (detalle.calorias != null && detalle.calorias !== '' && detalle.calorias != 0) {

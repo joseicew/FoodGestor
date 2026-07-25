@@ -125,12 +125,12 @@
               </div>
 
               <div class="sugerencia-cantidad">
-                <span class="sugerencia-cantidad-label">Para llegar a tu objetivo: ~{{ alimento._gramosNecesarios }}g</span>
+                <span class="sugerencia-cantidad-label">Para llegar a tu objetivo: ~{{ alimento._gramosNecesarios }} gr/ml</span>
                 <div class="sugerencia-cantidad-control">
                   <button type="button" (click)="ajustarCantidad(alimento, -10)">−</button>
                   <input type="number" min="1" [(ngModel)]="alimento._cantidad"
                          (ngModelChange)="onCantidadInput(alimento, $event)" />
-                  <span>g</span>
+                  <span>gr/ml</span>
                   <button type="button" (click)="ajustarCantidad(alimento, 10)">+</button>
                 </div>
                 <span class="sugerencia-aporte">= {{ aporteEnCantidad(alimento) }}{{ macroPrioridad === 'calorias' ? 'kcal' : 'g' }} de {{ macroPrioridad }}</span>

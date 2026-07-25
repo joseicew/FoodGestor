@@ -65,7 +65,7 @@
                 @if (modo === 'unidades' && alimento.nombre_unidad) {
                   {{ alimento.nombre_unidad }}
                 } @else {
-                  {{ alimento.medida_unidad === 'ml' ? 'ml' : 'gr' }}
+                  gr/ml
                 }
               </span>
             </div>
@@ -105,7 +105,7 @@
 
 @if (mostrarAyuda) {
   <app-modal-ayuda titulo="Porciones" imagen="assets/ayuda/porciones.png" (cerrar)="mostrarAyuda = false">
-    <p>Puedes indicar la cantidad en <strong>gramos/ml</strong> o, si el alimento tiene una unidad definida (como "1 plátano"), en <strong>porciones</strong>.</p>
-    <p>La primera vez que uses una cantidad en gramos, te preguntamos si es tu <strong>porción habitual</strong>. Si dices que sí, la próxima vez ya aparecerá sugerida automáticamente, para no tener que escribirla cada vez.</p>
+    <p>Puedes indicar la cantidad en <strong>gr/ml</strong> o, si el alimento tiene una unidad definida (como "1 plátano"), en <strong>porciones</strong>.</p>
+    <p>La primera vez que uses una cantidad en gr/ml, te preguntamos si es tu <strong>porción habitual</strong>. Si dices que sí, la próxima vez ya aparecerá sugerida automáticamente, para no tener que escribirla cada vez.</p>
   </app-modal-ayuda>
 }

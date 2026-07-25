@@ -181,7 +181,7 @@
                                  placeholder="1, 1/2"
                                  (change)="actualizarCantidadAlimento(tipoComida, alimento.id, $any($event.target).value)"
                                  class="cantidad-input" />
-                          <span class="unidad">g</span>
+                          <span class="unidad">gr/ml</span>
                         </div>
                         <span class="separador">|</span>
                         <span class="item-kcal">{{ ((alimento.calorias || 0) * (alimento.cantidad || 100) / 100) | number:'1.0-0' }} kcal</span>

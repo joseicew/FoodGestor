@@ -31,7 +31,7 @@
               <div class="seccion-item">
                 <div class="seccion-cabecera">
                   <span class="seccion-nombre">{{ s.icono }} {{ s.label }}</span>
-                  <span class="seccion-gramos">{{ s.gramos | number:'1.0-0' }} g</span>
+                  <span class="seccion-gramos">{{ s.gramos | number:'1.0-0' }} gr/ml</span>
                 </div>
                 <div class="seccion-barra-fondo">
                   <div class="seccion-barra" [style.width.%]="s.porcentaje" [style.background]="s.color"></div>
@@ -40,7 +40,7 @@
             }
           }
         </div>
-        <p class="resumen-total">Total: <strong>{{ totalGramosHoy | number:'1.0-0' }} g</strong></p>
+        <p class="resumen-total">Total: <strong>{{ totalGramosHoy | number:'1.0-0' }} gr/ml</strong></p>
       }
     </div>
   </div>
