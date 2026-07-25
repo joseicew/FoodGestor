@@ -45,7 +45,7 @@ def crear_racion():
     try:
         usuario_id = int(get_jwt_identity())
         data = request.get_json() or {}
-        nombre = data.get('nombre', '').strip()
+        nombre = (data.get('nombre') or '').strip()
 
         if not nombre:
             return jsonify({'error': 'El nombre es obligatorio'}), 400

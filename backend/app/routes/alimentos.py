@@ -154,9 +154,13 @@ def verificar_duplicado():
     """Verifica si existe un verdadero duplicado: marca + nombre similar + macros iguales"""
     try:
         data = request.get_json() or {}
-        nombre = data.get('nombre', '').strip().lower()
-        marca = data.get('marca', '').strip().lower()
-        codigo_barras_nuevo = data.get('codigo_barras', '').strip() or None
+        # (x or '') y no .get(x, ''): el default de .get solo se aplica si la
+        # clave NO existe. El formulario manda {"codigo_barras": null} cuando
+        # el EAN esta vacio, asi que .get devolvia None y el .strip() reventaba
+        # con un 500, bloqueando el alta de cualquier alimento sin codigo.
+        nombre = (data.get('nombre') or '').strip().lower()
+        marca = (data.get('marca') or '').strip().lower()
+        codigo_barras_nuevo = (data.get('codigo_barras') or '').strip() or None
         macros = {
             'calorias': data.get('calorias', 0),
             'proteinas': data.get('proteinas', 0),
@@ -209,8 +213,8 @@ def buscar_similares():
     """Busca productos con nombre realmente similar (misma categoría + 2+ palabras en común) para evitar duplicados"""
     try:
         data = request.get_json() or {}
-        nombre = data.get('nombre', '').strip().lower()
-        categoria = data.get('categoria', '').strip()
+        nombre = (data.get('nombre') or '').strip().lower()
+        categoria = (data.get('categoria') or '').strip()
 
         if not nombre:
             return jsonify({'similares': []}), 200
@@ -527,7 +531,7 @@ def actualizar_codigo_barras(id):
             return jsonify({'error': 'Alimento no encontrado'}), 404
 
         data = request.get_json() or {}
-        codigo_barras = data.get('codigo_barras', '').strip() or None
+        codigo_barras = (data.get('codigo_barras') or '').strip() or None
 
         if not codigo_barras:
             return jsonify({'error': 'Código de barras es requerido'}), 400
@@ -571,8 +575,8 @@ def actualizar_alergenos(id):
         # Procesar cada ingrediente
         for ing_data in ingredientes_data:
             ing_id = ing_data.get('id')
-            nombre = ing_data.get('nombre', '').strip()
-            categoria = ing_data.get('categoria', '').strip() or None
+            nombre = (ing_data.get('nombre') or '').strip()
+            categoria = (ing_data.get('categoria') or '').strip() or None
             alergenos_categorias = ing_data.get('alergenos_categorias', [])
             verificado = ing_data.get('verificado', False)
 
