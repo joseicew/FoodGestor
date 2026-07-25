@@ -458,6 +458,8 @@ def actualizar_cantidad_alimento(fecha, tipo_comida, alimento_id):
         return jsonify({'error': str(e)}), 500
 
 
+# Toda categoria del catalogo debe estar aqui: lo que no aparezca cae en
+# 'otros' y queda invisible como grupo propio en la pantalla de Stats.
 MAPEO_SECCIONES_CATEGORIA = {
     'Cereales y Derivados': 'carbohidratos',
     'Legumbres': 'carbohidratos',
@@ -471,9 +473,17 @@ MAPEO_SECCIONES_CATEGORIA = {
     'Verduras y Hortalizas': 'frutas_verduras',
     'Snacks y Aperitivos': 'snacks',
     'Dulces y Repostería': 'snacks',
-    'Bebidas': 'snacks',
+    # Las bebidas van aparte y no dentro de 'snacks': el cafe, el agua y las
+    # infusiones son la mayor parte de esta categoria y contarlos como snack
+    # distorsionaba el resumen.
+    'Bebidas': 'bebidas',
+    'Platos Preparados': 'platos_preparados',
+    'Condimentos y Salsas': 'condimentos',
 }
-SECCIONES_ORDEN = ['carbohidratos', 'proteinas', 'grasas', 'frutas_verduras', 'snacks', 'otros']
+SECCIONES_ORDEN = [
+    'carbohidratos', 'proteinas', 'grasas', 'frutas_verduras',
+    'snacks', 'bebidas', 'platos_preparados', 'condimentos', 'otros',
+]
 
 
 def _seccion_para_categoria(categoria):

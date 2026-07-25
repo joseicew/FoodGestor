@@ -15,12 +15,18 @@ interface SeccionResumen {
   porcentaje: number;
 }
 
+// Debe seguir el mismo orden y las mismas claves que SECCIONES_ORDEN del
+// backend (app/routes/calendario.py). Las secciones sin gramos no se pintan,
+// asi que tener varias no recarga la pantalla.
 const SECCIONES_CONFIG: Omit<SeccionResumen, 'gramos' | 'porcentaje'>[] = [
   { key: 'carbohidratos', label: 'Carbohidratos', icono: '🌾', color: '#FFB74D' },
   { key: 'proteinas', label: 'Proteínas', icono: '🍗', color: '#EF5350' },
   { key: 'grasas', label: 'Grasas', icono: '🥑', color: '#8D6E63' },
   { key: 'frutas_verduras', label: 'Frutas y verduras', icono: '🥕', color: '#66BB6A' },
   { key: 'snacks', label: 'Snacks', icono: '🍪', color: '#BA68C8' },
+  { key: 'bebidas', label: 'Bebidas', icono: '🥤', color: '#42A5F5' },
+  { key: 'platos_preparados', label: 'Platos preparados', icono: '🍲', color: '#FF8A65' },
+  { key: 'condimentos', label: 'Condimentos y salsas', icono: '🧂', color: '#9575CD' },
   { key: 'otros', label: 'Otros', icono: '🍽️', color: '#78909C' },
 ];
 
