@@ -73,3 +73,5 @@ AuxiliarTools/scrape_procesados.json
 # CSV de propuesta de reclasificacion: se regenera con el script
 backend/scripts/reclasificacion_otros.csv
 backend/scripts/rollback_otros_*.json
+
+workout/entrenamiento.html
