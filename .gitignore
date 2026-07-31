@@ -75,3 +75,4 @@ backend/scripts/reclasificacion_otros.csv
 backend/scripts/rollback_otros_*.json
 
 workout/entrenamiento.html
+workout/ejemplo_exportacion.json
