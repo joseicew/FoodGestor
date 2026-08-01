@@ -67,7 +67,17 @@ Existe también `build-android.yml`, que genera la plataforma Android en el prop
 
 ## Despliegue
 
-El backend corre en Render (`render.yaml` define los tres servicios). El frontend tiene configuración tanto de Netlify (`netlify.toml`) como de Render. Los detalles y las variables de entorno están en [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) y [NETLIFY_DEPLOYMENT.md](NETLIFY_DEPLOYMENT.md).
+Todo se despliega en **Render**, con los tres servicios definidos en `render.yaml`:
+
+| Servicio | URL |
+|---|---|
+| Backend (Flask) | https://foodgestor-backend.onrender.com |
+| Frontend (Angular) | https://foodgestor-frontend.onrender.com |
+| Panel admin | servicio estático independiente |
+
+El backend usa runtime Python (no contenedor): `pip install -r requirements.txt` y arranque con `gunicorn main:app`, con health check en `/api/health`. El deploy es automático en cada push a `main`. Las variables de entorno van marcadas como `sync: false` en `render.yaml` y se gestionan desde el panel de Render.
+
+Ver [ARQUITECTURA.md](ARQUITECTURA.md) para el detalle de la infraestructura.
 
 ## Documentación
 

@@ -105,21 +105,7 @@ Tu PWA estará en `https://foodgestor.vercel.app` (o tu dominio personalizado)
 
 ---
 
-### Opción 2: Netlify
-
-Alternativa a Vercel, también con HTTPS gratuito.
-
-```bash
-# Instalar Netlify CLI
-npm install -g netlify-cli
-
-# Desplegar
-netlify deploy --prod --dir=frontend/dist/frontend
-```
-
----
-
-### Opción 3: GitHub Pages + Cloudflare
+### Opción 2: GitHub Pages + Cloudflare
 
 Para máximo control y sin dependencias de terceros.
 
@@ -146,7 +132,7 @@ git push -u origin main
 
 ### En Android Chrome
 
-1. **Desplegar** en HTTPS (Vercel, Netlify, etc.)
+1. **Desplegar** en HTTPS (Render, Vercel, etc.)
 2. **Abrir** en Chrome Mobile
 3. **Ver** icono "Instalar" o "⋮" → "Instalar app"
 4. **Confirmar** instalación
@@ -226,7 +212,7 @@ En Chrome DevTools:
 ## 📂 Estructura Desplegada
 
 ```
-Vercel / Netlify / Server
+Render / Vercel / Server
 │
 └── https://foodgestor.app/
     ├── index.html             ← Main app shell
