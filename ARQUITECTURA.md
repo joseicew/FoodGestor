@@ -112,6 +112,8 @@ FoodGestor/
 ## 🌐 Infraestructura Cloud
 
 Los tres servicios están definidos en `render.yaml`, en la raíz del repositorio.
+Para el detalle operativo (variables de entorno, verificación, plan gratuito)
+ver [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md).
 
 ### 1. **Render** (Frontend)
 **URL:** https://foodgestor-frontend.onrender.com

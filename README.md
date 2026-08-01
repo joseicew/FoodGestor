@@ -75,13 +75,16 @@ Todo se despliega en **Render**, con los tres servicios definidos en `render.yam
 | Frontend (Angular) | https://foodgestor-frontend.onrender.com |
 | Panel admin | servicio estático independiente |
 
-El backend usa runtime Python (no contenedor): `pip install -r requirements.txt` y arranque con `gunicorn main:app`, con health check en `/api/health`. El deploy es automático en cada push a `main`. Las variables de entorno van marcadas como `sync: false` en `render.yaml` y se gestionan desde el panel de Render.
+El backend usa runtime Python (no contenedor): `pip install -r requirements.txt` y arranque con `gunicorn main:app`, con health check en `/api/health`. El deploy es automático en cada push a `main`.
 
-Ver [ARQUITECTURA.md](ARQUITECTURA.md) para el detalle de la infraestructura.
+Las variables de entorno van marcadas como `sync: false` y se gestionan desde el panel de Render. Ojo con dos: sin `DATABASE_URL` la app **no falla**, se cae a un SQLite efímero; y sin `JWT_SECRET_KEY` firma los tokens con un secreto por defecto que está en el código.
+
+Ver [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) para el detalle.
 
 ## Documentación
 
 - [ARQUITECTURA.md](ARQUITECTURA.md) — visión general del sistema y flujo de datos
+- [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) — despliegue, variables de entorno y verificación
 - [CONTRIBUTING.md](CONTRIBUTING.md) — convenciones de código y de commits
 - [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) y [DESIGN_GUIDELINES.md](DESIGN_GUIDELINES.md) — tokens visuales y criterios de interfaz
 - [PWA_SETUP.md](PWA_SETUP.md) — service worker e instalación
