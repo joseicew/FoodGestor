@@ -35,12 +35,24 @@ export class OcrAsyncService {
     return this.iniciarOcr('/api/ocr/codigo_barras/start', formData);
   }
 
+  /**
+   * Cabecera Authorization para los fetch de este servicio. Estos endpoints
+   * consumen la API de Claude (cuesta dinero) y por eso exigen JWT en el
+   * backend. Como aqui usamos fetch nativo (no HttpClient), el interceptor de
+   * Angular no aplica y hay que añadir el token a mano.
+   */
+  private authHeaders(): Record<string, string> {
+    const token = localStorage.getItem('auth_token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
   private async iniciarOcr(endpoint: string, formData: FormData): Promise<string> {
     // Usar URL absoluta del backend
     const backendUrl = `${environment.apiUrl}${endpoint}`;
 
     const response = await fetch(backendUrl, {
       method: 'POST',
+      headers: this.authHeaders(),
       body: formData
     });
 
@@ -67,7 +79,9 @@ export class OcrAsyncService {
         }
 
         try {
-          const response = await fetch(`${environment.apiUrl}/api/ocr/job/${jobId}`);
+          const response = await fetch(`${environment.apiUrl}/api/ocr/job/${jobId}`, {
+            headers: this.authHeaders()
+          });
           if (!response.ok) {
             reject(new Error('Job no encontrado'));
             return;
