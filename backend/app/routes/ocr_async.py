@@ -3,6 +3,7 @@ Rutas para procesar OCR de forma asíncrona usando jobs en cola.
 Devuelve un job_id inmediatamente y el frontend puede sondear el estado o usar WebSocket.
 """
 
+from flask_jwt_extended import jwt_required
 from flask import Blueprint, request, jsonify
 from app.services.ocr_service import procesar_ingredientes, procesar_macros, procesar_codigo_barras
 from app.services.job_queue import crear_job, obtener_job, actualizar_job, JobStatus
@@ -46,6 +47,7 @@ def _procesar_en_background(job_id: str, tipo: str, image_data: bytes, content_t
 
 
 @ocr_async_bp.route('/ingredientes/start', methods=['POST'])
+@jwt_required()
 def iniciar_ocr_ingredientes():
     """Inicia el OCR de ingredientes de forma asíncrona"""
     try:
@@ -78,6 +80,7 @@ def iniciar_ocr_ingredientes():
 
 
 @ocr_async_bp.route('/macros/start', methods=['POST'])
+@jwt_required()
 def iniciar_ocr_macros():
     """Inicia el OCR de macros de forma asíncrona"""
     try:
@@ -109,6 +112,7 @@ def iniciar_ocr_macros():
 
 
 @ocr_async_bp.route('/codigo_barras/start', methods=['POST'])
+@jwt_required()
 def iniciar_ocr_codigo_barras():
     """Inicia el OCR de código de barras de forma asíncrona"""
     try:
@@ -140,6 +144,7 @@ def iniciar_ocr_codigo_barras():
 
 
 @ocr_async_bp.route('/job/<job_id>', methods=['GET'])
+@jwt_required()
 def obtener_estado_job(job_id: str):
     """Obtiene el estado actual de un job"""
     job = obtener_job(job_id)
