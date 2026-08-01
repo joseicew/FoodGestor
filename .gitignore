@@ -76,3 +76,6 @@ backend/scripts/rollback_otros_*.json
 
 workout/entrenamiento.html
 workout/ejemplo_exportacion.json
+
+# IPA descargado de GitHub Actions
+dist-ipa/
