@@ -12,7 +12,7 @@ FoodGestor es una aplicación de **gestión nutricional full-stack** con arquite
                          ▼
 ┌────────────────────────────────────────────────────────────┐
 │           FRONTEND (Angular 21 PWA)                        │
-│           Netlify: food-gestor-frontent.netlify.app       │
+│           Render: foodgestor-frontend.onrender.com        │
 │           - Componentes standalone                         │
 │           - Design System v1.0                             │
 │           - Dark Mode por defecto                          │
@@ -22,11 +22,11 @@ FoodGestor es una aplicación de **gestión nutricional full-stack** con arquite
                          ▼
 ┌────────────────────────────────────────────────────────────┐
 │           BACKEND (Flask REST API)                         │
-│           Railway: foodgestor-backend-production           │
+│           Render: foodgestor-backend.onrender.com          │
 │           - Blueprints organizados                         │
 │           - JWT Authentication                             │
 │           - CORS habilitado                                │
-│           - Docker containerizado                          │
+│           - Gunicorn sobre runtime Python                  │
 └────────────────────────┬────────────────────────────────────┘
                          │ SQL
                          ▼
@@ -74,12 +74,11 @@ FoodGestor/
 │   │   ├── manifest.json             # Metadatos PWA
 │   │   ├── service-worker.js         # Offline support
 │   │   └── environments/
-│   │       └── environment.ts        # URLs API (Railway)
+│   │       └── environment.ts        # URLs API (Render)
 │   ├── public/
 │   │   ├── assets/
 │   │   │   ├── icon-192.png          # Icono PWA
 │   │   │   └── icon-512.png          # Icono PWA
-│   │   └── _redirects                # Reglas Netlify SPA
 │   ├── angular.json                  # Configuración build
 │   └── package.json                  # Dependencias
 │
@@ -100,12 +99,9 @@ FoodGestor/
 │   │   │   └── ocr.py                # OCR/Claude Vision
 │   │   └── __init__.py               # Factory app
 │   ├── main.py                       # Punto de entrada
-│   ├── requirements.txt               # Dependencias Python
-│   └── Dockerfile                    # Contenedor Docker
+│   └── requirements.txt              # Dependencias Python
 │
-├── netlify.toml                      # Config Netlify
-├── Dockerfile                        # Imagen Docker
-├── entrypoint.sh                     # Script inicio Railway
+├── render.yaml                       # Definicion de los servicios
 ├── DESIGN_SYSTEM.md                  # Sistema de diseño
 ├── ARQUITECTURA.md                   # Este archivo
 └── README.md                         # Documentación principal
@@ -115,50 +111,45 @@ FoodGestor/
 
 ## 🌐 Infraestructura Cloud
 
-### 1. **Netlify** (Frontend)
-**URL:** https://food-gestor-frontent.netlify.app
+Los tres servicios están definidos en `render.yaml`, en la raíz del repositorio.
+Para el detalle operativo (variables de entorno, verificación, plan gratuito)
+ver [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md).
 
-**¿Qué es?**
-- Plataforma de hosting para aplicaciones web estáticas/SPA
-- Deploy automático desde GitHub
+### 1. **Render** (Frontend)
+**URL:** https://foodgestor-frontend.onrender.com
 
 **¿Para qué lo usamos?**
-- ✅ Servir la aplicación Angular compilada
-- ✅ Manejo automático de rutas SPA (redirect /* → /index.html)
-- ✅ HTTPS gratuito
-- ✅ CDN global para rápido acceso
-- ✅ Deploy automático en cada push a main
+- ✅ Servir la aplicación Angular compilada como sitio estático
+- ✅ Manejo de rutas SPA (rewrite /* → /index.html)
+- ✅ HTTPS y deploy automático en cada push a main
 
 **Configuración:**
-- **Build command:** `cd frontend && npm install && npm run build`
-- **Publish directory:** `frontend/dist/frontend/browser`
-- **Archivo de redirección:** `frontend/public/_redirects`
+- **Build command:** `npm ci && npm run build -- --configuration=production`
+- **Publish directory:** `dist/frontend/browser` (con `rootDir: frontend`)
+
+El panel de administración (`admin/`) se despliega igual, como un tercer
+servicio estático independiente.
 
 ---
 
-### 2. **Railway** (Backend)
-**URL:** https://foodgestor-backend-production.up.railway.app
-
-**¿Qué es?**
-- Plataforma de hosting para aplicaciones containerizadas
-- Soporte nativo para Docker
+### 2. **Render** (Backend)
+**URL:** https://foodgestor-backend.onrender.com
 
 **¿Para qué lo usamos?**
 - ✅ Ejecutar servidor Flask REST API
 - ✅ Procesar requests de autenticación, alimentos, calendario
 - ✅ Conectar a base de datos PostgreSQL
-- ✅ Escalabilidad automática
 - ✅ Variables de entorno seguras
 
 **Configuración:**
-- **Builder:** Dockerfile
-- **Puerto:** 8000 (dinámico desde env $PORT)
-- **Entrypoint:** `entrypoint.sh` → gunicorn con --pythonpath
-- **Dockerfile:** Python 3.11-slim, instala dependencias, ejecuta gunicorn
+- **Runtime:** Python 3.12 (no contenedor)
+- **Build command:** `pip install -r requirements.txt`
+- **Start command:** `gunicorn main:app`
+- **Health check:** `/api/health`
 
 **Flujo:**
 ```
-GitHub push → Railway detecta cambio → Docker build → Contenedor inicia
+GitHub push → Render detecta cambio → pip install → gunicorn arranca
 ```
 
 ---
@@ -203,7 +194,7 @@ GitHub push → Railway detecta cambio → Docker build → Contenedor inicia
    └─ Submit → AlimentosService.crearAlimento()
 
 2. HTTP REQUEST
-   └─ POST https://foodgestor-backend-production.up.railway.app/api/alimentos
+   └─ POST https://foodgestor-backend.onrender.com/api/alimentos
    └─ Header: Authorization: Bearer {JWT_token}
    └─ Body: { nombre: "Manzana", calorias: 95, ... }
 
@@ -242,7 +233,7 @@ GitHub push → Railway detecta cambio → Docker build → Contenedor inicia
 ### Encriptación
 - **Passwords:** Werkzeug hash (seguro)
 - **Conexión DB:** SSL/TLS (Neon)
-- **API:** HTTPS (Railway + Netlify)
+- **API:** HTTPS (Render)
 - **JWT:** Firma con secret key
 
 ---
@@ -256,7 +247,7 @@ GitHub push → Railway detecta cambio → Docker build → Contenedor inicia
 | **Backend Framework** | Flask 3.1 |
 | **Database** | PostgreSQL (Neon) |
 | **Autenticación** | JWT |
-| **Deploy** | Automated (GitHub → Netlify/Railway) |
+| **Deploy** | Automated (GitHub → Render) |
 | **HTTPS** | ✅ Todas las conexiones |
 | **Dark Mode** | ✅ Por defecto |
 | **PWA Installable** | ✅ Sí |
