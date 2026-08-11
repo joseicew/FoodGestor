@@ -15,6 +15,16 @@ def _safe_rollback():
         db.session.remove()
 
 
+def _racion_del_usuario(racion_id):
+    """Busca una ración exigiendo que sea del usuario del token.
+
+    Devuelve 404 (y no 403) cuando la ración es de otro, para no confirmar
+    a un tercero qué ids existen.
+    """
+    usuario_id = int(get_jwt_identity())
+    return Racion.query.filter_by(id=racion_id, usuario_id=usuario_id).first()
+
+
 @raciones_bp.route('', methods=['GET'])
 @jwt_required()
 def obtener_raciones():
@@ -75,9 +85,10 @@ def crear_racion():
 
 
 @raciones_bp.route('/<int:racion_id>', methods=['PUT'])
+@jwt_required()
 def actualizar_racion(racion_id):
     try:
-        racion = Racion.query.get(racion_id)
+        racion = _racion_del_usuario(racion_id)
         if not racion:
             return jsonify({'error': 'Ración no encontrada'}), 404
 
@@ -105,9 +116,10 @@ def actualizar_racion(racion_id):
 
 
 @raciones_bp.route('/<int:racion_id>', methods=['DELETE'])
+@jwt_required()
 def eliminar_racion(racion_id):
     try:
-        racion = Racion.query.get(racion_id)
+        racion = _racion_del_usuario(racion_id)
         if not racion:
             return jsonify({'error': 'Ración no encontrada'}), 404
 
@@ -120,9 +132,10 @@ def eliminar_racion(racion_id):
 
 
 @raciones_bp.route('/<int:racion_id>/alimentos', methods=['POST'])
+@jwt_required()
 def agregar_alimento_racion(racion_id):
     try:
-        racion = Racion.query.get(racion_id)
+        racion = _racion_del_usuario(racion_id)
         if not racion:
             return jsonify({'error': 'Ración no encontrada'}), 404
 
@@ -166,9 +179,10 @@ def agregar_alimento_racion(racion_id):
 
 
 @raciones_bp.route('/<int:racion_id>/alimentos/<int:alimento_id>', methods=['DELETE'])
+@jwt_required()
 def remover_alimento_racion(racion_id, alimento_id):
     try:
-        racion = Racion.query.get(racion_id)
+        racion = _racion_del_usuario(racion_id)
         if not racion:
             return jsonify({'error': 'Ración no encontrada'}), 404
 
@@ -195,9 +209,10 @@ def remover_alimento_racion(racion_id, alimento_id):
 
 
 @raciones_bp.route('/<int:racion_id>/alimentos/<int:alimento_id>', methods=['PUT'])
+@jwt_required()
 def actualizar_cantidad_alimento(racion_id, alimento_id):
     try:
-        racion = Racion.query.get(racion_id)
+        racion = _racion_del_usuario(racion_id)
         if not racion:
             return jsonify({'error': 'Ración no encontrada'}), 404
 
