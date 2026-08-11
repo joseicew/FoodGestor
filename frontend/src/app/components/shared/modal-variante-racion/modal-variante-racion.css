@@ -1,0 +1,238 @@
+.variante-box {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  width: 92vw;
+  max-width: 480px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Cabecera ── */
+.variante-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.variante-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.variante-origen {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ── Cuerpo scrollable ── */
+.variante-body {
+  padding: var(--space-md);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.variante-campo {
+  display: block;
+  margin-bottom: var(--space-md);
+}
+
+.variante-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.variante-campo input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.variante-seccion h4 {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* ── Líneas de alimento ── */
+.variante-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.variante-item-nombre {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.variante-item-nombre > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.variante-marca {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.variante-cantidad {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.variante-cantidad .cantidad-input {
+  width: 52px;
+  padding: 4px 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  text-align: center;
+}
+
+.variante-cantidad .unidad {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.variante-kcal {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  min-width: 58px;
+  text-align: right;
+}
+
+.variante-item .btn-eliminar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.variante-vacio {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: var(--space-md) 0;
+  margin: 0;
+}
+
+/* ── Botón de añadir ── */
+.btn-secundario {
+  width: 100%;
+  margin-top: var(--space-sm);
+  padding: 10px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secundario:hover {
+  background: var(--bg-secondary);
+}
+
+/* ── Totales ── */
+.variante-totales {
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.total-principal {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.total-macros {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── Mensajes ── */
+.variante-error {
+  margin: var(--space-sm) 0 0 0;
+  font-size: 13px;
+  color: var(--error);
+}
+
+.variante-aviso {
+  margin: var(--space-sm) 0 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* ── Pie ── */
+.variante-footer {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.variante-footer button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancelar {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.btn-confirmar {
+  background: var(--primary);
+  color: #1B2514;
+}
+
+.btn-confirmar:hover {
+  background: var(--primary-dark);
+}
