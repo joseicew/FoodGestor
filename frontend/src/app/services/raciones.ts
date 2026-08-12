@@ -44,6 +44,18 @@ export class RacionesService {
     return this.http.delete<any>(`${this.apiUrl}/${id}`, this.getHeaders());
   }
 
+  /**
+   * Crea una copia de una ración con la composición indicada (misma ración
+   * pero con otras cantidades o algún alimento distinto). Si no se pasa
+   * nombre, el backend genera uno del tipo "Tostada (variante)".
+   */
+  crearVariante(racionId: number, data: {
+    nombre?: string;
+    alimentos: { alimento_id: number; cantidad: number }[];
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${racionId}/variante`, data, this.getHeaders());
+  }
+
   agregarAlimento(racionId: number, alimentoId: number, cantidad: number = 100): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${racionId}/alimentos`, {
       alimento_id: alimentoId,

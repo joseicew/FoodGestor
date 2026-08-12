@@ -14,12 +14,13 @@ import { MensajeFlash } from '../shared/mensaje-flash/mensaje-flash';
 import { PageHeaderComponent } from '../shared/page-header/page-header';
 import { ModalCantidadAlimentoComponent } from '../shared/modal-cantidad-alimento/modal-cantidad-alimento';
 import { ModalCantidadRacionComponent } from '../shared/modal-cantidad-racion/modal-cantidad-racion';
+import { ModalVarianteRacionComponent, VarianteRacion } from '../shared/modal-variante-racion/modal-variante-racion';
 import { ModalAyudaComponent } from '../shared/modal-ayuda/modal-ayuda';
 import { normalizarTexto } from '../../utils/texto';
 
 @Component({
   selector: 'app-calendario',
-  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent, ModalCantidadAlimentoComponent, ModalCantidadRacionComponent, ModalAyudaComponent],
+  imports: [CommonModule, FormsModule, BusquedaAlimentoComponent, MensajeFlash, PageHeaderComponent, ModalCantidadAlimentoComponent, ModalCantidadRacionComponent, ModalVarianteRacionComponent, ModalAyudaComponent],
   templateUrl: './calendario.html',
   styleUrl: './calendario.css'
 })
@@ -90,6 +91,10 @@ export class Calendario implements OnInit {
   // Modal de cantidad al añadir una ración a una comida
   racionParaAgregar: any = null;
   private tipoComidaParaAgregarRacion: string | null = null;
+  // Modal de variante: copiar una ración ya puesta en el día y retocarla
+  racionParaVariar: any = null;
+  private tipoComidaParaVariar: string | null = null;
+  private cantidadRacionOriginal = 1;
   // Alergias del usuario
   intoleranciaUsuario: string[] = [];
 
@@ -465,6 +470,84 @@ export class Calendario implements OnInit {
   onCancelarCantidadRacion() {
     this.racionParaAgregar = null;
     this.tipoComidaParaAgregarRacion = null;
+  }
+
+  // ── Ración alternativa (copia con cambios) ──
+
+  /**
+   * Abre el editor de variante partiendo de una ración que ya está en el día.
+   * Se pide la versión completa al servidor porque lo que hay pintado en el
+   * calendario puede venir de caché y traer la composición desactualizada.
+   */
+  abrirVarianteRacion(tipoComida: string, racion: any) {
+    this.tipoComidaParaVariar = tipoComida;
+    this.cantidadRacionOriginal = Number(racion.cantidad) || 1;
+    this.racionParaVariar = racion;
+
+    this.racionesService.obtenerRacion(racion.id).subscribe({
+      next: (fresca) => {
+        if (this.tipoComidaParaVariar === tipoComida) {
+          this.racionParaVariar = fresca;
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => { /* nos quedamos con la copia local */ }
+    });
+  }
+
+  onConfirmarVariante(variante: VarianteRacion) {
+    const tipoComida = this.tipoComidaParaVariar;
+    const original = this.racionParaVariar;
+    if (!tipoComida || !original) return;
+
+    const cantidad = this.cantidadRacionOriginal;
+    const originalId = original.id;
+    this.onCancelarVariante();
+
+    const fechaStr = this.formatoFecha(this.fechaSeleccionada);
+
+    this.racionesService.crearVariante(originalId, variante).subscribe({
+      next: (resp) => {
+        const nueva = resp?.racion;
+        if (!nueva) {
+          this.flash.mostrar('No se pudo crear la variante', 'error');
+          return;
+        }
+
+        // La nueva ración pasa a estar disponible en el selector
+        this.cacheService.agregarRacionLocal(nueva);
+        this.cargarRaciones();
+
+        // Sustituye a la original en esta comida, con la misma cantidad
+        this.calendarioService.agregarRacionAlComida(fechaStr, tipoComida, nueva.id, cantidad).subscribe({
+          next: () => {
+            this.calendarioService.removerRacionDelComida(fechaStr, tipoComida, originalId).subscribe({
+              next: () => {
+                this.flash.mostrar(`${nueva.nombre} sustituye a ${original.nombre}`, 'exito');
+                this.cargarDia(this.fechaSeleccionada);
+              },
+              error: () => {
+                // La variante ya está puesta; solo falló quitar la original
+                this.flash.mostrar('Variante añadida, pero no se pudo quitar la original', 'error');
+                this.cargarDia(this.fechaSeleccionada);
+              }
+            });
+          },
+          error: () => {
+            this.flash.mostrar('Variante creada, pero no se pudo añadir al día', 'error');
+            this.cargarDia(this.fechaSeleccionada);
+          }
+        });
+      },
+      error: (err) => {
+        this.flash.mostrar(err?.error?.error || 'Error al crear la variante', 'error');
+      }
+    });
+  }
+
+  onCancelarVariante() {
+    this.racionParaVariar = null;
+    this.tipoComidaParaVariar = null;
   }
 
   onSeleccionarAlimentoInline(tipoComida: string, alimento: any) {

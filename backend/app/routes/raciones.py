@@ -84,6 +84,104 @@ def crear_racion():
         return jsonify({'error': str(e)}), 500
 
 
+def _nombre_variante_libre(nombre_base, usuario_id):
+    """Devuelve un nombre de variante que no choque con otra ración del usuario.
+
+    "Tostada" -> "Tostada (variante)" -> "Tostada (variante 2)" -> ...
+    """
+    candidato = f'{nombre_base} (variante)'
+    sufijo = 2
+    while Racion.query.filter_by(nombre=candidato, usuario_id=usuario_id).first():
+        candidato = f'{nombre_base} (variante {sufijo})'
+        sufijo += 1
+    return candidato
+
+
+@raciones_bp.route('/<int:racion_id>/variante', methods=['POST'])
+@jwt_required()
+def crear_variante_racion(racion_id):
+    """Crea una copia de una ración con la composición que llegue en el body.
+
+    Pensado para el calendario: partes de una ración ya guardada y creas otra
+    igual pero con las cantidades cambiadas o algún alimento de más o de menos.
+    Se hace en una sola llamada para que no queden variantes a medio construir
+    si algo falla por el camino.
+    """
+    try:
+        usuario_id = int(get_jwt_identity())
+        original = Racion.query.filter_by(id=racion_id, usuario_id=usuario_id).first()
+        if not original:
+            return jsonify({'error': 'Ración no encontrada'}), 404
+
+        # Un cuerpo mal formado debe dar 400, no reventar en 500. Sin cuerpo
+        # es válido: significa "duplícala tal cual".
+        data = request.get_json(silent=True)
+        if data is None:
+            if request.get_data():
+                return jsonify({'error': 'JSON inválido'}), 400
+            data = {}
+
+        nombre = (data.get('nombre') or '').strip()
+        if nombre:
+            if Racion.query.filter_by(nombre=nombre, usuario_id=usuario_id).first():
+                return jsonify({'error': f'Ya existe una ración llamada "{nombre}"'}), 409
+        else:
+            nombre = _nombre_variante_libre(original.nombre, usuario_id)
+
+        # Composición pedida; si no llega ninguna, se copia la de la original
+        items = data.get('alimentos')
+        if not isinstance(items, list) or not items:
+            filas = db.session.execute(
+                select(racion_alimentos.c.alimento_id, racion_alimentos.c.cantidad)
+                .where(racion_alimentos.c.racion_id == racion_id)
+            ).fetchall()
+            items = [{'alimento_id': f[0], 'cantidad': f[1]} for f in filas]
+
+        # Validar y deduplicar antes de tocar la BD
+        composicion = {}
+        for item in items:
+            try:
+                alimento_id = int(item.get('alimento_id'))
+                cantidad = float(item.get('cantidad', 100))
+            except (TypeError, ValueError):
+                return jsonify({'error': 'Composición inválida'}), 400
+            if cantidad <= 0:
+                return jsonify({'error': 'Las cantidades deben ser mayores que 0'}), 400
+            if not Alimento.query.get(alimento_id):
+                return jsonify({'error': f'Alimento {alimento_id} no encontrado'}), 404
+            composicion[alimento_id] = cantidad
+
+        if not composicion:
+            return jsonify({'error': 'La variante necesita al menos un alimento'}), 400
+
+        variante = Racion(
+            usuario_id=usuario_id,
+            nombre=nombre,
+            descripcion=(data.get('descripcion') if data.get('descripcion') is not None
+                         else original.descripcion) or ''
+        )
+        categorias = data.get('categorias')
+        variante.set_categorias(categorias if isinstance(categorias, list)
+                                else original.get_categorias())
+        db.session.add(variante)
+        db.session.flush()  # necesitamos el id para la tabla intermedia
+
+        db.session.execute(
+            racion_alimentos.insert(),
+            [{'racion_id': variante.id, 'alimento_id': aid, 'cantidad': cant}
+             for aid, cant in composicion.items()]
+        )
+        db.session.commit()
+
+        return jsonify({
+            'mensaje': 'Variante creada',
+            'racion': variante.to_dict()
+        }), 201
+    except Exception as e:
+        _safe_rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 @raciones_bp.route('/<int:racion_id>', methods=['PUT'])
 @jwt_required()
 def actualizar_racion(racion_id):

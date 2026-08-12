@@ -155,6 +155,9 @@
                         </div>
                         <span class="separador">|</span>
                         <span class="item-kcal">{{ ((racion.totales?.calorias || 0) * (racion.cantidad || 1)) | number:'1.0-0' }} kcal</span>
+                        <button class="btn-variante"
+                                (click)="abrirVarianteRacion(tipoComida, racion)"
+                                title="Crear una variante de esta ración">⧉</button>
                         <button class="btn-eliminar"
                                 (click)="removerRacion(tipoComida, racion.id)"
                                 title="Eliminar">🗑️</button>
@@ -268,4 +271,12 @@
     (confirmar)="onConfirmarCantidadRacion($event)"
     (cancelar)="onCancelarCantidadRacion()">
   </app-modal-cantidad-racion>
+
+  <!-- Modal variante: copia de una ración del día con cantidades/alimentos retocados -->
+  <app-modal-variante-racion
+    [racion]="racionParaVariar"
+    [catalogoAlimentos]="alimentos"
+    (confirmar)="onConfirmarVariante($event)"
+    (cancelar)="onCancelarVariante()">
+  </app-modal-variante-racion>
 </div>

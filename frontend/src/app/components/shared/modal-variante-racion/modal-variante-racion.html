@@ -1,0 +1,80 @@
+@if (racion) {
+  <div class="modal-overlay dark" (click)="onCancelar()">
+    <div class="variante-box" (click)="$event.stopPropagation()">
+
+      <header class="variante-header">
+        <div>
+          <h3>Ración alternativa</h3>
+          <p class="variante-origen">Copia de <strong>{{ racion.nombre }}</strong></p>
+        </div>
+        <button class="modal-close" (click)="onCancelar()" title="Cerrar">✕</button>
+      </header>
+
+      <div class="variante-body">
+        <label class="variante-campo">
+          <span class="variante-label">Nombre</span>
+          <input type="text" [(ngModel)]="nombre" placeholder="Nombre de la variante" />
+        </label>
+
+        <div class="variante-seccion">
+          <h4>Alimentos</h4>
+
+          @for (item of items; track item.id) {
+            <div class="variante-item">
+              <div class="variante-item-nombre">
+                <span>{{ item.nombre }}</span>
+                @if (item.marca) {
+                  <span class="variante-marca">{{ item.marca }}</span>
+                }
+              </div>
+              <div class="variante-cantidad">
+                <input type="text"
+                       [value]="item.cantidad"
+                       (change)="cambiarCantidad(item, $any($event.target).value)"
+                       class="cantidad-input" />
+                <span class="unidad">gr/ml</span>
+              </div>
+              <span class="variante-kcal">{{ kcalItem(item) | number:'1.0-0' }} kcal</span>
+              <button class="btn-eliminar" (click)="quitarItem(item.id)" title="Quitar">🗑️</button>
+            </div>
+          } @empty {
+            <p class="variante-vacio">Sin alimentos. Añade al menos uno.</p>
+          }
+
+          @if (mostrarBuscador) {
+            <app-busqueda-alimento
+              [alimentos]="catalogoAlimentos"
+              [excluirIds]="idsEnUso"
+              (seleccionar)="onAnadirAlimento($event)">
+            </app-busqueda-alimento>
+            <button class="btn-secundario" (click)="mostrarBuscador = false">✕ Cancelar búsqueda</button>
+          } @else {
+            <button class="btn-secundario" (click)="mostrarBuscador = true">➕ Añadir alimento</button>
+          }
+        </div>
+
+        <div class="variante-totales">
+          <div class="total-principal">{{ totales.calorias | number:'1.0-0' }} kcal</div>
+          <div class="total-macros">
+            <span>P {{ totales.proteinas | number:'1.0-1' }}g</span>
+            <span>G {{ totales.grasas | number:'1.0-1' }}g</span>
+            <span>H {{ totales.hidratos_carbono | number:'1.0-1' }}g</span>
+          </div>
+        </div>
+
+        @if (error) {
+          <p class="variante-error">{{ error }}</p>
+        }
+        @if (!hayCambios && items.length > 0) {
+          <p class="variante-aviso">Aún no has cambiado nada respecto a la original.</p>
+        }
+      </div>
+
+      <footer class="variante-footer">
+        <button class="btn-cancelar" (click)="onCancelar()">Cancelar</button>
+        <button class="btn-confirmar" (click)="onConfirmar()">✓ Crear y usar</button>
+      </footer>
+
+    </div>
+  </div>
+}
